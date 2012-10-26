@@ -5,7 +5,7 @@ import os
 import sys
 import argparse
 
-class CommandGenerator(object):
+class CommandLine(object):
     def __init__(self, config):
         self.config = config
         self.subparsers = {}
@@ -136,6 +136,6 @@ class CommandGenerator(object):
             print "Errors:\n  * %s" % "\n  * ".join(errors)
             sys.exit(1)
 
-        exec('import %s as module' % program['lib'])
-        exec('module.%s(self.args.__dict__)' % program['method'])
+#        exec('import %s as module' % program['lib'])
+#        exec('module.%s(self.args.__dict__)' % program['method'])
 
