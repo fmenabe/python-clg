@@ -100,7 +100,7 @@ class CommandLine(object):
         option_config = self.config[parser]['options'][option]
         option_str = ['--%s' % option.replace('_', '-')]
         if 'short' in option_config:
-            option_str.insert(0, '-%s' % option_config['short'])
+            option_str.insert(0, option_config['short'])
         return "'%s'" % '/'.join(option_str)
 
 
