@@ -68,7 +68,7 @@ class CommandLine(object):
             elif type == 'list':
                 option.nargs = '*'
             else:
-                option.type = type
+                option.type = eval(type)
 
         if 'default' in params:
             option.default = params['default']
