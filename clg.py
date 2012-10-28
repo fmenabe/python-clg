@@ -73,6 +73,7 @@ class CommandLine(object):
             type = params['type']
             if type == 'list':
                 option.nargs = '*'
+                option.default = []
             else:
                 option.type = eval(type)
 
