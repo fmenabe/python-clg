@@ -143,11 +143,23 @@ class CommandLine(object):
         for option, config in options.iteritems():
             if not self.args[option]:
                 continue
-            if 'depends' not in config:
+            if 'necessary' not in config:
                 continue
-            for opt in config['depends']:
+            for opt in config['necessary']:
                 if not self.args[opt]:
                     self._error(parser, "argument %s: missing dependance %s" % (
+                        self._option_str(parser, option),
+                        self._option_str(parser, opt)
+                    ))
+
+        for option, config in options.iteritems():
+            if not self.args[option]:
+                continue
+            if 'conflicts' not in config:
+                continue
+            for opt in config['conflicts']:
+                if self.args[opt]:
+                    self._error(parser, "argument %s: option %s in conflict" % (
                         self._option_str(parser, option),
                         self._option_str(parser, opt)
                     ))
