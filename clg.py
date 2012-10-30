@@ -57,9 +57,11 @@ class CommandLine(object):
         option_help = params['help'].strip()
 
         option_str = option.replace('_', '-')
-        action = 'store_true' \
-            if 'type' in params and params['type'] == 'bool' \
-            else None
+        action = None
+        if 'type' in params and params['type'] == 'bool':
+            action = 'store_true'
+        if option == 'help':
+            action = 'help'
         if 'short' in params:
             option = parser.add_argument(
                 params['short'], '--%s' % option_str, dest=option, action=action
