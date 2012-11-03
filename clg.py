@@ -46,11 +46,9 @@ class CommandLine(object):
         parser._optionals.title = 'Options'
 #        parser.usage = self._format_usage(parser_name)
 
-        try:
+        if 'order' in params:
             for option in params['order']:
                 self._add_option(parser, option, params['options'][option])
-        except KeyError:
-            pass
 
 
     def _add_option(self, parser, option, params):
@@ -113,8 +111,10 @@ class CommandLine(object):
         return "'%s'" % '/'.join(option_str)
 
 
-    def _check(self):
-        parser = self.cur_parser_name
+    def _check_parser(self, parser):
+#        parser = self.cur_parser_name
+        if not 'options' in self.config[parser]:
+            return
         options = self.config[parser]['options']
         parser_config = self.config[parser]
         options = parser_config['options']
@@ -128,7 +128,7 @@ class CommandLine(object):
                     [self._option_str(parser, option) for option in group_options]
                 )
                 nb_options = sum(
-                    [1 for option in config['options'] if self.args[option] is not None]
+                    [1 for option in config['options'] if self.args[option]]
                 )
                 if nb_options > 1:
                     self._error(
@@ -167,20 +167,31 @@ class CommandLine(object):
                     ))
 
 
+    def _check(self):
+        if 'main' in self.config:
+            self._check_parser('main')
+        if 'subparser' in self.args:
+            self._check_parser(self.args['subparser'])
+
+
     def parse(self):
         # Get args in dictionnary (not Namespace)
         self.args = self.parser.parse_args().__dict__
 
-        self.cur_parser_name = 'main' \
-            if 'subparser' not in self.args or self.args['subparser'] is None \
-            else self.args['subparser']
-        self.cur_parser = self.parser \
-            if self.cur_parser_name == 'main' \
-            else self.subparsers[self.cur_parser_name]
+#        self.cur_parser_name = 'main' \
+#            if 'subparser' not in self.args or self.args['subparser'] is None \
+#            else self.args['subparser']
+#        self.cur_parser = self.parser \
+#            if self.cur_parser_name == 'main' \
+#            else self.subparsers[self.cur_parser_name]
 
         self._check()
 
-        parser_config = self.config[self.cur_parser_name]
+        cur_parser = 'main' \
+            if 'subparser' not in self.args or not self.args['subparser'] \
+            else self.args['subparser']
+
+        parser_config = self.config[cur_parser]
         if 'program' in parser_config and parser_config['program'] is not None:
             program_config = parser_config['program']
             if 'execute' in program_config:
