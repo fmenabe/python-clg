@@ -3,6 +3,7 @@
 
 import os
 import sys
+import re
 import argparse
 
 class CommandLine(object):
@@ -98,8 +99,9 @@ class CommandLine(object):
 
 
     def _error(self, parser, msg):
-        print self.cur_parser.format_usage()
-        print "%s: error: %s" % (self.cur_parser.prog, msg)
+        parser = self.parser if parser == 'main' else self.subparsers[parser]
+        print parser.format_usage()
+        print "%s: error: %s" % (parser.prog, msg)
         sys.exit(1)
 
 
@@ -141,30 +143,40 @@ class CommandLine(object):
                         "missing one of theses options: %s" % options_str
                     )
 
-        # Check dependances between options.
         for option, config in options.iteritems():
-            if not self.args[option]:
+            value = self.args[option]
+            if not value:
                 continue
-            if 'necessary' not in config:
-                continue
-            for opt in config['necessary']:
-                if not self.args[opt]:
-                    self._error(parser, "argument %s: missing dependance %s" % (
-                        self._option_str(parser, option),
-                        self._option_str(parser, opt)
-                    ))
 
-        for option, config in options.iteritems():
-            if not self.args[option]:
-                continue
-            if 'conflicts' not in config:
-                continue
-            for opt in config['conflicts']:
-                if self.args[opt]:
-                    self._error(parser, "argument %s: option %s in conflict" % (
-                        self._option_str(parser, option),
-                        self._option_str(parser, opt)
-                    ))
+            if 'format' in config and not re.match(config['format'], value):
+                self._error(
+                    parser,
+                    "argument %s: invalid value '%s'" % (option, value)
+                )
+
+            # Check needed options.
+            if 'necessary' in config:
+                for opt in config['necessary']:
+                    if not self.args[opt]:
+                        self._error(
+                            parser,
+                            "argument %s: missing dependance %s" % (
+                                self._option_str(parser, option),
+                                self._option_str(parser, opt)
+                            )
+                        )
+
+            # Check conflicting options.
+            if 'conflicts' in config:
+                for opt in config['conflicts']:
+                    if self.args[opt]:
+                        self._error(
+                            parser,
+                            "argument %s: option %s in conflict" % (
+                                self._option_str(parser, option),
+                                self._option_str(parser, opt)
+                            )
+                        )
 
 
     def _check(self):
