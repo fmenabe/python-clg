@@ -20,14 +20,13 @@ class CommandLine(object):
             self._add_parser(parser, params)
 
 
-    def _format_usage(self, parser_name):
-        begin = len("usage : %s %s " % (
-            os.path.basename(sys.argv[0]),
-            parser_name
-        ))
-        parser = self.config[parser_name]
-
-        return "%s %s %s" % (sys.argv[0], parser_name, usage)
+    def _format_usage(self, program, usage):
+        spaces = ''.join([' ' for index in "usage: "])
+        usage_elts = [program]
+        usage_elts.extend(
+            ["%s  %s" % (spaces, elt) for elt in usage.split('\n')[:-1]]
+        )
+        return '\n'.join(usage_elts)
 
 
     def _add_parser(self, parser_name, params):
@@ -44,8 +43,10 @@ class CommandLine(object):
             )
             # Memorise subparser.
             self.subparsers.setdefault(parser_name, parser)
+        parser._positionals.title = 'Commands'
         parser._optionals.title = 'Options'
-#        parser.usage = self._format_usage(parser_name)
+        if 'usage' in params:
+            parser.usage = self._format_usage(parser.prog, params['usage'])
 
         if 'order' in params:
             for option in params['order']:
