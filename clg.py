@@ -145,6 +145,7 @@ class CommandLine(object):
                     )
 
         for option, config in options.iteritems():
+            if option == 'help': continue
             value = self.args[option]
             if not value:
                 continue
