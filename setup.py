@@ -9,7 +9,7 @@ setup(
     py_modules=['clg'],
     license='LICENCE.txt',
     description='Generate a command line parser from a structured dictionnary.',
-    long_description=open('README.txt').read(),
+    long_description=open('README.md').read(),
     install_requires=[
         'argparse',
     ]
