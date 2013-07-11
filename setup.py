@@ -2,13 +2,13 @@
 from distutils.core import setup
 
 setup(
-    name='Command Line Generator',
+    name='clg',
     version='0.1',
     author='François Ménabé',
     author_email='francois.menabe@gmail.com',
     py_modules=['clg'],
     license='LICENCE.txt',
-    description='Generate a command line parser from a structured dictionnary.',
+    description='Command line generator from a dictionnary.',
     long_description=open('README.md').read(),
     install_requires=[
         'argparse',

@@ -1,27 +1,120 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
+from pprint import pprint
+import os.path
 import sys
-import re
+import copy
 import argparse
+import yaml
+import yaml.constructor
+import simplejson as json
+from collections import OrderedDict
+
+OPTION_KEYWORDS = (
+    'help', 'type', 'default', 'required', 'choices',
+    'metavar', 'dest', 'short', 'need', 'conflict'
+)
+POST_KEYWORDS = ('need', 'conflict')
+
+NEED_ERROR = "{prog}: error: argument {arg}: need {arg2} argument"
+CONFLICT_ERROR = "{prog}: error: argument {arg}: conflict with {arg2} argument"
+
+class OrderedDictLoader(yaml.Loader):
+    """
+    A YAML loader that loads mappings into ordered dictionaries.
+    (http://stackoverflow.com/questions/5121931/in-python-how-can-you-load-yaml-
+    mappings-as-ordereddicts)
+    """
+    def __init__(self, *args, **kwargs):
+        yaml.Loader.__init__(self, *args, **kwargs)
+
+        self.add_constructor(
+            u'tag:yaml.org,2002:map', type(self).construct_yaml_map
+        )
+        self.add_constructor(
+            u'tag:yaml.org,2002:omap', type(self).construct_yaml_map
+        )
+
+
+    def construct_yaml_map(self, node):
+        data = OrderedDict()
+        yield data
+        value = self.construct_mapping(node)
+        data.update(value)
+
+
+    def construct_mapping(self, node, deep=False):
+        if isinstance(node, yaml.MappingNode):
+            self.flatten_mapping(node)
+        else:
+            raise yaml.constructor.ConstructorError(
+                None,
+                None,
+                'expected a mapping node, but found %s' % node.id,
+                node.start_mark
+            )
+
+        mapping = OrderedDict()
+        for key_node, value_node in node.value:
+            key = self.construct_object(key_node, deep=deep)
+            try:
+                hash(key)
+            except TypeError, exc:
+                raise yaml.constructor.ConstructorError(
+                    'while constructing a mapping',
+                    node.start_mark,
+                    'found unacceptable key (%s)' % exc,
+                    key_node.start_mark
+                )
+            value = self.construct_object(value_node, deep=deep)
+            mapping[key] = value
+        return mapping
+
+
+class CLGError(Exception):
+    """Exception raised when there are errors."""
+    pass
+
 
 class CommandLine(object):
-    def __init__(self, config):
-        self.config = config
-        self.subparsers = {}
+    """Command line"""
+    def __init__(self, config_file, filetype, keyword='command'):
+        """Initialize the command from a YAML or a JSON file.
+        """
+        if filetype not in ('yaml', 'json'):
+            raise CLGError("invalid format '%s' (choices: 'yaml', 'json')")
 
-        add_help = False \
-            if 'main' in self.config and 'help' in self.config['main']['order'] \
-            else True
-        self.parser = argparse.ArgumentParser(add_help=add_help)
+        self.conf_file = config_file
+        self.keyword = keyword
+        self.args = None
+        self.parser = None
 
-        for parser, params in self.config.iteritems():
-            self._add_parser(parser, params)
+        self.config = {
+            'yaml': lambda:
+                yaml.load(open(config_file), Loader=OrderedDictLoader),
+            'json': lambda:
+                json.loads(open(config_file), object_pairs_hook=OrderedDict)
+        }.get(filetype)()
+
+        self.__add_parser([])
 
 
-    def _format_usage(self, program, usage):
-        spaces = ''.join([' ' for index in "usage: "])
+    def __opt_name(self, option):
+        """Format option name."""
+        return option.replace('_', '-')
+
+
+    def __opt_display(self, option, option_config):
+        """Format option display."""
+        return ('-%s/--%s' % (option_config['short'], self.__opt_name(option))
+            if 'short' in option_config
+            else '--%s' % self.__opt_name(option)
+        )
+
+
+    def __usage(self, program, usage):
+        """Format usage."""
+        spaces = ''.join([' ' for _ in "usage: "])
         usage_elts = [program]
         usage_elts.extend(
             ["%s  %s" % (spaces, elt) for elt in usage.split('\n')[:-1]]
@@ -29,192 +122,245 @@ class CommandLine(object):
         return '\n'.join(usage_elts)
 
 
-    def _add_parser(self, parser_name, params):
-        if parser_name == 'main':
-            # Main parser
-            parser = self.parser
+    def __get_config(self, path):
+        """Get the configuration of a given path."""
+        config = self.config
+        for elt in path:
+            config = config[elt]
+        return config
+
+
+    def __add_option(self, parser, name, config, isarg=False):
+        if config is None:
+            raise CLGError("option '%s' has no config" % name)
+
+        option_args = []
+        option_kwargs = {}
+
+        # Get option or arg args.
+        if not isarg:
+            if 'short' in config:
+                option_args.append(config['short'])
+                del(config['short'])
+            option_args.append('--%s' % self.__opt_name(name))
+            option_kwargs.setdefault('dest', name)
         else:
-            if not hasattr(self, 'parsers'):
-                self.parsers = self.parser.add_subparsers(dest='subparser')
-            options = params['options'] if 'options' in params else {}
-            parser = self.parsers.add_parser(
-                parser_name,
-                add_help=False if 'help' in options else True
-            )
-            # Memorise subparser.
-            self.subparsers.setdefault(parser_name, parser)
-        parser._positionals.title = 'Commands'
-        parser._optionals.title = 'Options'
-        if 'usage' in params:
-            parser.usage = self._format_usage(parser.prog, params['usage'])
+            option_args.append(name)
 
-        if 'order' in params:
-            for option in params['order']:
-                self._add_option(parser, option, params['options'][option])
+        # Manage type of the option.
+        if 'type' in config:
+            {
+                'bool':
+                    lambda: option_kwargs.setdefault('action', 'store_true'),
+                'list':
+                    lambda: option_kwargs.setdefault('nargs', '*'),
+                'path':
+                    lambda: None
+            }.get(
+                config['type'],
+                lambda: option_kwargs.setdefault('type', eval(config['type']))
+            )()
+            del(config['type'])
 
+        # Get other parameters.
+        for param, value in config.iteritems():
+            # Check for invalid parameters.
+            if param not in OPTION_KEYWORDS:
+                raise CLGError("invalid parameter '%s'" % param)
 
-    def _add_option(self, parser, option, params):
-        option_help = params['help'].strip()
-
-        option_str = option.replace('_', '-')
-        action = None
-        if 'type' in params and params['type'] == 'bool':
-            action = 'store_true'
-        if option == 'help':
-            action = 'help'
-        if 'short' in params:
-            option = parser.add_argument(
-                params['short'], '--%s' % option_str, dest=option, action=action
-            )
-        else:
-            option = parser.add_argument(
-                '--%s' % option_str, dest=option, action=action
-            )
-
-        if 'type' in params and params['type'] != bool:
-            type = params['type']
-            if type == 'list':
-                option.nargs = '*'
-                option.default = []
-            else:
-                option.type = eval(type)
-
-        if 'default' in params:
-            option.default = params['default']
-            option_help = option_help.replace(
-                '$DEFAULT$',
-                str(params['default'])
-            )
-
-        if 'choices' in params:
-            option.choices = params['choices']
-            option_help = option_help.replace(
-                '$CHOICES$',
-                params['choices'].__str__()[1:-1]
-            )
-
-        if 'required' in params:
-            option.required = True
-
-        option.help = option_help
-
-
-    def _error(self, parser, msg):
-        parser = self.parser if parser == 'main' else self.subparsers[parser]
-        print parser.format_usage()
-        print "%s: error: %s" % (parser.prog, msg)
-        sys.exit(1)
-
-
-    def _option_str(self, parser, option):
-        option_config = self.config[parser]['options'][option]
-        option_str = ['--%s' % option.replace('_', '-')]
-        if 'short' in option_config:
-            option_str.insert(0, option_config['short'])
-        return "'%s'" % '/'.join(option_str)
-
-
-    def _check_parser(self, parser):
-#        parser = self.cur_parser_name
-        if not 'options' in self.config[parser]:
-            return
-        options = self.config[parser]['options']
-        parser_config = self.config[parser]
-        options = parser_config['options']
-
-        # Check conflicting options.
-        if 'groups' in parser_config:
-            groups = parser_config['groups']
-            for group, config in groups.iteritems():
-                group_options = config['options']
-                options_str = ', '.join(
-                    [self._option_str(parser, option) for option in group_options]
-                )
-                nb_options = sum(
-                    [1 for option in config['options'] if self.args[option]]
-                )
-                if nb_options > 1:
-                    self._error(
-                        parser,
-                        "conflicting options: %s" % options_str
-                    )
-                if 'required' in config and config['required'] and nb_options == 0:
-                    self._error(
-                        parser,
-                        "missing one of theses options: %s" % options_str
-                    )
-
-        for option, config in options.iteritems():
-            if option == 'help': continue
-            value = self.args[option]
-            if not value:
+            # Ignore parameters used in post checks but check configuration.
+            if param in POST_KEYWORDS:
                 continue
 
-            if 'format' in config and not re.match(config['format'], value):
-                self._error(
-                    parser,
-                    "argument %s: invalid value '%s'" % (option, value)
+            value = {
+                'type': lambda: eval(value),
+                'help': lambda: (
+                    value.replace('$DEFAULT', str(config['default']))
+                        if "$DEFAULT" in str(value)
+                        else value
                 )
+            }.get(param, lambda: value)()
+            option_kwargs.setdefault(param, value)
 
-            # Check needed options.
-            if 'necessary' in config:
-                for opt in config['necessary']:
-                    if not self.args[opt]:
-                        self._error(
-                            parser,
-                            "argument %s: missing dependance %s" % (
-                                self._option_str(parser, option),
-                                self._option_str(parser, opt)
-                            )
-                        )
-
-            # Check conflicting options.
-            if 'conflicts' in config:
-                for opt in config['conflicts']:
-                    if self.args[opt]:
-                        self._error(
-                            parser,
-                            "argument %s: option %s in conflict" % (
-                                self._option_str(parser, option),
-                                self._option_str(parser, opt)
-                            )
-                        )
+        # Add option with args and parameters.
+        parser.add_argument(*option_args, **option_kwargs)
 
 
-    def _check(self):
-        if 'main' in self.config:
-            self._check_parser('main')
-        if 'subparser' in self.args:
-            self._check_parser(self.args['subparser'])
+    def __add_groups(self, parser, groups, options, exclusive=False):
+        for index, group_config in enumerate(groups):
+            group_options = group_config.get('options', '')
+            if not group_options:
+                raise CLGError('group #%d has no options' % index)
+
+            # Add group or exclusive to parser according to group configuration.
+            if exclusive:
+                group = parser.add_mutually_exclusive_group(
+                    required=group_config.get('required', False)
+                )
+            else:
+                group_kwargs = dict([
+                    group_config[param]
+                        for param in ('title', 'description')
+                        if param in group_config
+                ])
+                group = parser.add_argument_group(**group_kwargs)
+
+            # Add options.
+            for option in group_options:
+                try:
+                    self.__add_option(group, option, options[option])
+                    del(options[option]) # del option from options list.
+                except KeyError:
+                    raise CLGError(
+                        "group #%d as the unknown option '%s'" % (index, option)
+                    )
+
+
+    def __add_parser(self, config_path, parent=None):
+        # Get configuration elements from config_path.
+        config = self.__get_config(config_path)
+        # For options, use a deep copy for not altering initial configuration
+        # but permitting deletion of options (for group) and option parameter
+        # (when adding option).
+        options_config      = copy.deepcopy(config.get('options', {}))
+        args_config         = OrderedDict(config.get('args', {}))
+        subparsers_config   = config.get('subparsers', {})
+
+        # Manage conflicting entries.
+        if subparsers_config and config.get('execute', {}):
+            raise CLGError(
+                "/%s: 'execute' and 'subparsers' entries are in conflict" %
+                    '/'.join(config_path)
+            )
+        if options_config and subparsers_config:
+            raise CLGError(
+                "/%s: 'options' and 'subparsers' entries are in conflict" %
+                    '/'.join(config_path)
+            )
+
+        # Prepare help.
+        add_help = (False
+            if self.config.get('options', {}).get('help', '')
+            else True
+        )
+
+        # Add parser.
+        subparser_dest = '%s%d' % (self.keyword, len(config_path) / 2)
+        if parent is None:
+            self.parser = argparse.ArgumentParser(add_help=add_help)
+            parent = self.parser
+        if 'usage' in config:
+            parent.usage = self.__usage(parent.prog, config['usage'])
+        # Add current parser to the config (needed for having coherents
+        # messages with argparse in post checks and parser print methods).
+        config.setdefault('parser', parent)
+
+        # Add subparser.
+        if subparsers_config:
+            subparsers = parent.add_subparsers(dest=subparser_dest)
+            for subparser_name in subparsers_config:
+                subparser_path = list(config_path)
+                subparser_path.extend(['subparsers', subparser_name])
+                subparser = subparsers.add_parser(subparser_name)
+                subparser.name = subparser_name
+                self.__add_parser(subparser_path, subparser)
+
+        try:
+            # Add groups.
+            for group_type in 'groups', 'exclusives_groups':
+                if config.get(group_type, {}):
+                    self.__add_groups(
+                        parent, config.get(group_type), options_config,
+                        True if group_type == 'exclusives_groups' else False
+                    )
+
+            # Add options.
+            for option, option_config in options_config.iteritems():
+                self.__add_option(parent, option, option_config)
+
+            # Add args:
+            for arg, arg_config in args_config.iteritems():
+                self.__add_option(parent, arg, arg_config, True)
+        except CLGError as err:
+            raise CLGError('/%s: %s' % ('/'.join(config_path), err))
+
+
+    def __check_dependency(self, config, option, dependency=False):
+        """
+        dependency is True = check for needed options
+        dependency is False = check for confict options
+        """
+        parser = config['parser']
+        options = config['options']
+        keyword = 'need' if dependency else 'conflict'
+
+        for opt in options[option][keyword]:
+            if (
+              (dependency and not self.args[opt])
+              or (not dependency and self.args[opt])
+            ):
+                parser.print_usage()
+                kwargs = {
+                    'prog': parser.prog,
+                    'arg':  self.__opt_display(option, options[option]),
+                    'arg2': self.__opt_display(opt, options[opt])
+                }
+                print(NEED_ERROR.format(**kwargs)
+                    if dependency
+                    else CONFLICT_ERROR.format(**kwargs)
+                )
+                sys.exit(1)
+
+
+    def __execute(self, exec_config):
+        if 'module' in exec_config:
+            module_config = exec_config['module']
+            if 'path' in module_config:
+                syspath = os.path.abspath(
+                    module_config['path'].replace(
+                        '__FILE__', os.path.dirname(self.conf_file)
+                    )
+                )
+                sys.path.append(syspath)
+            exec('import %s as module' % module_config['lib'])
+            exec('module.%s(self.args)' % module_config['function'])
 
 
     def parse(self):
-        # Get args in dictionnary (not Namespace)
+        # Parse arguments.
         self.args = self.parser.parse_args().__dict__
 
-#        self.cur_parser_name = 'main' \
-#            if 'subparser' not in self.args or self.args['subparser'] is None \
-#            else self.args['subparser']
-#        self.cur_parser = self.parser \
-#            if self.cur_parser_name == 'main' \
-#            else self.subparsers[self.cur_parser_name]
+        # Get subparser configuration.
+        path = []
+        for arg, value in sorted(self.args.iteritems()):
+            if arg.startswith(self.keyword):
+                path.extend([value, 'subparsers'])
+        if path:
+            path = ['subparsers'] + path[:-1]
+        config = self.__get_config(path)
 
-        self._check()
+        # Post checks.
+        for option, option_config in config['options'].iteritems():
+            if self.args[option] is None:
+                continue
 
-        cur_parser = 'main' \
-            if 'subparser' not in self.args or not self.args['subparser'] \
-            else self.args['subparser']
+            for keyword in POST_KEYWORDS:
+                if keyword in option_config:
+                    {
+                        'need': lambda:
+                            self.__check_dependency(config, option, True),
+                        'conflict': lambda:
+                            self.__check_dependency(config, option, False)
+                    }.get(keyword)()
 
-        parser_config = self.config[cur_parser]
-        if 'program' in parser_config and parser_config['program'] is not None:
-            program_config = parser_config['program']
-            if 'execute' in program_config:
-                # Execute code defining.
-                pass
-            elif 'module' in program_config:
-                program = program_config['module']
-                if 'path' in program:
-                    sys.path.append(program['path'])
-                exec('import %s as module' % program['lib'])
-                exec('module.%s(self.args)' % program['main'])
+            if 'type' in option_config and option_config['type'] == 'path':
+                self.args[option] = os.path.abspath(
+                    self.args[option].replace(
+                        '__FILE__', os.path.dirname(self.conf_file)
+                    )
+                )
+
+        # Execute.
+        if 'execute' in config:
+            self.__execute(config['execute'])
 
