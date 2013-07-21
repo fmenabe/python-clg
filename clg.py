@@ -18,7 +18,8 @@ POST_KEYWORDS = ('need', 'conflict')
 NEED_ERROR = "{prog}: error: argument {arg}: need {arg2} argument"
 CONFLICT_ERROR = "{prog}: error: argument {arg}: conflict with {arg2} argument"
 
-class OrderedDictLoader(yaml.Loader):
+
+class YAMLOrderedDictLoader(yaml.Loader):
     """
     A YAML loader that loads mappings into ordered dictionaries.
     (http://stackoverflow.com/questions/5121931/in-python-how-can-you-load-yaml-
