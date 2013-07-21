@@ -1,3 +1,7 @@
+# Ignore README which must be a symbolic link to REAME.md (necessary for
+# uploading in PyPi).
+README
+
 # Ignore virtualenv.
 env
 
