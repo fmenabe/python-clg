@@ -3,13 +3,13 @@ from distutils.core import setup
 
 setup(
     name='clg',
-    version='0.1',
+    version='0.2',
     author='François Ménabé',
     author_email='francois.menabe@gmail.com',
     py_modules=['clg'],
     license='LICENCE.txt',
-    description='Command line generator from a dictionnary.',
-    long_description=open('README.md').read(),
+    description='Command-line generator from a dictionary.',
+    long_description=open('README').read(),
     install_requires=[
         'argparse',
     ]

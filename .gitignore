@@ -11,5 +11,7 @@ env
 # Ignore build directory which is generated when
 # the package is installed.
 build
+dist
+MANIFEST
 
 test/*
