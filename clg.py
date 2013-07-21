@@ -7,7 +7,6 @@ import copy
 import argparse
 import yaml
 import yaml.constructor
-import simplejson as json
 from collections import OrderedDict
 
 OPTION_KEYWORDS = (
@@ -78,23 +77,12 @@ class CLGError(Exception):
 
 class CommandLine(object):
     """Command line"""
-    def __init__(self, config_file, filetype, keyword='command'):
-        """Initialize the command from a YAML or a JSON file.
-        """
-        if filetype not in ('yaml', 'json'):
-            raise CLGError("invalid format '%s' (choices: 'yaml', 'json')")
-
-        self.conf_file = config_file
+    def __init__(self, config, keyword='command'):
+        """Initialize the command from a YAML or a JSON file."""
+        self.config = config
         self.keyword = keyword
         self.args = None
         self.parser = None
-
-        self.config = {
-            'yaml': lambda:
-                yaml.load(open(config_file), Loader=OrderedDictLoader),
-            'json': lambda:
-                json.loads(open(config_file), object_pairs_hook=OrderedDict)
-        }.get(filetype)()
 
         self.__add_parser([])
 
