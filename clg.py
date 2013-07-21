@@ -9,6 +9,10 @@ import yaml
 import yaml.constructor
 from collections import OrderedDict
 
+PARSER_KEYWORDS = (
+    'usage', 'subparsers', 'options', 'args', 'groups',
+    'exclusive_groups', 'execute'
+)
 OPTION_KEYWORDS = (
     'help', 'type', 'default', 'required', 'choices',
     'metavar', 'dest', 'short', 'need', 'conflict'
@@ -205,73 +209,76 @@ class CommandLine(object):
                     )
 
 
+    def __check_parser_conf(self, config_path, config):
+        # Check for invalid sections.
+        for keyword in config:
+            if keyword not in PARSER_KEYWORDS:
+                raise CLGError(
+                    "/%s: unknown section '%s'" % (
+                        '/'.join(config_path), keyword)
+                )
+
+        # Check 'subparsers' section is alone.
+        if 'subparsers' in config and len(config) > 1:
+            raise CLGError(
+                "/%s: 'subparsers' section is in conflict with '%s'" % (
+                    '/'.join(config_path), keyword
+                )
+            )
+
+
     def __add_parser(self, config_path, parent=None):
         # Get configuration elements from config_path.
         config = self.__get_config(config_path)
-        # For options, use a deep copy for not altering initial configuration
-        # but permitting deletion of options (for group) and option parameter
-        # (when adding option).
-        options_config      = copy.deepcopy(config.get('options', {}))
-        args_config         = OrderedDict(config.get('args', {}))
-        subparsers_config   = config.get('subparsers', {})
 
-        # Manage conflicting entries.
-        if subparsers_config and config.get('execute', {}):
-            raise CLGError(
-                "/%s: 'execute' and 'subparsers' entries are in conflict" %
-                    '/'.join(config_path)
-            )
-        if options_config and subparsers_config:
-            raise CLGError(
-                "/%s: 'options' and 'subparsers' entries are in conflict" %
-                    '/'.join(config_path)
-            )
+        self.__check_parser_conf(config_path, config)
 
-        # Prepare help.
-        add_help = (False
-            if self.config.get('options', {}).get('help', '')
-            else True
-        )
-
-        # Add parser.
-        subparser_dest = '%s%d' % (self.keyword, len(config_path) / 2)
+        # Init main parser.
         if parent is None:
-            self.parser = argparse.ArgumentParser(add_help=add_help)
+            self.parser = argparse.ArgumentParser(add_help=True)
             parent = self.parser
-        if 'usage' in config:
-            parent.usage = self.__usage(parent.prog, config['usage'])
-        # Add current parser to the config (needed for having coherents
-        # messages with argparse in post checks and parser print methods).
-        config.setdefault('parser', parent)
+        # We may need to access to the parser object later (for printing usage
+        # by example) so save it to __parsers attibute.
+        self.__parsers.setdefault('/'.join(config_path), parent)
 
         # Add subparser.
-        if subparsers_config:
+        if config.get('subparsers'):
+            subparsers_config = config.get('subparsers', {})
+            subparser_dest = '%s%d' % (self.keyword, len(config_path) / 2)
             subparsers = parent.add_subparsers(dest=subparser_dest)
-            for subparser_name in subparsers_config:
+            for subparser_name, subparser_conf in subparsers_config.iteritems():
                 subparser_path = list(config_path)
                 subparser_path.extend(['subparsers', subparser_name])
-                subparser = subparsers.add_parser(subparser_name)
+                subparser = subparsers.add_parser(subparser_name, add_help=True)
                 subparser.name = subparser_name
                 self.__add_parser(subparser_path, subparser)
+        else:
+            # For options, use a deep copy for not altering initial
+            # configuration when change must be done.
+            options_config = copy.deepcopy(config.get('options', {}))
+            args_config = OrderedDict(config.get('args', {}))
 
-        try:
-            # Add groups.
-            for group_type in 'groups', 'exclusives_groups':
-                if config.get(group_type, {}):
-                    self.__add_groups(
-                        parent, config.get(group_type), options_config,
-                        True if group_type == 'exclusives_groups' else False
-                    )
+            if 'usage' in config:
+                parent.usage = self.__usage(parent.prog, config['usage'])
 
-            # Add options.
-            for option, option_config in options_config.iteritems():
-                self.__add_option(parent, option, option_config)
+            try:
+                # Add groups.
+                for group_type in 'groups', 'exclusive_groups':
+                    if config.get(group_type, {}):
+                        self.__add_groups(
+                            parent, config.get(group_type), options_config,
+                            True if group_type == 'exclusive_groups' else False
+                        )
 
-            # Add args:
-            for arg, arg_config in args_config.iteritems():
-                self.__add_option(parent, arg, arg_config, True)
-        except CLGError as err:
-            raise CLGError('/%s: %s' % ('/'.join(config_path), err))
+                # Add options.
+                for option, option_config in options_config.iteritems():
+                    self.__add_option(parent, option, option_config)
+
+                # Add args:
+                for arg, arg_config in args_config.iteritems():
+                    self.__add_option(parent, arg, arg_config, True)
+            except CLGError as err:
+                raise CLGError('/%s: %s' % ('/'.join(config_path), err))
 
 
     def __check_dependency(self, config, option, dependency=False):
