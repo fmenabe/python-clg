@@ -304,13 +304,6 @@ class CommandLine(object):
     def __execute(self, exec_config):
         if 'module' in exec_config:
             module_config = exec_config['module']
-            if 'path' in module_config:
-                syspath = os.path.abspath(
-                    module_config['path'].replace(
-                        '__FILE__', os.path.dirname(self.conf_file)
-                    )
-                )
-                sys.path.append(syspath)
             exec('import %s as module' % module_config['lib'])
             exec('module.%s(self.args)' % module_config['function'])
 
