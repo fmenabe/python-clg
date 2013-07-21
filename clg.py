@@ -88,6 +88,7 @@ class CommandLine(object):
         self.keyword = keyword
         self.args = None
         self.parser = None
+        self.__parsers = {}
 
         self.__add_parser([])
 
@@ -281,12 +282,11 @@ class CommandLine(object):
                 raise CLGError('/%s: %s' % ('/'.join(config_path), err))
 
 
-    def __check_dependency(self, config, option, dependency=False):
+    def __check_dependency(self, config, option, parser, dependency=False):
         """
         dependency is True = check for needed options
         dependency is False = check for confict options
         """
-        parser = config['parser']
         options = config['options']
         keyword = 'need' if dependency else 'conflict'
 
@@ -327,6 +327,7 @@ class CommandLine(object):
         if path:
             path = ['subparsers'] + path[:-1]
         config = self.__get_config(path)
+        parser = self.__parsers['/'.join(path)]
 
         # Post checks.
         for option, option_config in config['options'].iteritems():
@@ -337,9 +338,9 @@ class CommandLine(object):
                 if keyword in option_config:
                     {
                         'need': lambda:
-                            self.__check_dependency(config, option, True),
+                            self.__check_dependency(config, option, parser, True),
                         'conflict': lambda:
-                            self.__check_dependency(config, option, False)
+                            self.__check_dependency(config, option, parser, False)
                     }.get(keyword)()
 
             if 'type' in option_config and option_config['type'] == 'path':
