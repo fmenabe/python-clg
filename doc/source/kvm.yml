@@ -1,0 +1,197 @@
+subparsers:
+    deploy:
+        usage: |
+            {
+                -n NAME -d DEST -t MODEL
+                -i IP,NETMASK,GATEWAY,VLAN [IP2,NETMASK2,VLAN2 ...]
+            } | { -f YAML_FILE [-d DEST] [-t model] }
+            [-c CORES] [-m MEMORY] [--resize SIZE] [--format FORMAT]
+            [--disks SUFFIX1,SIZE1 [SUFFIX2,SIZE2 ...]]
+            [--force] [--no_check] [--nbd DEV] [--no-autostart]
+            [--vgroot VGROOT] [--lvroot LVROOT]
+            [--src-host HOST] [--src-conf PATH] [--src-disks PATH]
+            [--dst-conf PATH] [--dst-disks PATH]
+
+        execute:
+            module:
+                lib: lib.deploy
+                function: main
+
+        options:
+            name:
+                short: -n
+                help: Name of the VM to deploy.
+                need:
+                    - dst_host
+                    - interfaces
+                    - model
+            dst_host:
+                short: -d
+                help: "Host on which deploy the new VM."
+            interfaces:
+                short: -i
+                type: list
+                help: >
+                    Network interfaces separated by spaces. Parameters of
+                    each interfaces are separated by commas. The first interface
+                    has four parameters: IP address, netmask, gateway and VLAN.
+                    The others interfaces have the same parameters except the
+                    gateway.
+            model:
+                short: -t
+                help: "Model on which the new VM is based."
+                choices:
+                    - redhat5.8
+                    - redhat6.3
+                    - centos5
+                    - ubuntu-lucid
+                    - ubuntu-natty
+                    - ubuntu-oneiric
+                    - ubuntu-precise
+                    - w2003
+                    - w2008-r2
+            file:
+                short: -f
+                help: >
+                    YAML File for deploying many hosts. Required parameters
+                    on the file are the name and the network configuration.
+                    The others parameters are retrieving from the command line
+                    (or default values). However, destination and model have
+                    no defaults values and must be defined somewhere!
+                conflict:
+                    - interfaces
+            cores:
+                short: -c
+                default: 2
+                type: int
+                help: "Number of cores assigned to the VM (default: $DEFAULT)."
+            memory:
+                short: -m
+                default: 1
+                type: int
+                help: "Memory (in Gb) assigned to the VM (default: $DEFAULT)."
+            format:
+                help: >
+                    Format of the image(s). If format is different from
+                    '$DEFAULT', the image is converting to the specified format
+                    (this could be a little long!).
+                choices:
+                    - raw
+                    - qcow2
+                default: qcow2
+            resize:
+                help: >
+                    Resize (in fact, only increase) the main disk image and,
+                    for linux system, allocate the new size on the root LVM
+                    Volume Group. This option only work on KVM host which have
+                    a version of qemu superior to 0.??!
+                type: int
+            disks:
+                type: list
+                help: >
+                    Add new disk(s). Parameters are a suffix and the size.
+                    Filename of the created image is NAME-SUFFIX.FORMAT (ex:
+                    mavm-datas.qcow2).
+            force:
+                type: bool
+                help: >
+                    If a virtual machine already exists on destination host,
+                    configuration and disk images are automaticaly backuped
+                    then overwrited!
+            no_check:
+                type: bool
+                help: Ignore checking of resources (Use with cautions!).
+            no_autostart:
+                type: bool
+                default: True
+                help: "Don't set autostart of the VM."
+            nbd:
+                default: /dev/nbd0
+                help: "NBD device to use (default: '$DEFAULT')."
+            vgroot:
+                default: sys
+                help: "Name of the LVM root Volume Group (default: '$DEFAULT')."
+            lvroot:
+                default: root
+                help: "Name of the LVM root Logical Volume (default: '$DEFAULT')"
+            src_host:
+                default: bes1
+                help: "Host on which models are stored (default: '$DEFAULT')"
+            src_conf:
+                default: /vm/conf
+                help: >
+                    Path of configurations files on the source host
+                    (default: '$DEFAULT').
+            src_disks:
+                default: /vm/disk
+                help: >
+                    Path of images files on the source host
+                    (default: '$DEFAULT').
+            dst_conf:
+                default: /vm/conf
+                help: >
+                    Path of configurations files on the destination host
+                    (default: '$DEFAULT').
+            dst_disks:
+                default: /vm/disk
+                help: >
+                    Path of disks files on the destination host
+                    (default: '$DEFAULT')
+
+        exclusive_groups:
+            -
+                required: True
+                options:
+                    - name
+                    - file
+
+
+    migrate:
+        usage: |
+            { -n NAME -s SRC_HOST -d DST_HOST }
+            | { -f YAML_FILE [-s SRC_HOST] [-d DST_HOST] }
+            [--no-check] [--no-pc-check] [--remove] [--force]
+
+        execute:
+            module:
+                lib: lib.migrate
+                main: migrate
+
+        options:
+            name:
+                short: -n
+                help: Name of the VM to migrate.
+                need:
+                    - src_host
+                    - dst_host
+                conflict:
+                    - file
+            src_host:
+                short: -s
+                help: Host on which the VM is actually running.
+            dst_host:
+                short: -d
+                help: "Host on which migrating the VM."
+            file:
+                short: -f
+                help: >
+                    YAML File for migrating many hosts. Only the name is require
+                    in the file and the other parameters are retrieving from the
+                    command line. However, in all case, source and destination
+                    hosts must be defined!
+            no_check:
+                type: bool
+                help: Ignore checking of resources (Use with cautions!).
+            no_pc_check:
+                type: bool
+                help: Ignore checking of "pc" parameter.
+            force:
+                type: bool
+                help: >
+                    If a virtual machine already exists on destination host,
+                    configuration and disk images are automaticaly backuped
+                    then overwrited!
+            remove:
+                short: -r
+                type: bool
+                help: "Remove VM on the source host when migration is over."
