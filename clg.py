@@ -80,6 +80,26 @@ class CLGError(Exception):
     pass
 
 
+class Namespace(argparse.Namespace):
+    def __init__(self, namespace):
+        argparse.Namespace.__init__(self)
+        self.__dict__.update(namespace.__dict__)
+
+
+    def __getitem__(self, key):
+        return self.__dict__[key]
+
+
+    def __setitem__(self, key, value):
+        if key not in self.__dict__:
+            raise KeyError(key)
+        self.__dict__[key] = value
+
+
+    def __iter__(self):
+        return self.__dict__.iteritems()
+
+
 class CommandLine(object):
     """Command line"""
     def __init__(self, config, keyword='command'):
@@ -317,11 +337,11 @@ class CommandLine(object):
 
     def parse(self):
         # Parse arguments.
-        self.args = self.parser.parse_args().__dict__
+        self.args = Namespace(self.parser.parse_args())
 
         # Get subparser configuration.
         path = []
-        for arg, value in sorted(self.args.iteritems()):
+        for (arg, value) in sorted(self.args):
             if arg.startswith(self.keyword):
                 path.extend([value, 'subparsers'])
         if path:
