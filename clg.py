@@ -332,6 +332,8 @@ class CommandLine(object):
         # Post checks.
         for option, option_config in config['options'].iteritems():
             if self.args[option] is None:
+                if 'type' in option_config and option_config['type'] == 'list':
+                    self.args[option] = []
                 continue
 
             for keyword in POST_KEYWORDS:
