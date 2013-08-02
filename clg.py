@@ -247,7 +247,7 @@ class CommandLine(object):
             subparsers_config = config.get('subparsers', {})
             subparser_dest = '%s%d' % (self.keyword, len(config_path) / 2)
             subparsers = parent.add_subparsers(dest=subparser_dest)
-            for subparser_name, subparser_conf in subparsers_config.iteritems():
+            for subparser_name in subparsers_config:
                 subparser_path = list(config_path)
                 subparser_path.extend(['subparsers', subparser_name])
                 subparser = subparsers.add_parser(subparser_name, add_help=True)
@@ -342,13 +342,6 @@ class CommandLine(object):
                         'conflict': lambda:
                             self.__check_dependency(config, option, parser, False)
                     }.get(keyword)()
-
-            if 'type' in option_config and option_config['type'] == 'path':
-                self.args[option] = os.path.abspath(
-                    self.args[option].replace(
-                        '__FILE__', os.path.dirname(self.conf_file)
-                    )
-                )
 
         # Execute.
         if 'execute' in config:
