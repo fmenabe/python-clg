@@ -7,7 +7,7 @@ setup(
     author='François Ménabé',
     author_email='francois.menabe@gmail.com',
     py_modules=['clg'],
-    license='LICENCE.txt',
+    license='LICENSE.txt',
     description='Command-line generator from a dictionary.',
     long_description=open('README').read(),
     install_requires=[
