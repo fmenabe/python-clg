@@ -238,13 +238,9 @@ class CommandLine(object):
                 )
 
         # Check 'subparsers' section is alone.
-        # TODO: keyword not in right place!!!!
         if 'subparsers' in config and len(config) > 1:
-            raise CLGError(
-                "/%s: 'subparsers' section is in conflict with '%s'" % (
-                    '/'.join(config_path), keyword
-                )
-            )
+            raise CLGError("/%s: 'subparsers' section must be alone" % (
+                '/'.join(config_path)))
 
 
     def __add_parser(self, config_path, parent=None):
