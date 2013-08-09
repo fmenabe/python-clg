@@ -10,7 +10,7 @@ setup(
     download_url='https://github.com/fmenabe/python-clg',
     license=open('LICENSE').read(),
     description='Command-line generator from a dictionary.',
-    long_description=open('README').read(),
+    long_description=open('README.rst').read(),
     classifiers=[
         'Intended Audience :: System Administrators',
         'License :: OSI Approved :: MIT License',
