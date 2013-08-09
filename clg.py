@@ -327,15 +327,17 @@ class CommandLine(object):
         if 'module' in exec_config:
             import imp
             module_path = exec_config['module']['path']
-            search_params = ([module_path.replace('.py', '')]
-                if os.path.dirname(module_path) in sys.path
+            search_params = ([os.path.splitext(module_path)[0]]
+                if not os.path.isabs(module_path)
                 else [
-                    os.path.basename(module_path).replace('.py', ''),
+                    os.path.splitext(os.path.basename(module_path))[0],
                     [os.path.dirname(module_path)]
                 ]
             )
             module_params = imp.find_module(*search_params)
-            module = imp.load_module(module_path, *module_params)
+            module = imp.load_module(
+                os.path.splitext(module_path)[0], *module_params
+            )
             getattr(module, exec_config['module'].get('function', 'main'))(args)
 
 
