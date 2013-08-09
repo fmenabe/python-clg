@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from pprint import pprint
 import os.path
 import sys
 import copy
@@ -106,7 +105,6 @@ class CommandLine(object):
         """Initialize the command from a YAML or a JSON file."""
         self.config = config
         self.keyword = keyword
-        self.args = None
         self.parser = None
         self.__parsers = {}
 
@@ -240,6 +238,7 @@ class CommandLine(object):
                 )
 
         # Check 'subparsers' section is alone.
+        # TODO: keyword not in right place!!!!
         if 'subparsers' in config and len(config) > 1:
             raise CLGError(
                 "/%s: 'subparsers' section is in conflict with '%s'" % (
@@ -302,7 +301,7 @@ class CommandLine(object):
                 raise CLGError('/%s: %s' % ('/'.join(config_path), err))
 
 
-    def __check_dependency(self, config, option, parser, dependency=False):
+    def __check_dependency(self, args, config, option, parser, dependency=False):
         """
         dependency is True = check for needed options
         dependency is False = check for confict options
@@ -312,8 +311,8 @@ class CommandLine(object):
 
         for opt in options[option][keyword]:
             if (
-              (dependency and not self.args[opt])
-              or (not dependency and self.args[opt])
+              (dependency and not args[opt])
+              or (not dependency and args[opt])
             ):
                 parser.print_usage()
                 kwargs = {
@@ -328,20 +327,20 @@ class CommandLine(object):
                 sys.exit(1)
 
 
-    def __execute(self, exec_config):
+    def __execute(self, exec_config, args):
         if 'module' in exec_config:
             module_config = exec_config['module']
             exec('import %s as module' % module_config['lib'])
-            exec('module.%s(self.args)' % module_config['function'])
+            exec('module.%s(args)' % module_config['function'])
 
 
-    def parse(self):
+    def parse(self, args=None):
         # Parse arguments.
-        self.args = Namespace(self.parser.parse_args())
+        args = Namespace(self.parser.parse_args(args))
 
         # Get subparser configuration.
         path = []
-        for (arg, value) in sorted(self.args):
+        for (arg, value) in sorted(args):
             if arg.startswith(self.keyword):
                 path.extend([value, 'subparsers'])
         if path:
@@ -351,21 +350,25 @@ class CommandLine(object):
 
         # Post checks.
         for option, option_config in config['options'].iteritems():
-            if self.args[option] is None:
+            if args[option] is None:
                 if 'type' in option_config and option_config['type'] == 'list':
-                    self.args[option] = []
+                    args[option] = []
                 continue
 
             for keyword in POST_KEYWORDS:
                 if keyword in option_config:
                     {
                         'need': lambda:
-                            self.__check_dependency(config, option, parser, True),
+                            self.__check_dependency(
+                                args, config, option, parser, True),
                         'conflict': lambda:
-                            self.__check_dependency(config, option, parser, False)
+                            self.__check_dependency(
+                                args, config, option, parser, False)
                     }.get(keyword)()
 
         # Execute.
         if 'execute' in config:
-            self.__execute(config['execute'])
+            self.__execute(config['execute'], args)
+
+        return args
 
