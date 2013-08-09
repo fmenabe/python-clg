@@ -8,7 +8,7 @@ Welcome to clg's documentation!
 
 Overview
 --------
-This module is a wrapper to **argparse** module. Its goal is to generate a
+This module is a wrapper to ``argparse`` module. Its goal is to generate a
 custom and advanced command-line from a formatted dictionary. The sequence of
 subparsers is not limited but it is not possible to have a (sub)parser that have
 both subparsers and options. The idea is really to not write dozens or hundreds
@@ -17,11 +17,11 @@ of lines of code to generate the command-line but to outsource it to a file in a
 
 When parsing a dictionary in Python, keys are retrieved randomly, so with a
 simple dictionary, it is not possible to order keys (ie: options and subparsers).
-That's why it is better to use *OrderedDict* (from the module **collections**)
+That's why it is better to use **OrderedDict** (from the module ``collections``)
 for ordering subparsers and options. The module provide a class for loading a
-YAML file as in. **simplejson** module for JSON file support it by default.
+YAML file as in. ``simplejson`` module for JSON file support it by default.
 
-Groups and mutually exclusive groups from **argparse** are implemented but, as
+Groups and mutually exclusive groups from ``argparse`` are implemented but, as
 I wanted some relatively complex behaviours, "post" checks have been implemented.
 It means that after the command is parsed, according to the configuration, some
 additionaly checks can be done (like checking dependencies between options).
@@ -37,9 +37,9 @@ Structure of the configuration
 ------------------------------
 
 The configuration corresponds of a chain of parsers. Each parsers have either
-subparsers, either options and args. If the current parser have subparsers, the
+subparsers or options and args. If the current parser have subparsers, the
 key **subparsers** is used and the value is a dictionary which keys are the
-names of the subparsers. These subparsers can have subparsers or options, and so
+names of subparsers. These subparsers can have subparsers or options, and so
 on.
 
 When it is a "real" parser (ie: no subparsers but options and args), allowed
@@ -52,13 +52,10 @@ keywords are:
     * **exclusive_groups**
     * **execute**
 
-subparsers
-^^^^^^^^^^
-
 usage
 ^^^^^
-This allow to redifined the usage of the parser if default usage generate by
-the **argparse** module is not enough.
+This allow to redifined the usage of the parser if the default usage generated
+by the ``argparse`` module is not enough.
 
 options
 ^^^^^^^
@@ -68,7 +65,7 @@ the name of the option in the configuration is use to generate an option in the
 parser which begin by ``--`` and, underscores and spaces, are replaced by ``-``
 (For example ``my_option`` in the configuration will add an option
 ``--my-option`` to the parser). The parameters of an option are not an exact
-mapping to **argparse** options parameters. Allowed parameters are:
+mapping to ``argparse`` options parameters. Allowed parameters are:
 
     * **short**
     * **help**
@@ -98,9 +95,13 @@ type
 """"
 By default, the type of an option is *str*. Allowed types are:
 
-    * *bool* => **argparse** equivalent is ``action='store_true'``
-    * *list* => **argparse** equivalent is ``nargs='*'``
+    * *bool* => ``argparse`` equivalent is ``action='store_true'``
+    * *list* => ``argparse`` equivalent is ``nargs='*'``
     * any built-in types and functions
+
+.. note:: When parsing the command-line, value of options that are not in the
+   command-line or have not default value is *None* at the exception of the
+   *list* type which have for default value an empty list (``[]``).
 
 default
 """""""
@@ -165,36 +166,43 @@ execute
 Section that indicate what must be done after the command is parsed.
 
 For now only a **module** section has been implemented, which launch a function
-in an external module (which must be in *sys.path*). This function must take
-only one argument: arguments from the command-line.
+in an external file. For loading the file, the ``imp`` module is used. By
+default the *find_module* method of this module search the file in any directory
+of **sys.path**. By default, directory of the main program is in **sys.path** so
+any relative path will have this directory for root. If an absolute path is
+given, the dirname of the path will be pass to the *find_module* method.
+
+The executed function defined in the external file must take only one argument:
+arguments from the command-line. If no function are defined, ``main`` function
+will be executed.
 
 **Example:**
+
 .. code-block:: yaml
 
     execute:
         module:
-            lib: lib.deploy
+            path: lib/deploy.py
             function: main
-
-If **execute** section is not defined, it is possible to retrieve arguments from
-*args* attribute of the object **CommandLine**.
 
 Python program
 --------------
 
-This is the simpler part. You need to import the module **clg** and the module
+This is the simpler part. You need to import the module ``clg`` and the module
 for loading your configuration file. Then you initialize the **CommandLine**
 object with the loaded configuration. Finally, you just need to use *parse*
 method for parsing the command. If there is an **execute** section, this one
-will be executed otherwise, arguments of the commands are available via the
-*args* attribute of the object.
-
-At the contrary of **argparse** which return a **Namespace** object, *args*
-attribute is a dictionary.
+will be executed. In all case a **Namespace** with arguments is returned.
 
 .. note:: Personnaly, I prefer YAML for this type of configuration file (in
    particular for the simple syntax and anchors), but it is possible to use
    JSON or any formats that manage python dictionaries.
+
+With ``argparse``, parsing of the command-line return a **Namespace**.
+Unfortunately, this namespace is not iterable and it not is possible to access
+elements like dictionnaries (with ``[]``). A custom **Namespace** has been
+implemented which implement ``__iter__`` and ``__getitem__`` functions for
+resolving this problem.
 
 
 YAML example
@@ -208,7 +216,7 @@ YAML example
         command = clg.CommandLine(
             yaml.load(open('command.yml'), Loader=clg.YAMLOrderedDictLoader)
         )
-        command.parse()
+        args = command.parse()
 
     if __name__ == '__main__':
         main()
@@ -224,7 +232,7 @@ JSON example
         command = clg.CommandLine(
             json.loads(open('command.json'), object_pairs_hook=OrderedDict)
         )
-        command.parse()
+        args = command.parse()
 
     if __name__ == '__main__':
         main()
@@ -264,7 +272,13 @@ Program
         yaml.load(open('command.yml'), Loader=clg.YAMLOrderedDictLoader)
     )
     command.parse()
-    pprint(command.args)
+    args = command.args
+    pprint(vars(args))
+    print args.foo, args['bar']
+
+    # Parse arguments.
+    for (arg, value) in sorted(args):
+        print arg, value
 
 Tests
 """""
@@ -284,9 +298,15 @@ Tests
 
     # python prog.py -f test
     {'bar': 1, 'foo': 'test'}
+    test 1
+    foo test
+    bar 1
 
     # python prog.py -f test --bar 2
     {'bar': 2, 'foo': 'test'}
+    test 2
+    foo test
+    bar 2
 
 
 Example with subparsers
@@ -347,8 +367,8 @@ Program
     command = clg.CommandLine(
         yaml.load(open('command.yml'), Loader=clg.YAMLOrderedDictLoader)
     )
-    command.parse()
-    pprint(command.args)
+    args = command.parse()
+    pprint(vars(args))
 
 Tests
 """""
@@ -366,7 +386,7 @@ Tests
     {'command0': 'parser1',
      'command1': 'parser11',
      'option111': None,
-     'option112': None}
+     'option112': []}
 
     # python prog.py parser1 parser11 --help
     usage: prog.py parser1 parser11 [-h] [--option111 OPTION111]
@@ -427,26 +447,24 @@ This example is a program I made for managing KVM guests. Actually, there is
 only two commands for deploying and migrating guests. For each of theses
 commands, it is possible to deploy/migrate one guest or to use a YAML file which
 allow to deploy/migrate multiple guests successively. For example, for deploying
-a new guest, we need the name (``--name``) of the guest, the hypervisor
-(``--dst-host``) on which it will be deploy, the model (``--model``) on which
-it is based and the network configuration (``--interfaces``). In per guest
+a new guest, we need the name of the guest (``--name``), the hypervisor on
+which it will be deploy (``--dst-host``), the model on which it is based
+(``--model``) and the network configuration (``--interfaces``). In per guest
 deployment, all theses parameters must be in the command-line. When using a YAML
 file (``--file``), the name and the network configuration must absolutely be
 defined in the deployment file. Others parameters will be retrieved from the
-command-line if they are not defined in the file. To summarize, ``--name`` and
-``--file`` options can't be used at the same time. If ``--name``, ``--dst-host``,
-``--model``, ``--interfaces`` options must be in the command-line. If ``--file``,
-``--interfaces`` option must no be in the command-line but ``--dst-host`` and
-``--model`` options may be in the command. There also are many options which are
-rarely used because they are optionals or have default values.
+command-line if they are not defined in the file.
 
-For each of the command, a function in an external module is executed. In fact,
-I just created a *lib* directory, with an empty *__init__.py* file, in the same
-directory of the program (so the package **lib** is in **sys.path**). In the
-*lib* directory, there are two files, one for each commands. Each of this file
-contain a *main* function which take command-line arguments in parameter and
-implement the logic. For the example, theses functions will only *pprint*
-arguments of the command.
+To summarize, ``--name`` and ``--file`` options can't be used at the same time.
+If ``--name`` is used, ``--dst-host``, ``--model``, ``--interfaces`` options
+must be in the command-line. If ``--file`` is used, ``--interfaces`` option must
+no be in the command-line but ``--dst-host`` and ``--model`` options may be in
+the command. There also are many options which are rarely used because they are
+optionals or have default values.
+
+Each command use an external module for implemented the logic. A *main*
+function, taking the command-line Namespace as argument, has been implemented.
+For the example, theses functions will only print the command-line arguments.
 
 YAML file
 """""""""
@@ -474,7 +492,7 @@ Program
     from pprint import pprint
     def main(args):
         print "'main' function on 'deploy' module"
-        pprint(args)
+        pprint(vars(args))
 
 *lib/migrate.py*
 
@@ -483,7 +501,7 @@ Program
     from pprint import pprint
     def main(args):
         print "'main' function on 'migrate' module"
-        pprint(args)
+        pprint(vars(args))
 
 Tests
 """""
@@ -606,7 +624,7 @@ Tests
     'main' function on 'deploy' module
     {'command0': 'deploy',
      'cores': 4,
-     'disks': None,
+     'disks': [],
      'dst_conf': '/vm/conf',
      'dst_disks': '/vm/disk',
      'dst_host': 'hypervisor1',
@@ -659,7 +677,7 @@ Tests
     'main' function on 'deploy' module
     {'command0': 'deploy',
      'cores': 2,
-     'disks': None,
+     'disks': [],
      'dst_conf': '/vm/conf',
      'dst_disks': '/vm/disk',
      'dst_host': 'hypervisor1',

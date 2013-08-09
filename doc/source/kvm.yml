@@ -14,7 +14,7 @@ subparsers:
 
         execute:
             module:
-                lib: lib.deploy
+                lib: lib/deploy.py
                 function: main
 
         options:
@@ -154,7 +154,7 @@ subparsers:
 
         execute:
             module:
-                lib: lib.migrate
+                lib: lib/migrate.py
                 main: migrate
 
         options:
