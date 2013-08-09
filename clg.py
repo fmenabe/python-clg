@@ -185,10 +185,14 @@ class CommandLine(object):
                 continue
 
             value = {
-                'type': lambda: eval(value),
                 'help': lambda: (
                     value.replace('$DEFAULT', str(config['default']))
                         if "$DEFAULT" in str(value)
+                        else value
+                ),
+                'default': lambda: (
+                    value.replace('__FILE__', sys.path[0])
+                        if type(value) in (str, unicode)
                         else value
                 )
             }.get(param, lambda: value)()

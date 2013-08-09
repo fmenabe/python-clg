@@ -15,17 +15,19 @@ Releases notes
 --------------
 0.3
 ~~~
-  * Add an iterable and accessible namespace for arguments
-  * Change behaviour of *parse* method (now return a namespace with arguments)
-  * Set default value for *list* type to empty list
+  * Add an iterable and accessible namespace for arguments.
+  * Change behaviour of *parse* method (now return a namespace with arguments).
+  * Set default value for *list* type to empty list.
   * Change behaviour of the execution of an external module. It is no longer a
     python path of a module in 'sys.path' but directly the path of a file.
     In addition, keyword 'lib' as be replaced by 'path'.
-  * Update the licence to MIT
+  * Replace '__FILE__' in default value of an option by the directory of the
+    program.
+  * Update the licence to MIT.
 
 0.2
 ~~~
   * **CommandLine** object doesn't take anymore a JSON or YAML file but a
-    dictionary
-  * Add documentation
-  * Updating setup for PyPi
+    dictionary.
+  * Add documentation.
+  * Updating setup for PyPi.
