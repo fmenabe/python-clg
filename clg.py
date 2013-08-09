@@ -325,9 +325,18 @@ class CommandLine(object):
 
     def __execute(self, exec_config, args):
         if 'module' in exec_config:
-            module_config = exec_config['module']
-            exec('import %s as module' % module_config['lib'])
-            exec('module.%s(args)' % module_config['function'])
+            import imp
+            module_path = exec_config['module']['path']
+            search_params = ([module_path.replace('.py', '')]
+                if os.path.dirname(module_path) in sys.path
+                else [
+                    os.path.basename(module_path).replace('.py', ''),
+                    [os.path.dirname(module_path)]
+                ]
+            )
+            module_params = imp.find_module(*search_params)
+            module = imp.load_module(module_path, *module_params)
+            getattr(module, exec_config['module'].get('function', 'main'))(args)
 
 
     def parse(self, args=None):
