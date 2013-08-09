@@ -6,11 +6,18 @@ setup(
     version='0.2',
     author='François Ménabé',
     author_email='francois.menabe@gmail.com',
-    py_modules=['clg'],
-    license='LICENSE.txt',
+    url='https://clg.readthedocs.org/en/latest/',
+    download_url='https://github.com/fmenabe/python-clg',
+    license=open('LICENSE').read(),
     description='Command-line generator from a dictionary.',
     long_description=open('README').read(),
-    install_requires=[
-        'argparse',
-    ]
+    classifiers=[
+        'Intended Audience :: System Administrators',
+        'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 2.7',
+        'Topic :: Utilities'
+    ],
+    py_modules=['clg'],
+    install_requires=['argparse',]
 )
