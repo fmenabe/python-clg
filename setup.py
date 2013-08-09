@@ -3,7 +3,7 @@ from distutils.core import setup
 
 setup(
     name='clg',
-    version='0.2',
+    version='0.3',
     author='François Ménabé',
     author_email='francois.menabe@gmail.com',
     url='https://clg.readthedocs.org/en/latest/',

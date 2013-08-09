@@ -10,3 +10,22 @@ of lines of code to generate the command-line but to outsource it to a file in a
 
 Code is available on [Github](http://github.com/fmenabe/python-clg).
 Documentation is available on [readthedocs](https://clg.readthedocs.org/en/latest/).
+
+Releases notes
+--------------
+0.3
+~~~
+  * Add an iterable and accessible namespace for arguments
+  * Change behaviour of *parse* method (now return a namespace with arguemnts)
+  * Set default value for *list* type to empty list
+  * Change behaviour of the execution of an external module. It is no longer a
+    python path of a module in 'sys.path' but directly the path of a file.
+    In addition, keyword 'lib' as be replaced by 'path'.
+  * Update the licence to MIT
+
+0.2
+~~~
+  * **CommandLine** object doesn't take anymore a JSON or YAML file but a
+    dictionary
+  * Add documentation
+  * Updating setup for PyPi
