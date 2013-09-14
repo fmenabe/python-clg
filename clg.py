@@ -166,8 +166,6 @@ class CommandLine(object):
                     lambda: option_kwargs.setdefault('action', 'store_true'),
                 'list':
                     lambda: option_kwargs.setdefault('nargs', '*'),
-                'path':
-                    lambda: None
             }.get(
                 config['type'],
                 lambda: option_kwargs.setdefault('type', eval(config['type']))
@@ -180,7 +178,7 @@ class CommandLine(object):
             if param not in OPTION_KEYWORDS:
                 raise CLGError("invalid parameter '%s'" % param)
 
-            # Ignore parameters used in post checks but check configuration.
+            # Ignore post checks parameters.
             if param in POST_KEYWORDS:
                 continue
 

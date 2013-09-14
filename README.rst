@@ -9,6 +9,7 @@ of lines of code to generate the command-line but to outsource it to a file in a
 "classic" format (YAML, JSON, ...).
 
 Code is available on Github (http://github.com/fmenabe/python-clg).
+
 Documentation is available on readthedocs (https://clg.readthedocs.org/en/latest/).
 
 Releases notes
@@ -20,7 +21,7 @@ Releases notes
   * Set default value for *list* type to empty list.
   * Change behaviour of the execution of an external module. It is no longer a
     python path of a module in 'sys.path' but directly the path of a file.
-    In addition, keyword 'lib' as be replaced by 'path'.
+    In addition, keyword 'lib' has be replaced by 'path'.
   * Replace '__FILE__' in default value of an option by the directory of the
     program.
   * Update the licence to MIT.

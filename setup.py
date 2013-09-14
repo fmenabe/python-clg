@@ -8,7 +8,7 @@ setup(
     author_email='francois.menabe@gmail.com',
     url='https://clg.readthedocs.org/en/latest/',
     download_url='https://github.com/fmenabe/python-clg',
-    license=open('LICENSE').read(),
+    license='MIT License',
     description='Command-line generator from a dictionary.',
     long_description=open('README.rst').read(),
     classifiers=[
