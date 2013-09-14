@@ -46,6 +46,7 @@ When it is a "real" parser (ie: no subparsers but options and args), allowed
 keywords are:
 
     * **usage**
+    * **desc**
     * **options**
     * **args**
     * **groups**
@@ -56,6 +57,12 @@ usage
 ^^^^^
 This allow to redifined the usage of the parser if the default usage generated
 by the ``argparse`` module is not enough.
+
+desc
+^^^^
+This allow to add a description of the parser parser between usage and options
+descriptions (see http://docs.python.org/dev/library/argparse.html#description
+for more details).
 
 options
 ^^^^^^^

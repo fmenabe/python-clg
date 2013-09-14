@@ -3,7 +3,7 @@ from distutils.core import setup
 
 setup(
     name='clg',
-    version='0.3',
+    version='0.4',
     author='François Ménabé',
     author_email='francois.menabe@gmail.com',
     url='https://clg.readthedocs.org/en/latest/',
@@ -12,6 +12,9 @@ setup(
     description='Command-line generator from a dictionary.',
     long_description=open('README.rst').read(),
     classifiers=[
+        'Development Status :: 5 - Production/Stable',
+        'Environment :: Console',
+        'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',

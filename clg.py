@@ -9,7 +9,7 @@ import yaml.constructor
 from collections import OrderedDict
 
 PARSER_KEYWORDS = (
-    'usage', 'subparsers', 'options', 'args', 'groups',
+    'desc', 'usage', 'subparsers', 'options', 'args', 'groups',
     'exclusive_groups', 'execute'
 )
 OPTION_KEYWORDS = (
@@ -278,6 +278,8 @@ class CommandLine(object):
 
             if 'usage' in config:
                 parent.usage = self.__usage(parent.prog, config['usage'])
+            if 'desc' in config:
+                parent.description = config['desc']
 
             try:
                 # Add groups.

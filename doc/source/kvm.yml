@@ -12,9 +12,11 @@ subparsers:
             [--src-host HOST] [--src-conf PATH] [--src-disks PATH]
             [--dst-conf PATH] [--dst-disks PATH]
 
+        desc: Deploy new KVM guest(s) based on a model.
+
         execute:
             module:
-                lib: lib/deploy.py
+                path: lib/deploy.py
                 function: main
 
         options:
@@ -151,6 +153,8 @@ subparsers:
             { -n NAME -s SRC_HOST -d DST_HOST }
             | { -f YAML_FILE [-s SRC_HOST] [-d DST_HOST] }
             [--no-check] [--no-pc-check] [--remove] [--force]
+
+        desc: Hot migrate a KVM guest from one hypervisor to another.
 
         execute:
             module:

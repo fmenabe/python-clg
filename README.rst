@@ -14,6 +14,10 @@ Documentation is available on readthedocs (https://clg.readthedocs.org/en/latest
 
 Releases notes
 --------------
+0.4
+~~~
+  * Add description of parser (via *desc* keyword).
+
 0.3
 ~~~
   * Add an iterable and accessible namespace for arguments.
