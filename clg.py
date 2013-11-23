@@ -6,7 +6,12 @@ import copy
 import argparse
 import yaml
 import yaml.constructor
-from collections import OrderedDict
+if sys.version_info[0] == 2 and sys.version_info[1] <= 6:
+    from ordereddict import OrderedDict
+    STR_TYPES = (str, unicode)
+else:
+    from collections import OrderedDict
+    STR_TYPES = (str,)
 
 PARSER_KEYWORDS = (
     'desc', 'usage', 'subparsers', 'options', 'args', 'groups',
@@ -62,7 +67,7 @@ class YAMLOrderedDictLoader(yaml.Loader):
             key = self.construct_object(key_node, deep=deep)
             try:
                 hash(key)
-            except TypeError, exc:
+            except TypeError as exc:
                 raise yaml.constructor.ConstructorError(
                     'while constructing a mapping',
                     node.start_mark,
@@ -96,7 +101,7 @@ class Namespace(argparse.Namespace):
 
 
     def __iter__(self):
-        return self.__dict__.iteritems()
+        return ((key, value) for key, value in self.__dict__.items())
 
 
 class CommandLine(object):
@@ -173,7 +178,7 @@ class CommandLine(object):
             del(config['type'])
 
         # Get other parameters.
-        for param, value in config.iteritems():
+        for param, value in config.items():
             # Check for invalid parameters.
             if param not in OPTION_KEYWORDS:
                 raise CLGError("invalid parameter '%s'" % param)
@@ -190,7 +195,7 @@ class CommandLine(object):
                 ),
                 'default': lambda: (
                     value.replace('__FILE__', sys.path[0])
-                        if type(value) in (str, unicode)
+                        if type(value) in STR_TYPES
                         else value
                 )
             }.get(param, lambda: value)()
@@ -264,6 +269,7 @@ class CommandLine(object):
             subparsers_config = config.get('subparsers', {})
             subparser_dest = '%s%d' % (self.keyword, len(config_path) / 2)
             subparsers = parent.add_subparsers(dest=subparser_dest)
+            subparsers.required = True
             for subparser_name in subparsers_config:
                 subparser_path = list(config_path)
                 subparser_path.extend(['subparsers', subparser_name])
@@ -291,11 +297,11 @@ class CommandLine(object):
                         )
 
                 # Add options.
-                for option, option_config in options_config.iteritems():
+                for option, option_config in options_config.items():
                     self.__add_option(parent, option, option_config)
 
                 # Add args:
-                for arg, arg_config in args_config.iteritems():
+                for arg, arg_config in args_config.items():
                     self.__add_option(parent, arg, arg_config, True)
             except CLGError as err:
                 raise CLGError('/%s: %s' % ('/'.join(config_path), err))
@@ -360,7 +366,7 @@ class CommandLine(object):
         parser = self.__parsers['/'.join(path)]
 
         # Post checks.
-        for option, option_config in config['options'].iteritems():
+        for option, option_config in config['options'].items():
             if args[option] is None:
                 if 'type' in option_config and option_config['type'] == 'list':
                     args[option] = []

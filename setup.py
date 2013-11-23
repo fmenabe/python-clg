@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
+import sys
 from distutils.core import setup
+
+REQUIRES = (['ordereddict']
+    if sys.version_info[0] == 2 and sys.version_info[1] <= 6  else [])
 
 setup(
     name='clg',
@@ -18,9 +22,11 @@ setup(
         'Intended Audience :: System Administrators',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
         'Topic :: Utilities'
     ],
     py_modules=['clg'],
-    install_requires=['argparse',]
+    install_requires=REQUIRES
 )
