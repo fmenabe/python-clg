@@ -15,6 +15,7 @@ setup(
     license='MIT License',
     description='Command-line generator from a dictionary.',
     long_description=open('README.rst').read(),
+    keywords=['command-line', 'argparse', 'wrapper', 'YAML', 'JSON'],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
