@@ -14,6 +14,10 @@ Documentation is available on readthedocs (https://clg.readthedocs.org/en/latest
 
 Releases notes
 --------------
+0.5
+~~~
+  * Port code to Python 3 (with compatiblity at least until Python 2.6)
+
 0.4
 ~~~
   * Add description of parser (via *desc* keyword).

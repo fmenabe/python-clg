@@ -7,7 +7,7 @@ REQUIRES = (['ordereddict']
 
 setup(
     name='clg',
-    version='0.4',
+    version='0.5',
     author='François Ménabé',
     author_email='francois.menabe@gmail.com',
     url='https://clg.readthedocs.org/en/latest/',
