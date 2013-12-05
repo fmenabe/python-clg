@@ -13,10 +13,9 @@ else:
     from collections import OrderedDict
     STR_TYPES = (str,)
 
+SUBPARSER_KEYWORDS = ('subparsers', 'anchors')
 PARSER_KEYWORDS = (
-    'desc', 'usage', 'subparsers', 'options', 'args', 'groups',
-    'exclusive_groups', 'execute'
-)
+    'desc', 'usage', 'options', 'args', 'groups', 'exclusive_groups', 'execute')
 OPTION_KEYWORDS = (
     'help', 'type', 'default', 'required', 'choices',
     'metavar', 'dest', 'short', 'need', 'conflict'
@@ -238,14 +237,16 @@ class CommandLine(object):
     def __check_parser_conf(self, config_path, config):
         # Check for invalid sections.
         for keyword in config:
-            if keyword not in PARSER_KEYWORDS:
+            if (keyword not in SUBPARSER_KEYWORDS
+              and keyword not in PARSER_KEYWORDS):
                 raise CLGError(
                     "/%s: unknown section '%s'" % (
                         '/'.join(config_path), keyword)
                 )
 
         # Check 'subparsers' section is alone.
-        if 'subparsers' in config and len(config) > 1:
+        if ('subparsers' in config and
+          any(keyword in config for keyword in PARSER_KEYWORDS):
             raise CLGError("/%s: 'subparsers' section must be alone" % (
                 '/'.join(config_path)))
 
