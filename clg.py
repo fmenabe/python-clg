@@ -217,7 +217,7 @@ class CommandLine(object):
                 )
             else:
                 group_kwargs = dict([
-                    group_config[param]
+                    (param, group_config[param])
                         for param in ('title', 'description')
                         if param in group_config
                 ])
