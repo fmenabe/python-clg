@@ -245,8 +245,8 @@ class CommandLine(object):
                 )
 
         # Check 'subparsers' section is alone.
-        if ('subparsers' in config and
-          any(keyword in config for keyword in PARSER_KEYWORDS):
+        if ('subparsers' in config and 
+          any(keyword in config for keyword in PARSER_KEYWORDS)):
             raise CLGError("/%s: 'subparsers' section must be alone" % (
                 '/'.join(config_path)))
 
