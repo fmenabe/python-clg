@@ -343,13 +343,19 @@ class CommandLine(object):
 
             option_kwargs.setdefault(param, {
                 'type': lambda: eval(value),
-                'default': lambda: value.replace('__FILE__', sys.path[0])
-                    if type(value) is str else value,
                 'help': lambda: value.replace(
                     '__DEFAULT__', str(option_kwargs.get('default', '?')))
-            }.get(param, lambda: value)())
+            }.get(param, lambda: self._set_builtin(value))())
 
         parser.add_argument(*option_args, **option_kwargs)
+
+
+    def _set_builtin(self, value):
+        try:
+            return eval(re.search('^__([A-Z]*)__$', value).group(1).lower())
+        except (AttributeError, TypeError):
+            return (value.replace('__FILE__', sys.path[0])
+                if type(value) is str else value)
 
 
     #
