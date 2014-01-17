@@ -197,6 +197,8 @@ class CommandLine(object):
 
         # Add groups.
         for group_type in 'groups', 'exclusive_groups':
+            if type(config.get(group_type, [])) is not list:
+                raise CLGError(config_path, INVALID_SECTION % (group_type, 'list'))
             for index, group_config in enumerate(config.get(group_type, [])):
                 self._add_group(parser, config_path,
                     group_config, options_config, group_type, index)
@@ -259,13 +261,13 @@ class CommandLine(object):
     def _check_group(self, path, config, options, group_type, index):
         path = path + [group_type]
         section = ('%s #%d' % (
-            'group' if group_type == 'group' else 'exclusive group', index+1))
+            'group' if group_type == 'groups' else 'exclusive group', index+1))
 
         if config is None:
             raise CLGError(path, "(%s) %s" % (section, EMPTY_CONF))
 
         valid_keywords = (GROUP_KEYWORDS
-            if group_type == 'group' else EXCLUSIVEGROUP_KEYWORDS)
+            if group_type == 'groups' else EXCLUSIVEGROUP_KEYWORDS)
         self.__check(path, config, valid_keywords, section)
 
         if 'options' not in config:
@@ -290,7 +292,7 @@ class CommandLine(object):
             'exclusive_groups': lambda: parser.add_mutually_exclusive_group(
                 required=config.get('required', False)),
             'groups': lambda: parser.add_argument_group(
-                **{keyword: value for keyword, value in config
+                **{keyword: value for keyword, value in config.items()
                     if keyword in ('title', 'description')})
         }[group_type]()
 
