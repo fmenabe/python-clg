@@ -361,6 +361,17 @@ class CommandLine(object):
     #
     # Parsing functions.
     #
+    def __has_value(self, optvalue, optconf):
+        if optvalue is None:
+            return False
+        if 'action' in optconf:
+            action = optconf['action']
+            if ((action == 'store_true' and not optvalue)
+              or (action == 'store_false' and optvalue)):
+                return False
+        return True
+
+
     def parse(self, args=None):
         # Parse arguments:
         args = Namespace(self.parser.parse_args(args).__dict__)
@@ -377,13 +388,17 @@ class CommandLine(object):
 
         # Post checks.
         for option, option_config in config['options'].items():
-            if args[option] is None:
+            if not self.__has_value(args[option], option_config):
                 if 'nargs' in option_config and option_config['nargs'] == '*':
                     args[option] = []
                 continue
 
             for keyword in POST_KEYWORDS:
                 if keyword in option_config:
+                    if type(option_config[keyword]) is not list:
+                        raise CLGError(
+                            path + ["options/%s" % option],
+                            INVALID_SECTION % ('need', 'list'))
                     self._check_dependency(
                         args, config['options'], option, parser, keyword)
 
@@ -395,13 +410,14 @@ class CommandLine(object):
 
 
     def _check_dependency(self, args, options, option, parser, keyword):
-        for opt in options[option][keyword]:
-            if ((keyword == 'need' and not args[opt])
-              or (keyword == 'conflict' and args[opt])):
+        for optname in options[option][keyword]:
+            has_value = self.__has_value(args[optname], options[optname])
+            if (keyword == 'need' and not has_value
+              or keyword == 'conflict' and has_value):
                 parser.print_usage()
                 values = (parser.prog,
                     self._format_display(option, options[option]),
-                    self._format_display(opt, options[opt]))
+                    self._format_display(optname, options[optname]))
                 print(
                     (NEED_ERROR if keyword == 'need' else CONFLICT_ERROR) % values)
                 sys.exit(1)
