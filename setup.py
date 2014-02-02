@@ -29,5 +29,6 @@ setup(
         'Topic :: Utilities'
     ],
     py_modules=['clg'],
+    scripts=['gencomp']
     install_requires=REQUIRES
 )
