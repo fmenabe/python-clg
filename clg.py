@@ -102,6 +102,24 @@ class Namespace(argparse.Namespace):
         return ((key, value) for key, value in self.__dict__.items())
 
 
+def format_usage(prog, usage):
+    """Format usage."""
+    spaces = ''.join([' ' for _ in "usage: "])
+    usage_elts = [prog]
+    usage_elts.extend(
+        ["%s  %s" % (spaces, elt) for elt in usage.split('\n')[:-1]])
+    return '\n'.join(usage_elts)
+
+
+def format_optname(value):
+    return value.replace('_', '-').replace(' ', '-')
+
+
+def format_optdisplay(value, config):
+    return ('-%s/--%s' % (config['short'], format_optname(value))
+        if 'short' in config else '--%s' % format_optname(value))
+
+
 class CommandLine(object):
     def __get_config(self, path, ignore=True):
         config = self.config
@@ -151,15 +169,6 @@ class CommandLine(object):
             'add_help':         parser_config.get('add_help', True)}
 
 
-    def _set_usage(self, parser, usage):
-        """Format usage."""
-        spaces = ''.join([' ' for _ in "usage: "])
-        usage_elts = [parser.prog]
-        usage_elts.extend(
-            ["%s  %s" % (spaces, elt) for elt in usage.split('\n')[:-1]])
-        parser.usage = '\n'.join(usage_elts)
-
-
     def _check_parser(self, path, config):
         if config is None:
             raise CLGError(path, EMPTY_CONF)
@@ -185,7 +194,7 @@ class CommandLine(object):
 
         # Generate custom usage.
         if 'usage' in config:
-            self._set_usage(parser, config['usage'])
+            parser.usage = format_usage(parser.prog, config['usage'])
 
         # Add subparsers.
         if 'subparsers' in config:
@@ -306,15 +315,6 @@ class CommandLine(object):
     #
     # Options and args functions.
     #
-    def _format_name(self, value):
-        return value.replace('_', '-').replace(' ', '-')
-
-
-    def _format_display(self, value, config):
-        return ('-%s/--%s' % (config['short'], self._format_name(value))
-            if 'short' in config else '--%s' % self._format_name(value))
-
-
     def _check_arg(self, path, config, name, isopt):
         path = path + ['options' if isopt else 'args', name]
         arg_type = "%s" % ('option' if isopt else 'arg')
@@ -334,7 +334,7 @@ class CommandLine(object):
             if 'short' in config:
                 option_args.append('-%s' % config['short'])
                 del(config['short'])
-            option_args.append('--%s' % self._format_name(name))
+            option_args.append('--%s' % format_optname(name))
             option_kwargs.setdefault('dest', name)
         else:
             option_args.append(name)
@@ -418,8 +418,8 @@ class CommandLine(object):
               or keyword == 'conflict' and has_value):
                 parser.print_usage()
                 values = (parser.prog,
-                    self._format_display(option, options[option]),
-                    self._format_display(optname, options[optname]))
+                    format_optdisplay(option, options[option]),
+                    format_optdisplay(optname, options[optname]))
                 print(
                     (NEED_ERROR if keyword == 'need' else CONFLICT_ERROR) % values)
                 sys.exit(1)
