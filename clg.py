@@ -9,17 +9,34 @@ import copy
 import argparse
 from collections import OrderedDict
 
-# Keywords.
-CLG_KEYWORDS = ('anchors', 'subparsers', 'options', 'args', 'groups',
-    'exclusive_groups', 'execute')
-PARSER_KEYWORDS = ('prog', 'usage', 'description', 'epilog',
-    'formatter_class', 'argument_default', 'conflict_handler', 'add_help')
-SUBPARSER_KEYWORDS = ('title', 'description', 'prog', 'help', 'metavar')
-GROUP_KEYWORDS = ('title', 'description', 'options')
-EXCLUSIVEGROUP_KEYWORDS = ('required', 'options')
-OPTION_KEYWORDS = ('short', 'action', 'nargs', 'const', 'default', 'choices',
-    'required', 'help', 'metavar', 'type')
-POST_KEYWORDS = ('need', 'conflict')
+# Keywords (argparse and clg).
+KEYWORDS = {
+    'parser': {
+        'argparse': ['prog', 'usage', 'description', 'epilog',
+                    'formatter_class', 'argument_default', 'conflict_handler',
+                    'add_help'],
+        'clg': ['anchors', 'subparsers', 'options', 'args', 'groups',
+                'exclusive_groups', 'execute']
+    },
+    'subparser': {
+        'argparse': ['title', 'description', 'prog', 'help', 'metavar'],
+        'clg': ['required', 'parsers']
+    },
+    'group': {
+        'argparse': ['title', 'description', 'options'], 'clg': ['options']},
+    'exclusive_group': {'argparse': ['required'], 'clg': ['options']},
+    'option': {
+        'argparse': ['action', 'nargs', 'const', 'default', 'choices',
+                    'required', 'help', 'metavar', 'type'],
+        'clg': ['short'],
+        'post': ['need', 'conflict']
+    },
+    'argument': {
+        'argparse': ['action', 'nargs', 'const', 'default', 'choices',
+                    'required', 'help', 'metavar', 'type'],
+        'clg': ['short']
+    },
+}
 
 # Errors messages.
 INVALID_SECTION = '(%s) this section is not a %s'
@@ -120,6 +137,19 @@ def format_optdisplay(value, config):
         if 'short' in config else '--%s' % format_optname(value))
 
 
+def _check_conf(path, config, section, comment=''):
+        section_str = ' '.join((section, comment)).strip()
+        if not isinstance(config, dict):
+            raise CLGError(path, INVALID_SECTION % (section_str, 'dict'))
+        valid_keywords = [keyword
+            for keywords in KEYWORDS[section].values() for keyword in keywords]
+        for keyword in config:
+            if keyword not in valid_keywords:
+                raise CLGError(path, UNKNOWN_KEYWORD % (section_str, keyword))
+            if config[keyword] is None:
+                raise CLGError(path + [keyword], EMPTY_CONF)
+
+
 class CommandLine(object):
     def __get_config(self, path, ignore=True):
         config = self.config
@@ -129,16 +159,6 @@ class CommandLine(object):
                     and path[index-1] == 'subparsers' and 'parsers' in config)
                 else config[elt])
         return config
-
-
-    def __check(self, path, config, keywords, section_type):
-        if not isinstance(config, dict):
-            raise CLGError(path, INVALID_SECTION % (section_type, 'dict'))
-        for keyword in config:
-            if keyword not in keywords:
-                raise CLGError(path, UNKNOWN_KEYWORD % (section_type, keyword))
-            if config[keyword] is None:
-                raise CLGError(path + [keyword], EMPTY_CONF)
 
 
     def __init__(self, config, keyword='command'):
@@ -172,7 +192,7 @@ class CommandLine(object):
     def _check_parser(self, path, config):
         if config is None:
             raise CLGError(path, EMPTY_CONF)
-        self.__check(path, config, CLG_KEYWORDS + PARSER_KEYWORDS, 'parser')
+        _check_conf(path, config, 'parser')
 
 
     def _add_parser(self, config_path, parser=None):
@@ -227,13 +247,17 @@ class CommandLine(object):
     #
     def _check_subparsers(self, path, config):
         if 'parsers' in config:
-            self.__check(path, config,
-                SUBPARSER_KEYWORDS + ('required', 'parsers'), 'subparsers')
+            _check_conf(path, config, 'subparser')
 
-            for keyword in SUBPARSER_KEYWORDS:
+            for keyword in KEYWORDS['subparser']['argparse']:
                 if keyword in config and not isinstance(config[keyword], str):
                     raise CLGError(
                         path, INVALID_SECTION % ('subparsers', 'string'))
+
+            if 'parsers' in config and not isinstance(config['parsers'], dict):
+                raise CLGError(path + ['parsers'],
+                    INVALID_SECTION % ('subparsers', 'dict'))
+
 
 
     def _add_subparsers(self, parser, config_path, subparsers_config):
@@ -245,7 +269,7 @@ class CommandLine(object):
         subparsers_init = {'dest': '%s%d' % (self.keyword, len(config_path) / 2)}
         if 'parsers' in subparsers_config:
             config_path.append('parsers')
-            for keyword in SUBPARSER_KEYWORDS:
+            for keyword in KEYWORDS['subparser']['argparse']:
                 if keyword not in subparsers_config:
                     continue
                 subparsers_init.setdefault(keyword, subparsers_config[keyword])
@@ -269,15 +293,13 @@ class CommandLine(object):
     #
     def _check_group(self, path, config, options, group_type, index):
         path = path + [group_type]
-        section = ('%s #%d' % (
-            'group' if group_type == 'groups' else 'exclusive group', index+1))
+        section = ('%s' % (
+            'group' if group_type == 'groups' else 'exclusive_group'))
 
         if config is None:
             raise CLGError(path, "(%s) %s" % (section, EMPTY_CONF))
 
-        valid_keywords = (GROUP_KEYWORDS
-            if group_type == 'groups' else EXCLUSIVEGROUP_KEYWORDS)
-        self.__check(path, config, valid_keywords, section)
+        _check_conf(path, config, section, '#%d' % (index+1))
 
         if 'options' not in config:
             raise CLGError(path, "(%s) 'options' keyword is needed" % section)
@@ -318,11 +340,21 @@ class CommandLine(object):
     def _check_arg(self, path, config, name, isopt):
         path = path + ['options' if isopt else 'args', name]
         arg_type = "%s" % ('option' if isopt else 'arg')
-        self.__check(path, config, OPTION_KEYWORDS + POST_KEYWORDS, arg_type)
+        _check_conf(path, config, arg_type)
 
         if 'short' in config and len(config['short']) != 1:
             raise CLGError(path,
                 "(%s) short parameter must be a single letter" % arg_type)
+
+        if not isopt:
+            return
+
+        for keyword in KEYWORDS['option']['post']:
+            if keyword not in config:
+                continue
+            for opt in config[keyword]:
+                if opt not in self.__get_config(path[:-1]):
+                    raise CLGError(path, "(%s) unknown option '%s'" % (keyword, opt))
 
 
     def _add_arg(self, parser, config_path, name, config, isopt):
@@ -340,7 +372,7 @@ class CommandLine(object):
             option_args.append(name)
 
         for param, value in sorted(config.items()):
-            if param in POST_KEYWORDS:
+            if isopt and param in KEYWORDS['option']['post']:
                 continue
 
             option_kwargs.setdefault(param, {
@@ -364,7 +396,7 @@ class CommandLine(object):
     # Parsing functions.
     #
     def __has_value(self, optvalue, optconf):
-        if optvalue is None:
+        if optvalue is None or (isinstance(optvalue, list) and not optvalue):
             return False
         if 'action' in optconf:
             action = optconf['action']
@@ -391,15 +423,14 @@ class CommandLine(object):
         # Post checks.
         for option, option_config in config['options'].items():
             if not self.__has_value(args[option], option_config):
-                if 'nargs' in option_config and option_config['nargs'] == '*':
+                if 'nargs' in option_config and option_config['nargs'] in ('*', '+'):
                     args[option] = []
                 continue
 
-            for keyword in POST_KEYWORDS:
+            for keyword in KEYWORDS['option']['post']:
                 if keyword in option_config:
                     if type(option_config[keyword]) is not list:
-                        raise CLGError(
-                            path + ["options/%s" % option],
+                        raise CLGError(path + ["options/%s" % option],
                             INVALID_SECTION % ('need', 'list'))
                     self._check_dependency(
                         args, config['options'], option, parser, keyword)
