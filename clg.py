@@ -339,7 +339,7 @@ class CommandLine(object):
     #
     def _check_arg(self, path, config, name, isopt):
         path = path + ['options' if isopt else 'args', name]
-        arg_type = "%s" % ('option' if isopt else 'arg')
+        arg_type = "%s" % ('option' if isopt else 'argument')
         _check_conf(path, config, arg_type)
 
         if 'short' in config and len(config['short']) != 1:
