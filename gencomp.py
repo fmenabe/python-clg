@@ -3,9 +3,8 @@
 
 from pprint import pprint
 import sys
-import yaml
 import clg
-#from collections import OrderedDict
+from collections import OrderedDict
 
 
 BASH_SCRIPT = """declare -a choices
@@ -59,59 +58,65 @@ return ret
 SIMPLE_COMMAND = '_arguments "*: :($choices)" && ret=0'
 MENU_COMMAND = "_describe -t desc '$1' choices && ret=0"
 
-CMD="""
-anchors: &OPTIONS
-    prog:
-        short: p
-        help: Program name.
-        required: True
-    conf_file:
-        short: c
-        help: Configuration file of the command .
-        required: True
-    format:
-        short: f
-        help: Format of configuration file.
-        choices:
-            - yaml
-            - json
-        required: True
-    output_file:
-        short: o
-        help: Output file
-        required: True
-    ignore_options:
-        short: i
-        help: >
-            When there are subcommands, don't complete options. With
-            simple completion, completion is generate alphabetically but
-            ignoring dashes of options which can generate an "ugly""
-            result.
-        action: store_true
+COMMON_OPTIONS = OrderedDict({
+    'prog': {
+        'short': 'p',
+        'required': True,
+        'help': 'Program name'
+    },
+    'conf_file': {
+        'short': 'c',
+        'required': True,
+        'help': 'Configuration file of the command.'
+    },
+    'format': {
+        'short': 'f',
+        'required': True,
+        'choices': ['yaml', 'json'],
+        'help': 'Format of configuration file.'
+    },
+    'output_file': {
+        'short': 'o',
+        'required': True,
+        'help': 'Output file.'
+    },
+    'ignore_options': {
+        'short': 'i',
+        'action': 'store_true',
+        'help': "When there are subcommands, don't complete options. With "
+                "simple completion, completion is generate alphabetically but"
+                'ignoring dashes of options which can generate an "ugly"'
+                "result."
+    }
+})
 
-subparsers:
-    bash:
-        options:
-            <<: *OPTIONS
-    zsh:
-        options:
-            <<: *OPTIONS
-            simple:
-                short: s
-                help: >
-                    Generate completion without printing the descriptions of
-                    options and subcommands.
-                action: store_true
-"""
+BASH_OPTS = OrderedDict(COMMON_OPTIONS)
+BASH_OPTS.update(OrderedDict())
+ZSH_OPTS = OrderedDict(COMMON_OPTIONS)
+ZSH_OPTS.update(OrderedDict({
+    'simple': {
+        'short': 's',
+        'action': 'store_true',
+        'help': "Generate completion without printing the descriptions "
+                "of options and subcommands."
+    }
+}))
+CMD = OrderedDict({
+    'subparsers': {
+        'bash': {'options': BASH_OPTS},
+        'zsh': {'options': ZSH_OPTS}
+    }
+})
 
 def main():
-    cmd = clg.CommandLine(yaml.load(CMD, Loader=clg.YAMLOrderedDictLoader))
+    cmd = clg.CommandLine(CMD)
     global args
     args = cmd.parse()
     global shell
     shell = args.command0
 
     if args.format == 'yaml':
+        import yaml
         config = yaml.load(open(args.conf_file), Loader=clg.YAMLOrderedDictLoader)
     elif args.format == 'json':
         import simplejson as json
