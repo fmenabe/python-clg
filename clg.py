@@ -4,6 +4,7 @@ from pprint import pprint
 import os
 import re
 import sys
+import imp
 import yaml
 import copy
 import argparse
@@ -36,11 +37,13 @@ KEYWORDS = {
                     'required', 'help', 'metavar', 'type'],
         'clg': ['short']
     },
+    'execute': ['module', 'file']
 }
 
 # Errors messages.
 INVALID_SECTION = '(%s) this section is not a %s'
 EMPTY_CONF = 'configuration is empty'
+ONE_KEYWORDS = "this section need (only) one theses keywords: '%s'"
 UNKNOWN_KEYWORD = "(%s) unknown keyword '%s'"
 NEED_ERROR = '%s: error: argument %s: need %s argument'
 CONFLICT_ERROR = '%s: error: argument %s: conflict with %s argument'
@@ -435,9 +438,19 @@ class CommandLine(object):
                     self._check_dependency(
                         args, config['options'], option, parser, keyword)
 
+
         # Execute.
         if 'execute' in config:
-            self._execute(config['execute'], args)
+            path = path + ['execute']
+            main_params = [arg in config['execute'] for arg in KEYWORDS['execute']]
+            if main_params.count(True) != 1:
+                raise CLGError(
+                    path, ONE_KEYWORDS % ("', '".join(KEYWORDS['execute'])))
+
+            if 'module' in config['execute']:
+                self._exec_module(config['execute'], args, path)
+            if 'file' in config['execute']:
+                self._exec_file(config['execute'], args, path)
 
         return args
 
@@ -456,17 +469,28 @@ class CommandLine(object):
                 sys.exit(1)
 
 
-    def _execute(self, exec_config, args):
-        if 'module' in exec_config:
-            import imp
-            module_path = exec_config['module']['path']
-            search_params = ([os.path.splitext(module_path)[0]]
-                if not os.path.isabs(module_path)
-                else [
-                    os.path.splitext(os.path.basename(module_path))[0],
-                    [os.path.dirname(module_path)]])
+    def _exec_file(self, config, args, path):
+        mdl_path = os.path.abspath(config['file'])
+        mdl_name = os.path.splitext(os.path.basename(mdl_path))[0]
+        mdl_func = config.get('function', 'main')
 
-            module_params = imp.find_module(*search_params)
-            module = imp.load_module(
-                os.path.splitext(module_path)[0], *module_params)
-            getattr(module, exec_config['module'].get('function', 'main'))(args)
+        if not os.path.exists(mdl_path):
+            raise CLGError(path + ['file'], "file '%s' not exists" % mdl_path)
+
+        getattr(imp.load_source(mdl_name, mdl_path), mdl_func)(args)
+
+
+    def _exec_module(self, config, args, path):
+        mdl_func = config.get('function', 'main')
+        mdl_tree = config['module'].split('.')
+        mdl = None
+
+        for mdl_idx, mdl_name in enumerate(mdl_tree):
+            try:
+                mdl = imp.load_module('.'.join(mdl_tree[:mdl_idx + 1]),
+                    *imp.find_module(mdl_name, mdl.__path__ if mdl else None))
+            except ImportError as err:
+                raise CLGError(path + ['module'],
+                    "Unable to load module '%s': %s" % (mdl, err))
+
+        getattr(mdl, mdl_func)(args)
