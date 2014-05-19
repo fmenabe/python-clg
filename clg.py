@@ -149,7 +149,7 @@ def format_optdisplay(value, config):
 
 
 def check_conf(clg_path, config, section, comment=''):
-    # Check config is not empty:
+    # Check config is not empty.
     if config is None:
         raise CLGError(clg_path, EMPTY_CONF)
 
@@ -443,7 +443,7 @@ class CommandLine(object):
         parser = self.__parsers['/'.join(clg_path)]
 
         # Post checks.
-        for option, option_config in config['options'].items():
+        for option, option_config in config.get('options', {}).items():
             if not self.__has_value(args[option], option_config):
                 if 'nargs' in option_config and option_config['nargs'] in ('*', '+'):
                     args[option] = []
@@ -502,7 +502,7 @@ class CommandLine(object):
             try:
                 mdl = imp.load_module('.'.join(mdl_tree[:mdl_idx + 1]),
                     *imp.find_module(mdl_name, mdl.__path__ if mdl else None))
-            except ImportError as err:
+            except (ImportError, AttributeError) as err:
                 raise CLGError(clg_path + ['module'],
                     "Unable to load module '%s': %s" % (mdl, err))
 
