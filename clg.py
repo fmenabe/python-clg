@@ -13,7 +13,7 @@ from collections import OrderedDict
 # Keywords (argparse and clg).
 KEYWORDS = {
     'parser': {
-        'argparse': ['prog', 'usage', 'description', 'epilog',
+        'argparse': ['prog', 'usage', 'description', 'epilog', 'help',
                     'formatter_class', 'argument_default', 'conflict_handler',
                     'add_help'],
         'clg': ['anchors', 'subparsers', 'options', 'args', 'groups',
@@ -194,8 +194,8 @@ class CommandLine(object):
     #
     # Parser functions.
     #
-    def _gen_parser(self, parser_config):
-        return {
+    def _gen_parser(self, parser_config, subparser=False):
+        config = {
             'prog':             parser_config.get('prog', None),
             'usage':            None,
             'description':      parser_config.get('description', None),
@@ -205,6 +205,10 @@ class CommandLine(object):
             'argument_default': parser_config.get('argument_default', None),
             'conflict_handler': parser_config.get('conflict_handler', 'error'),
             'add_help':         parser_config.get('add_help', True)}
+
+        if subparser and 'help' in parser_config:
+            config['help'] = parser_config['help']
+        return config
 
 
     def _add_parser(self, clg_path, parser=None):
@@ -312,7 +316,7 @@ class CommandLine(object):
             subparser_path.append(parser_name)
             check_conf(subparser_path, parser_config, 'parser')
             subparser = subparsers.add_parser(
-                parser_name, **self._gen_parser(parser_config))
+                parser_name, **self._gen_parser(parser_config, True))
             self._add_parser(subparser_path, subparser)
 
 
