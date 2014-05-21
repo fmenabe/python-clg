@@ -27,7 +27,7 @@ parse_command () {{
 }}
 {functions}
 
-complete -F _main {prog}
+complete -F _{prog} {prog}
 """
 
 ZSH_SCRIPT = """#compdef ldapuds
@@ -123,7 +123,7 @@ def main():
         config = json.loads(open('command.json'), object_pairs_hook=OrderedDict)
 
     functions = '\n'.join(
-        parse_config(shell, '_main', config, [], args.ignore_options))
+        parse_config(shell, '_%s' % args.prog, config, [], args.ignore_options))
     script = {
         'bash': lambda: BASH_SCRIPT.format(prog=args.prog, functions=functions),
         'zsh': lambda: ZSH_SCRIPT.format(prog=args.prog, functions=functions,
@@ -174,7 +174,7 @@ def parse_config(shell, name, config, functions=[], ignore_opts=False):
 
     # Add parse_command execution
     functions.append('    parse_command %s %s' % (name,
-        {'bash': 1, 'zsh': 2}[shell] if name == '_main' else '$1'))
+        {'bash': 1, 'zsh': 2}[shell] if name == '_%s' % args.prog else '$1'))
     functions.append('}')
 
     for subparser, config in subparsers_config.items():
