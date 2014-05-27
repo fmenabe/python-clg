@@ -153,11 +153,11 @@ def check_conf(clg_path, config, section, comment=''):
     if config is None:
         raise CLGError(clg_path, EMPTY_CONF)
 
-    # Check type of the configuration.
+    # Check type of the configuration.
     if not isinstance(config, dict):
         raise CLGError(clg_path, INVALID_SECTION % 'dict')
 
-    # Check keywords.
+    # Check keywords.
     valid_keywords = [
         keyword for keywords in KEYWORDS[section].values()
         for keyword in keywords]
@@ -274,7 +274,7 @@ class CommandLine(object):
     # Subparsers functions.
     #
     def _check_subparsers(self, clg_path, config):
-        # Check config is not empty:
+        # Check config is not empty.
         if config is None:
             raise CLGError(clg_path, EMPTY_CONF)
 
@@ -327,7 +327,7 @@ class CommandLine(object):
         clg_path = clg_path + [group_type, '#%d' % (index + 1)]
         section = 'group' if group_type == 'groups' else 'exclusive_group'
 
-        # Check group configuration (type and keywords).
+        # Check group configuration (type and keywords).
         check_conf(clg_path, config, section)
 
         # Check group options.
