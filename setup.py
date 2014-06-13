@@ -2,9 +2,6 @@
 import sys
 from distutils.core import setup
 
-REQUIRES = (['ordereddict']
-    if sys.version_info[0] == 2 and sys.version_info[1] <= 6  else [])
-
 setup(
     name='clg',
     version='0.5',
@@ -30,5 +27,5 @@ setup(
     ],
     py_modules=['clg'],
     scripts=['gencomp.py'],
-    install_requires=REQUIRES
+    install_requires=['six']
 )

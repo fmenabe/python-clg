@@ -6,6 +6,7 @@ import sys
 import imp
 import copy
 import argparse
+from six import iteritems
 
 
 # Get builtins.
@@ -72,7 +73,7 @@ class Namespace(argparse.Namespace):
         self.__dict__[key] = value
 
     def __iter__(self):
-        return ((key, value) for key, value in self.__dict__.items())
+        return ((key, value) for key, value in iteritems(self.__dict__))
 
 
 #
@@ -322,12 +323,12 @@ class CommandLine(object):
                                 opts_conf, grp_type, grp_number)
 
         # Add options.
-        for opt_name, opt_conf in opts_conf.items():
+        for opt_name, opt_conf in iteritems(opts_conf):
             self._add_arg(path, parser, opt_name, opt_conf, True)
 
         # Add args.
         args_conf = conf.get('args', {})
-        for arg_name, arg_conf in args_conf.items():
+        for arg_name, arg_conf in iteritems(args_conf):
             self._add_arg(path, parser, arg_name, arg_conf, False)
 
 
@@ -351,7 +352,7 @@ class CommandLine(object):
         subparsers.required = required
 
         # Add parsers.
-        for parser_name, parser_config in subparsers_config.items():
+        for parser_name, parser_config in iteritems(subparsers_config):
             subparser_path = list(path)
             subparser_path.append(parser_name)
             _check_conf(subparser_path, parser_config, 'parser')
@@ -369,7 +370,7 @@ class CommandLine(object):
         if grp_type == 'groups':
             group = parser.add_argument_group(
                 **{key: value
-                   for key, value in conf.items()
+                   for key, value in iteritems(conf)
                    if key in KEYWORDS[grp_type]['argparse']})
         else:
             required=conf.get('required', False)
@@ -401,7 +402,7 @@ class CommandLine(object):
 
         default = str(conf.get('default', '?'))
         match = str(conf.get('match', '?'))
-        for param, value in sorted(conf.items()):
+        for param, value in sorted(iteritems(conf)):
             if param in KEYWORDS['option']['post']:
                 continue
 
@@ -431,7 +432,7 @@ class CommandLine(object):
         parser = self.__parsers['/'.join(path)]
 
         # Options checks.
-        for opt_name, opt_conf in conf.get('options', {}).items():
+        for opt_name, opt_conf in iteritems(conf.get('options', {})):
             if not _has_value(args[opt_name], opt_conf):
                 if 'nargs' in opt_conf and opt_conf['nargs'] in ('*', '+'):
                     args[opt_name] = []
@@ -448,7 +449,7 @@ class CommandLine(object):
             _check_match(parser, opt_conf, opt_name, args[opt_name], 'option')
 
         # Arguments check.
-        for arg_name, arg_conf in conf.get('args', {}).items():
+        for arg_name, arg_conf in iteritems(conf.get('args', {})):
             _check_match(parser, arg_conf, arg_name, args[arg_name], 'argument')
 
         # Execute.
