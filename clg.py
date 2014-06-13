@@ -4,6 +4,9 @@ from pprint import pprint
 import os
 import re
 import sys
+BUILTINS = sys.modules['builtins'
+                       if sys.version_info.major == 3
+                       else '__builtin__']
 import imp
 import copy
 import argparse
@@ -362,7 +365,7 @@ class CommandLine(object):
                 continue
 
             option_kwargs.setdefault(param, {
-                'type': lambda: eval(value),
+                'type': lambda: getattr(BUILTINS, value),
                 'help': lambda: value.replace('__DEFAULT__', default)
                                      .replace('__MATCH__', match)
             }.get(param, lambda: self._set_builtin(value))())
@@ -372,7 +375,8 @@ class CommandLine(object):
 
     def _set_builtin(self, value):
         try:
-            return eval(re.search('^__([A-Z]*)__$', value).group(1).lower())
+            return getattr(BUILTINS,
+                           re.search('^__([A-Z]*)__$', value).group(1).lower())
         except (AttributeError, TypeError):
             return (value.replace('__FILE__', sys.path[0])
                 if type(value) is str else value)
