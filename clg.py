@@ -35,12 +35,13 @@ KEYWORDS = {
         'argparse': ['action', 'nargs', 'const', 'default', 'choices',
                     'required', 'help', 'metavar', 'type'],
         'clg': ['short'],
-        'post': ['need', 'conflict']
+        'post': ['match', 'need', 'conflict']
     },
     'argument': {
         'argparse': ['action', 'nargs', 'const', 'default', 'choices',
                     'required', 'help', 'metavar', 'type'],
-        'clg': ['short']
+        'clg': ['short'],
+        'post': ['match']
     },
     'execute': {
         'needone': ['module', 'file'],
@@ -55,6 +56,7 @@ ONE_KEYWORDS = "this section need (only) one theses keywords: '%s'"
 UNKNOWN_KEYWORD = "unknown keyword '%s'"
 NEED_ERROR = '%s: error: argument %s: need %s argument'
 CONFLICT_ERROR = '%s: error: argument %s: conflict with %s argument'
+MATCH_ERROR = "%s: value '%s' of %s '%s' does not match '%s'"
 
 
 class YAMLOrderedDictLoader(yaml.Loader):
@@ -374,7 +376,7 @@ class CommandLine(object):
         if 'short' in config and len(config['short']) != 1:
             raise CLGError(clg_path + ['short'], "this must be a single letter")
 
-        for keyword in KEYWORDS['option']['post']:
+        for keyword in ('need', 'conflict'):
             if keyword not in config:
                 continue
             for opt in config[keyword]:
@@ -397,14 +399,16 @@ class CommandLine(object):
         else:
             option_args.append(name)
 
+        default = str(config.get('default', '?'))
+        match = str(config.get('match', '?'))
         for param, value in sorted(config.items()):
-            if isopt and param in KEYWORDS['option']['post']:
+            if param in KEYWORDS['option']['post']:
                 continue
 
             option_kwargs.setdefault(param, {
                 'type': lambda: eval(value),
-                'help': lambda: value.replace(
-                    '__DEFAULT__', str(option_kwargs.get('default', '?')))
+                'help': lambda: value.replace('__DEFAULT__', default)
+                                     .replace('__MATCH__', match)
             }.get(param, lambda: self._set_builtin(value))())
 
         parser.add_argument(*option_args, **option_kwargs)
@@ -432,6 +436,14 @@ class CommandLine(object):
         return True
 
 
+    def print_error(self, parser, msg, *args):
+        parser.print_usage()
+        values = [parser.prog]
+        values.extend(args)
+        print(msg % tuple(values))
+        sys.exit(1)
+
+
     def parse(self, args=None):
         # Parse arguments:
         args = Namespace(self.parser.parse_args(args).__dict__)
@@ -446,14 +458,14 @@ class CommandLine(object):
         config = self.__get_config(clg_path, ignore=False)
         parser = self.__parsers['/'.join(clg_path)]
 
-        # Post checks.
+        # Options checks.
         for option, option_config in config.get('options', {}).items():
             if not self.__has_value(args[option], option_config):
                 if 'nargs' in option_config and option_config['nargs'] in ('*', '+'):
                     args[option] = []
                 continue
 
-            for keyword in KEYWORDS['option']['post']:
+            for keyword in ('need', 'conflict'):
                 if keyword in option_config:
                     if type(option_config[keyword]) is not list:
                         raise CLGError(clg_path + ["options/%s" % option],
@@ -461,6 +473,11 @@ class CommandLine(object):
                     self._check_dependency(
                         args, config['options'], option, parser, keyword)
 
+            self._check_match(parser, option_config, option, args[option], 'option')
+
+        # Arguments check.
+        for arg, arg_config in config.get('args', {}).items():
+            self._check_match(parser, arg_config, arg, args[arg], 'argument')
 
         # Execute.
         if 'execute' in config:
@@ -477,13 +494,24 @@ class CommandLine(object):
             has_value = self.__has_value(args[optname], options[optname])
             if (keyword == 'need' and not has_value
               or keyword == 'conflict' and has_value):
-                parser.print_usage()
-                values = (parser.prog,
-                    format_optdisplay(option, options[option]),
-                    format_optdisplay(optname, options[optname]))
-                print(
-                    (NEED_ERROR if keyword == 'need' else CONFLICT_ERROR) % values)
-                sys.exit(1)
+                self.print_error(parser,
+                                 NEED_ERROR
+                                    if keyword == 'need' else CONFLICT_ERROR,
+                                 format_optdisplay(option, options[option]),
+                                 format_optdisplay(optname, options[optname]))
+
+
+    def _check_match(self, parser, config, arg, value, arg_type):
+        pattern = config.get('match', None)
+        if pattern is None:
+            return
+
+        if 'nargs' in config and config['nargs'] in ('*', '+'):
+            [self.print_error(parser, MATCH_ERROR, val, arg_type, arg,pattern)
+             for val in value
+             if not re.match(pattern, val)]
+        elif not re.match(pattern, value):
+            self.print_error(parser, MATCH_ERROR, value, arg_type, arg, pattern)
 
 
     def _exec_file(self, config, args, clg_path):
