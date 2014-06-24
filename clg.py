@@ -9,7 +9,7 @@ import sys
 import imp
 import argparse
 from six import iteritems
-
+from collections import OrderedDict
 
 # Get types.
 BUILTINS = sys.modules['builtins'
@@ -109,9 +109,11 @@ def _gen_parser(parser_conf, subparser=False):
 
 def _get_args(parser_conf):
     """Get options and arguments from a parser configuration."""
-    return {arg: (arg_type, arg_conf)
-            for arg_type in ('options', 'args')
-            for arg, arg_conf in iteritems(parser_conf.get(arg_type, {}))}
+    args = OrderedDict()
+    for arg_type in ('options', 'args'):
+        for arg, arg_conf in iteritems(parser_conf.get(arg_type, {})):
+            args[arg] = (arg_type, arg_conf)
+    return args
 
 
 def _set_builtin(value):
