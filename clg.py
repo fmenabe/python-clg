@@ -11,6 +11,9 @@ import argparse
 from six import iteritems
 from collections import OrderedDict
 
+#
+# Constants.
+#
 # Get types.
 BUILTINS = sys.modules['builtins'
                        if sys.version_info.major == 3
@@ -59,6 +62,9 @@ FILE_ERR = "Unable to load file: {err}"
 LOAD_ERR = "Unable to load module: {err}"
 
 
+#
+# Exceptions.
+#
 class CLGError(Exception):
     """CLG exception."""
     def __init__(self, path, msg):
@@ -70,24 +76,9 @@ class CLGError(Exception):
         return "/%s: %s" % ('/'.join(self.path), self.msg)
 
 
-class Namespace(argparse.Namespace):
-    """Iterable namespace."""
-    def __init__(self, args):
-        argparse.Namespace.__init__(self)
-        self.__dict__.update(args)
-
-    def __getitem__(self, key):
-        return self.__dict__[key]
-
-    def __setitem__(self, key, value):
-        if key not in self.__dict__:
-            raise KeyError(key)
-        self.__dict__[key] = value
-
-    def __iter__(self):
-        return ((key, value) for key, value in iteritems(self.__dict__))
-
-
+#
+# Utils functions.
+#
 def _gen_parser(parser_conf, subparser=False):
     """Retrieve arguments pass to **argparse.ArgumentParser** from
     **parser_conf**. A subparser can take an extra 'help' keyword."""
@@ -127,34 +118,9 @@ def _set_builtin(value):
                 else value)
 
 
-def _has_value(value, conf):
-    """The value of an argument not passed in the command is *None*, except:
-        * if **nargs** is ``*`` or ``+``: in this case, the value is an empty
-          list (this is set by this module),
-        * if **action** is ``store_true`` or ``store_false``: in this case, the
-          value is respectively ``False`` and ``True``.
-    This function take theses cases in consideration and check if an argument
-    really has a value.
-    """
-    if value is None or (isinstance(value, list) and not value):
-        return False
-
-    if 'action' in conf:
-        action = conf['action']
-        store_true = (action == 'store_true' and not value)
-        store_false = (action == 'store_false' and value)
-        if store_true or store_false:
-            return False
-    return True
-
-
-def _print_error(parser, msg):
-    """Print parser usage with an error message at the end and exit."""
-    parser.print_usage()
-    print("%s: error: %s" % (parser.prog, msg))
-    sys.exit(1)
-
-
+#
+# Formatting functions.
+#
 def _format_usage(prog, usage):
     """Format usage."""
     spaces = re.sub('.', ' ', 'usage: ')
@@ -173,12 +139,14 @@ def _format_optname(value):
 def _format_optdisplay(value, conf):
     """Format the display of an option in error message (short and long option
     with dashe(s) separated by a slash."""
-    print(conf)
     return ('-%s/--%s' % (conf['short'], _format_optname(value))
             if 'short' in conf
             else '--%s' % _format_optname(value))
 
 
+#
+# Check functions.
+#
 def _check_empty(path, conf):
     """Check **conf** is not ``None`` or an empty iterable."""
     if conf is None or (hasattr(conf, '__iter__') and not len(conf)):
@@ -219,6 +187,37 @@ def _check_section(path, conf, section, one=None, need=None):
     _check_empty(path, conf)
     _check_type(path, conf, dict)
     _check_keywords(path, conf, section, one=one, need=need)
+
+
+#
+# Post processing functions.
+#
+def _has_value(value, conf):
+    """The value of an argument not passed in the command is *None*, except:
+        * if **nargs** is ``*`` or ``+``: in this case, the value is an empty
+          list (this is set by this module),
+        * if **action** is ``store_true`` or ``store_false``: in this case, the
+          value is respectively ``False`` and ``True``.
+    This function take theses cases in consideration and check if an argument
+    really has a value.
+    """
+    if value is None or (isinstance(value, list) and not value):
+        return False
+
+    if 'action' in conf:
+        action = conf['action']
+        store_true = (action == 'store_true' and not value)
+        store_false = (action == 'store_false' and value)
+        if store_true or store_false:
+            return False
+    return True
+
+
+def _print_error(parser, msg):
+    """Print parser usage with an error message at the end and exit."""
+    parser.print_usage()
+    print("%s: error: %s" % (parser.prog, msg))
+    sys.exit(1)
 
 
 def _post_need(parser, parser_args, args_values, arg):
@@ -293,6 +292,27 @@ def _exec_file(path, exec_conf, args_values):
         getattr(imp.load_source(mdl_name, mdl_path), mdl_func)(args_values)
     except (IOError, ImportError, AttributeError) as err:
         raise CLGError(path, FILE_ERR.format(err=err))
+
+
+#
+# Classes.
+#
+class Namespace(argparse.Namespace):
+    """Iterable namespace."""
+    def __init__(self, args):
+        argparse.Namespace.__init__(self)
+        self.__dict__.update(args)
+
+    def __getitem__(self, key):
+        return self.__dict__[key]
+
+    def __setitem__(self, key, value):
+        if key not in self.__dict__:
+            raise KeyError(key)
+        self.__dict__[key] = value
+
+    def __iter__(self):
+        return ((key, value) for key, value in iteritems(self.__dict__))
 
 
 class CommandLine(object):
