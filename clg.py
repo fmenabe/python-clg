@@ -103,7 +103,7 @@ def _get_args(parser_conf):
     args = OrderedDict()
     for arg_type in ('options', 'args'):
         for arg, arg_conf in iteritems(parser_conf.get(arg_type, {})):
-            args[arg] = (arg_type, arg_conf)
+            args[arg] = (arg_type, OrderedDict(arg_conf))
     return args
 
 
