@@ -445,7 +445,8 @@ class CommandLine(object):
                 group = parser.add_mutually_exclusive_group(**grp_kwargs)
 
             for opt in grp_conf['options']:
-                if opt not in parser_args or parser_args[opt][0] != 'options':
+                if opt not in parser_args or (grp_type == 'exclusive_groups'
+                                              and parser_args[opt][0] != 'options'):
                     raise CLGError(grp_path, UNKNOWN_ARG.format(type='option',
                                                                 arg=opt))
                 self._add_arg(group, path[:-1], opt, parser_args)
