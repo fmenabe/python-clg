@@ -530,7 +530,7 @@ class CommandLine(object):
 
         # Execute.
         if 'execute' in parser_conf:
-            for keyword in KEYWORDS['execute']['clg']:
+            for keyword in ('module', 'file'):
                 if keyword in parser_conf['execute']:
                     exec_params = (path + ['execute'],
                                    parser_conf['execute'],
