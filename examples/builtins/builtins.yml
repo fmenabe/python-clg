@@ -1,0 +1,15 @@
+description: Process some integers.
+
+options:
+    sum:
+        action: store_const
+        const: __SUM__
+        default: __MAX__
+        help: "sum the integers (default: find the max)."
+
+args:
+    integers:
+        metavar: N
+        type: int
+        nargs: +
+        help: an integer for the accumulator

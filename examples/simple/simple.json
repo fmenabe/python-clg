@@ -1,0 +1,4 @@
+{"options": {"foo": {"short": "f",
+                     "help": "Foo help."},
+             "bar": {"short": "b",
+                     "help": "Bar help."}}}

@@ -1,14 +1,5 @@
-anchors:
-    formatter: &FORMATTER
-#        formatter_class: ArgumentDefaultsHelpFormatter
-        formatter_class: HelpFormatter
-    help: &HELP
-        add_help: False
-
 subparsers:
      deploy: &DEPLOY
-         <<: *FORMATTER
-
          usage: |
              {
                  -n NAME -d DEST -t MODEL
@@ -24,9 +15,7 @@ subparsers:
          description: Deploy new KVM guests from a model.
 
          execute:
-             module:
-                 path: /home/francois/dev/test_clg/lib/deploy.py
-                 function: main
+             module: commands.deploy
 
          exclusive_groups:
              -
@@ -151,16 +140,13 @@ subparsers:
                      Path of disks files on the destination host.
 
      migrate:
-         <<: *FORMATTER
          usage: |
              { -n NAME -s SRC_HOST -d DST_HOST }
              | { -f YAML_FILE [-s SRC_HOST] [-d DST_HOST] }
              [--no-check] [--no-pc-check] [--remove] [--force]
 
          execute:
-             module:
-                 lib: lib.migrate
-                 function: migrate
+             module: commands.migrate
 
          options:
              name:

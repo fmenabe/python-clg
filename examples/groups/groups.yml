@@ -1,0 +1,15 @@
+options:
+    foo:
+        help: foo help
+
+args:
+    bar:
+        help: bar help
+        nargs: "?"
+
+groups:
+    - title: group
+      description: group description
+      options:
+          - foo
+          - bar
