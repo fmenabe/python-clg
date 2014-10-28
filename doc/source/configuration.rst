@@ -85,8 +85,8 @@ add_help
 --------
 **argparse link**: `<http://docs.python.org/dev/library/argparse.html#add-help>`_
 
-Indicate whether or not a default ``-h``/``--help`` option is added to the
-command-line, allowing to print help.
+Indicate whether a default ``-h``/``--help`` option is added to the command-line,
+allowing to print help.
 
 
 
@@ -144,11 +144,11 @@ prefixing and sufixing by double underscores: ``__BUILTIN__``. For example:
             help: "sum the integers (default: find the max)"
 
 In the same way, there are two additionnal "builtins":
-    * ``__DEFAULT__``: in the value of **help** option, this keyword is replaced
-      by the default value of the option.
+    * ``__DEFAULT__``: in the value of the **help** option, this keyword is
+      replaced by the default value of the option.
     * ``__FILE__``: this "builtin" is replaced by the path of the main program
-      (**sys.path[0]**). This allow to define file relatively to the program
-      (ex: *__FILE__/conf/someconf.yml*, *__FILE__/logs/*).
+      (**sys.path[0]**). This allow to define file relatively to the main
+      program (ex: *__FILE__/conf/someconf.yml*, *__FILE__/logs/*).
 
 
 short
@@ -168,7 +168,7 @@ required
 ~~~~~~~~
 **argparse link**: `<http://docs.python.org/dev/library/argparse.html#required>`_
 
-Boolean indicating whether or not the option is necessary.
+Boolean indicating whether the option is necessary.
 
 
 type
@@ -181,7 +181,7 @@ this is not necessary to use the ``__BULTIN__`` syntax.
 It is possible to add custom types. For this, you must define a function
 that check the given value for the option and add this function to
 ``clg.TYPES``. For example, to add a custom ``Date`` type based on french date
-format (DD/MM/YYYY):
+format (DD/MM/YYYY) and returning a ``datetime`` object:
 
 *Python program*:
 
@@ -193,15 +193,13 @@ format (DD/MM/YYYY):
     def Date(value):
         from datetime import datetime
         try:
-            return datetime(*reversed([int(val) for val in value.split('/')]))
+            return datetime.strptime(value, '%d/%m/%Y')
         except Exception as err:
             raise clg.argparse.ArgumentTypeError(err)
     clg.TYPES['Date'] = Date
 
-
-    def main():
-        command = clg.CommandLine(yaml.load(open('cmd.yml'))
-        args = command.parse()
+    command = clg.CommandLine(yaml.load(open('cmd.yml'))
+    args = command.parse()
 
 *YAML configuration*:
 
@@ -227,7 +225,7 @@ choices
 ~~~~~~~
 **argparse link**: `<http://docs.python.org/dev/library/argparse.html#choices>`_
 
-This is a list indicating the possible values of the option.
+This is a list indicating the possible values for the option.
 
 
 action
@@ -388,6 +386,8 @@ And the configuration syntax is:
                     execute:
                         module: commands.list.users
 
+This will execute the ``main`` function if the file *commands/list/users.py*.
+
 
 function
 ~~~~~~~~
@@ -432,12 +432,12 @@ resulted **Namespace** is:
 
 title
 ~~~~~
-Customize help with a title.
+Customize the help with a title.
 
 
 description
 ~~~~~~~~~~~
-Customize help with a description
+Customize the help with a description
 
 
 help

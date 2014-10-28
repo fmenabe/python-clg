@@ -3,9 +3,9 @@ Examples
 ********
 
 
-All examples are available if the *examples* directory of the
+All theses examples (and more) are available in the *examples* directory of the
 `github repository <https://github.com/fmenabe/python-clg>`_. All examples
-describe here use YAML files.
+describe here use a YAML file.
 
 First argparse example
 ----------------------

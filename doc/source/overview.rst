@@ -2,16 +2,16 @@
 Overview
 ********
 
-This module is a wrapper to ``argparse``  module
-(http://docs.python.org/dev/library/argparse.html). Its goal is to generate a
-custom and advanced command-line from a formatted dictionary. As python
-dictionnaries are easily exportable to a file like YAML or JSON, the idea is to
-outsource the command-line definition to a file instead of writing dozens or
-hundreds lines of code. As it may be nice to have the list of
-parsers/options/arguments ordered when printing the help, it may be better to
-use an **OrderedDict** (from the ``collection`` module). JSON module has an
-option (``object_pairs_hook``) allowing to keep order. For YAML, you can use the
-module `yamlorderedictloader <https://pypi.python.org/pypi/yamlordereddictloader>`_.
+This module is a wrapper to `argparse <http://docs.python.org/dev/library/argparse.html>`_
+module . Its goal is to generate a custom and advanced command-line from a
+formatted dictionary. As python dictionnaries are easily exportable to a file
+like YAML or JSON, the idea is to outsource the command-line definition to a
+file instead of writing dozens or hundreds lines of code. As it may be nice to
+have the list of parsers/options/arguments ordered when printing the help, it
+may be better to use an **OrderedDict** (from the ``collection`` module). JSON
+module has an option (``object_pairs_hook``) allowing to keep order. For YAML,
+you can use the module
+`yamlorderedictloader <https://pypi.python.org/pypi/yamlordereddictloader>`_.
 
 Almost everything available with ``argparse`` module is possible with this
 module. This include:
@@ -53,7 +53,7 @@ For example, to use ``clg`` with YAML in a virtualenv:
      ``virtualenv -p /usr/bin/python3.3 env/ --prompt "(myprog)"``
 
 
-Otherwise sources are on github: https://github.com/fmenabe/python-clg
+Otherwise sources are on `github <https://github.com/fmenabe/python-clg>`_
 
 Usage
 =====
