@@ -7,7 +7,7 @@ CLG Documentation
     overview
     configuration
     examples
-    completion
+..    completion
 
 
 Indices and tables

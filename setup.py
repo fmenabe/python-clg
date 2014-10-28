@@ -4,7 +4,7 @@ from distutils.core import setup
 
 setup(
     name='clg',
-    version='0.5',
+    version='1.0',
     author='François Ménabé',
     author_email='francois.menabe@gmail.com',
     url='https://clg.readthedocs.org/en/latest/',
@@ -20,12 +20,10 @@ setup(
         'Intended Audience :: System Administrators',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Topic :: Utilities'
     ],
     py_modules=['clg'],
-    scripts=['gencomp.py'],
     install_requires=['six']
 )

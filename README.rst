@@ -2,11 +2,10 @@ Command-line generator in python
 ================================
 
 This module is a wrapper to **argparse** module. Its goal is to generate a
-custom and advanced command-line from a formatted dictionary. The sequence of
-subparsers is not limited but it is not possible to have a (sub)parser that have
-both subparsers and options. The idea is really to not write dozens or hundreds
-of lines of code to generate the command-line but to outsource it to a file in a
-"classic" format (YAML, JSON, ...).
+custom and advanced command-line from a formatted dictionary. As python
+dictionnaries are easily exportable to a file like YAML or JSON, the idea is to
+outsource the command-line definition to a file instead of writing dozens or
+hundreds lines of code.
 
 Code is available on Github (http://github.com/fmenabe/python-clg).
 
@@ -14,6 +13,12 @@ Documentation is available on readthedocs (https://clg.readthedocs.org/en/latest
 
 Releases notes
 --------------
+1.0
+~~~
+  * Rewrite module for matching at best ``argparse``
+  * Allow bultins
+  * Remove compatibility to python2.6 (because of dict comprehension)
+
 0.5
 ~~~
   * Port code to Python 3 (with compatiblity at least until Python 2.6)
@@ -32,7 +37,7 @@ Releases notes
     In addition, keyword 'lib' has be replaced by 'path'.
   * Replace '__FILE__' in default value of an option by the directory of the
     program.
-  * Update the licence to MIT.
+  * Update the license to MIT.
 
 0.2
 ~~~
