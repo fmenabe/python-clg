@@ -623,6 +623,5 @@ For the example, theses functions will only pprint the command-line arguments.
          'src_host': 'bes1',
          'vgroot': 'sys'}
 
-A way to organize files
------------------------
-
+.. A way to organize files
+.. -----------------------
