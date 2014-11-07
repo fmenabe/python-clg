@@ -520,6 +520,8 @@ class CommandLine(object):
         # Post processing.
         parser_args = _get_args(parser_conf)
         for arg, (arg_type, arg_conf) in iteritems(parser_args):
+            if arg_conf.get('default', '') == '__SUPPRESS__':
+                continue
             if not _has_value(args_values[arg], arg_conf):
                 if arg_conf.get('nargs', None) in ('*', '+'):
                     args_values[arg] = []
