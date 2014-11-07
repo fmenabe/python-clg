@@ -13,6 +13,10 @@ Documentation is available on readthedocs (https://clg.readthedocs.org/en/latest
 
 Releases notes
 --------------
+1.1
+~~~
+  * Allow to use ``argparse.SUPPRESS`` by using ``__SUPPRESS__`` "builtin"
+
 1.0
 ~~~
   * Rewrite module for matching at best ``argparse``

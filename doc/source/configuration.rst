@@ -149,6 +149,7 @@ In the same way, there are two additionnal "builtins":
     * ``__FILE__``: this "builtin" is replaced by the path of the main program
       (**sys.path[0]**). This allow to define file relatively to the main
       program (ex: *__FILE__/conf/someconf.yml*, *__FILE__/logs/*).
+    * ``__SUPPRESS__``: identical to ``argparse.SUPPRESS``
 
 
 short
@@ -293,6 +294,21 @@ have theses keywords:
     * **title** (argparse)
     * **description** (argparse)
     * **options** (clg)
+
+.. note:: All ``argparse`` examples set ``add_help`` to *False*. If this is set,
+   ``help`` option is put in *optional arguments*. If you want to put the
+   ``help`` option in a group, you need to refine the option with theses values
+   (this is what ``add_help`` does):
+
+   .. code::
+
+      help:
+        short: h
+        action: help
+        default: __SUPPRESS__
+        help: show this help message and exit
+
+
 
 title
 ~~~~~

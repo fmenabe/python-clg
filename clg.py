@@ -19,6 +19,7 @@ BUILTINS = sys.modules['builtins'
                        if sys.version_info.major == 3
                        else '__builtin__']
 TYPES = {builtin: getattr(BUILTINS, builtin) for builtin in vars(BUILTINS)}
+TYPES['suppress'] = argparse.SUPPRESS
 # Get current module.
 SELF = sys.modules[__name__]
 
