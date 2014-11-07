@@ -144,8 +144,12 @@ prefixing and sufixing by double underscores: ``__BUILTIN__``. For example:
             help: "sum the integers (default: find the max)"
 
 In the same way, there are two additionnal "builtins":
-    * ``__DEFAULT__``: in the value of the **help** option, this keyword is
-      replaced by the default value of the option.
+    * ``__DEFAULT__``: this is replaced in the help message by the value of
+      **default** option.
+    * ``__MATCH__``: this is replaced in the help message by the value of
+      **match** option.
+    * ``__CHOICES__``: this is replace in the help message by the value of
+      **choices** option (choices are separated by commas).
     * ``__FILE__``: this "builtin" is replaced by the path of the main program
       (**sys.path[0]**). This allow to define file relatively to the main
       program (ex: *__FILE__/conf/someconf.yml*, *__FILE__/logs/*).

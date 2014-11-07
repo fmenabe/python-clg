@@ -16,6 +16,8 @@ Releases notes
 1.1
 ~~~
   * Allow to use ``argparse.SUPPRESS`` by using ``__SUPPRESS__`` "builtin"
+  * Replace the "builtins" __CHOICES__, __MATCH__ and __FILE__ in the help
+    message by the respectives values of these keywords.
 
 1.0
 ~~~

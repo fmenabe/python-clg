@@ -486,6 +486,7 @@ class CommandLine(object):
             arg_args.append(arg)
 
         default = str(arg_conf.get('default', '?'))
+        choices = ', '.join(arg_conf.get('choices', ['?']))
         match = str(arg_conf.get('match', '?'))
         for param, value in sorted(iteritems(arg_conf)):
             if param in KEYWORDS[arg_type]['post']:
@@ -494,7 +495,9 @@ class CommandLine(object):
             arg_kwargs[param] = {
                 'type': lambda: TYPES[value],
                 'help': lambda: value.replace('__DEFAULT__', default)
+                                     .replace('__CHOICES__', choices)
                                      .replace('__MATCH__', match)
+                                     .replace('__FILE__', sys.path[0])
                 }.get(param, lambda: _set_builtin(value))()
 
         # Add argument to parser.
