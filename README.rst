@@ -15,19 +15,21 @@ Releases notes
 --------------
 1.1
 ~~~
-  * Allow to use ``argparse.SUPPRESS`` by using ``__SUPPRESS__`` "builtin"
+  * Allow to use ``argparse.SUPPRESS`` by using ``__SUPPRESS__`` "builtin".
   * Replace the "builtins" __CHOICES__, __MATCH__ and __FILE__ in the help
     message by the respectives values of these keywords.
+  * Add the parameter ``allow_abbrev`` in parser configuration, controlling
+    abbrevations behaviour (http://bugs.python.org/issue14910).
 
 1.0
 ~~~
-  * Rewrite module for matching at best ``argparse``
-  * Allow bultins
-  * Remove compatibility to python2.6 (because of dict comprehension)
+  * Rewrite module for matching at best ``argparse``.
+  * Allow bultins.
+  * Remove compatibility to python2.6 (because of dict comprehension).
 
 0.5
 ~~~
-  * Port code to Python 3 (with compatiblity at least until Python 2.6)
+  * Port code to Python 3 (with compatiblity at least until Python 2.6).
 
 0.4
 ~~~

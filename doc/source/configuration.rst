@@ -15,6 +15,7 @@ are:
     * **argument_default** (argparse)
     * **conflict_handler** (argparse)
     * **add_help** (argparse)
+    * **allow_abbrev** (clg)
     * **anchors** (clg)
     * **options** (clg)
     * **args** (clg)
@@ -87,6 +88,14 @@ add_help
 
 Indicate whether a default ``-h``/``--help`` option is added to the command-line,
 allowing to print help.
+
+
+
+allow_abbrev
+-------------
+Boolean (default: *True*) indicating whether `abrevations
+<https://docs.python.org/dev/library/argparse.html#argument-abbreviations-prefix-matching>`_
+are allowed.
 
 
 

@@ -27,7 +27,7 @@ SELF = sys.modules[__name__]
 KEYWORDS = {
     'parsers': {'argparse': ['prog', 'usage', 'description', 'epilog', 'help',
                              'add_help', 'formatter_class', 'argument_default',
-                             'conflict_handler'],
+                             'conflict_handler', 'allow_abbrev'],
                 'clg': ['anchors', 'subparsers', 'options', 'args', 'groups',
                         'exclusive_groups', 'execute']},
     'subparsers': {'argparse': ['title', 'description', 'prog', 'help',
@@ -298,6 +298,11 @@ def _exec_file(path, exec_conf, args_values):
 #
 # Classes.
 #
+class NoAbbrevParser(argparse.ArgumentParser):
+    def _get_option_tuples(self, option_string):
+        return []
+
+
 class Namespace(argparse.Namespace):
     """Iterable namespace."""
     def __init__(self, args):
@@ -360,7 +365,9 @@ class CommandLine(object):
 
         # Initialize parent parser.
         if parser is None:
-            self.parser = argparse.ArgumentParser(**_gen_parser(parser_conf))
+            self.parser = (argparse.ArgumentParser
+                           if parser_conf.pop('allow_abbrev', True)
+                           else NoAbbrevParser)(**_gen_parser(parser_conf))
             parser = self.parser
 
         # Index parser (based on path) as it may be necessary to access it
