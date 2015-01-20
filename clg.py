@@ -493,7 +493,7 @@ class CommandLine(object):
             arg_args.append(arg)
 
         default = str(arg_conf.get('default', '?'))
-        choices = ', '.join(arg_conf.get('choices', ['?']))
+        choices = ', '.join(map(str, arg_conf.get('choices', ['?'])))
         match = str(arg_conf.get('match', '?'))
         for param, value in sorted(iteritems(arg_conf)):
             if param in KEYWORDS[arg_type]['post']:
