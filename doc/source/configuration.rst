@@ -148,6 +148,7 @@ Keywords:
     * **default** (argparse)
     * **choices** (argparse)
     * **action** (argparse)
+    * **version** (argparse)
     * **nargs** (argparse)
     * **const** (argparse)
     * **metavar** (argparse)
@@ -271,6 +272,35 @@ action
 **argparse link**: `<http://docs.python.org/dev/library/argparse.html#action>`_
 
 This indicate what to do with the value.
+
+
+version
+~~~~~~~
+When using ``version`` action, this argument is expected. ``version`` action
+allow to prints the version information and exits.
+
+The ``argparse`` example look like this:
+
+.. code:: python
+
+    >>> import argparse
+    >>> parser = argparse.ArgumentParser(prog='PROG')
+    >>> parser.add_argument('--version', action='version', version='%(prog)s 2.0')
+    >>> parser.parse_args(['--version'])
+    PROG 2.0
+
+And the ``clg`` equivalent (in YAML) is this:
+
+.. code:: python
+
+    options:
+        version:
+            action: version
+            version: "%(prog)s 2.0"
+
+.. note:: Like the ``--help`` option (see **add_help**), a default help message
+    is set. But, like other option, you can define the help you want with the
+    **help** keyword.
 
 
 nargs

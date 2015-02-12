@@ -38,7 +38,7 @@ KEYWORDS = {
     'exclusive_groups': {'argparse': ['required'],
                          'clg': ['options']},
     'options': {'argparse': ['action', 'nargs', 'const', 'default', 'choices',
-                             'required', 'help', 'metavar', 'type'],
+                             'required', 'help', 'metavar', 'type', 'version'],
                 'clg': ['short'],
                 'post': ['match', 'need', 'conflict']},
     'args': {'argparse': ['action', 'nargs', 'const', 'default', 'choices',

@@ -15,6 +15,7 @@ Releases notes
 --------------
 1.1
 ~~~
+  * Add a ``version`` keyword for options, allowing to use ``version`` action.
   * Allow to use ``argparse.SUPPRESS`` by using ``__SUPPRESS__`` "builtin".
   * Replace the "builtins" __CHOICES__, __MATCH__ and __FILE__ in the help
     message by the respectives values of these keywords.
