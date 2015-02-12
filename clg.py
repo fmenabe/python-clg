@@ -518,7 +518,7 @@ class CommandLine(object):
 
         # Get command configuration.
         path = [elt
-                for arg, value in sorted(args_values)
+                for arg, value in sorted(args_values) if value
                 for elt in ('subparsers', value)
                 if re.match('^%s[0-9]*$' % self.keyword, arg)]
         parser_conf = self._get_config(path, ignore=False)
