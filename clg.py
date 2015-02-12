@@ -366,7 +366,7 @@ class CommandLine(object):
         # Initialize parent parser.
         if parser is None:
             self.parser = (argparse.ArgumentParser
-                           if parser_conf.pop('allow_abbrev', True)
+                           if parser_conf.pop('allow_abbrev', False)
                            else NoAbbrevParser)(**_gen_parser(parser_conf))
             parser = self.parser
 
