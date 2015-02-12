@@ -2,7 +2,6 @@
 Examples
 ********
 
-
 All theses examples (and more) are available in the *examples* directory of the
 `github repository <https://github.com/fmenabe/python-clg>`_. All examples
 describe here use a YAML file.
@@ -70,7 +69,7 @@ simple command with an option and an argument, and the use of builtins.
 Subparsers example
 ------------------
 This is the same example that `argparse subparsers documentation
-<https://docs.python.org/dev/library/argparse.html#sub-commands>`_ .
+<https://docs.python.org/dev/library/argparse.html#sub-commands>`_.
 
 The python program initialize ``clg`` and print arguments:
 

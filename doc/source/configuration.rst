@@ -30,7 +30,8 @@ prog
 ----
 **argparse link**: `<http://docs.python.org/dev/library/argparse.html#prog>`_
 
-Set the name of the program.
+Set the name of the program. By default, it match how the program was invoked
+on the command line.
 
 
 
@@ -62,7 +63,13 @@ formatter_class
 ---------------
 **argparse link**: `<http://docs.python.org/dev/library/argparse.html#formatter-class>`_
 
-Class indicating how the help is formatted.
+This is the name of one of the ``argparse`` class (**HelpFormatter** by
+default). For example:
+
+
+.. code:: yaml
+
+    formatter_class: RawTextHelpFormatter
 
 
 
@@ -87,15 +94,30 @@ add_help
 **argparse link**: `<http://docs.python.org/dev/library/argparse.html#add-help>`_
 
 Indicate whether a default ``-h``/``--help`` option is added to the command-line,
-allowing to print help.
+allowing to print help. You may need to have a better control on this option
+(for putting the option in a group, customizing the help message, removing the
+short option, ...). You can manually set this option by using theses values:
+
+.. code:: yaml
+
+    options:
+        help:
+          short: h
+          action: help
+          default: __SUPPRESS__
+          help: show this help message and exit
+        ...
 
 
 
 allow_abbrev
 -------------
-Boolean (default: *True*) indicating whether `abrevations
+Boolean (default: *False*) indicating whether `abrevations
 <https://docs.python.org/dev/library/argparse.html#argument-abbreviations-prefix-matching>`_
 are allowed.
+
+.. note:: The default behavior of ``argparse`` is to allow abbrevation but
+    ``clg`` module disable this "feature" by default.
 
 
 
@@ -112,24 +134,24 @@ anchors.
 options
 -------
 This section defines the options of the current command. It is a dictionnary
-whose keys are the name of the option (long format beginning with two dashes)
-and values a hash with the configuration of the option. In ``argparse`` module,
-**dest** keyword defines the keys in the resulted Namespace. It is not possible
-to overload this parameter as the name of the option in the configuration is
-used as destination.
+whose keys are the name of the option (long format beginning with two dashes in
+the command-line) and values a hash with the configuration of the option. In
+``argparse`` module, **dest** keyword defines the keys in the resulted
+Namespace. It is not possible to overload this parameter as the name of the
+option in the configuration is used as destination.
 
 Keywords:
 
+    * **short** (clg)
+    * **help** (argparse)
+    * **required** (argparse)
+    * **default** (argparse)
+    * **choices** (argparse)
     * **action** (argparse)
     * **nargs** (argparse)
     * **const** (argparse)
-    * **default** (argparse)
-    * **choices** (argparse)
-    * **required** (argparse)
-    * **help** (argparse)
     * **metavar** (argparse)
     * **type** (argparse)
-    * **short** (clg)
     * **need** (clg)
     * **conflict** (clg)
     * **match** (clg)
@@ -152,7 +174,7 @@ prefixing and sufixing by double underscores: ``__BUILTIN__``. For example:
             default: __MAX__
             help: "sum the integers (default: find the max)"
 
-In the same way, there are two additionnal "builtins":
+In the same way, there are specials "builtins":
     * ``__DEFAULT__``: this is replaced in the help message by the value of
       **default** option.
     * ``__MATCH__``: this is replaced in the help message by the value of
@@ -162,7 +184,9 @@ In the same way, there are two additionnal "builtins":
     * ``__FILE__``: this "builtin" is replaced by the path of the main program
       (**sys.path[0]**). This allow to define file relatively to the main
       program (ex: *__FILE__/conf/someconf.yml*, *__FILE__/logs/*).
-    * ``__SUPPRESS__``: identical to ``argparse.SUPPRESS``
+    * ``__SUPPRESS__``: identical to ``argparse.SUPPRESS`` (no attribute is
+      added to the resulted Namespace if the command-line argument is not
+      present).
 
 
 short
@@ -294,15 +318,16 @@ This is a regular expression that the option's value must match.
 args
 ----
 This section define arguments of the current command. It is identical as the
-`options`_ section at the exception of the **short** keyword which is not available.
+`options`_ section at the exception of the **short** and **version** keywords
+which are not available.
 
 
 
 groups
 ------
-This section is a list of groups. Each group
-(`<https://docs.python.org/dev/library/argparse.html#argument-groups>`_) can
-have theses keywords:
+This section is a list of groups. Each
+`group <https://docs.python.org/dev/library/argparse.html#argument-groups>`_
+can have theses keywords:
 
     * **title** (argparse)
     * **description** (argparse)
@@ -310,17 +335,8 @@ have theses keywords:
 
 .. note:: All ``argparse`` examples set ``add_help`` to *False*. If this is set,
    ``help`` option is put in *optional arguments*. If you want to put the
-   ``help`` option in a group, you need to refine the option with theses values
-   (this is what ``add_help`` does):
-
-   .. code::
-
-      help:
-        short: h
-        action: help
-        default: __SUPPRESS__
-        help: show this help message and exit
-
+   ``help`` option in a group, you need to set the help option
+   `manually <configuration.html#add_help>`_.
 
 
 title
@@ -342,9 +358,9 @@ List with the options of the group. Theses options must be defined in the
 
 exclusive groups
 ----------------
-This section is a list of exclusive groups. Each exclusive group
-(`<https://docs.python.org/dev/library/argparse.html#mutual-exclusion>`_) can
-have theses keywords:
+This section is a list of
+`exclusive groups <https://docs.python.org/dev/library/argparse.html#mutual-exclusion>`_.
+Each group can have theses keywords:
 
     * **required** (argparse)
     * **options** (clg)
@@ -361,8 +377,6 @@ List with the options of the group. Theses options must be defined in the
 `options`_ section.
 
 
-
-.. _execute:
 
 execute
 -------
@@ -386,7 +400,7 @@ module
 ~~~~~~
 This is a string indicating the module to load (ex: package.subpackage.module).
 This recursively load all intermediary packages until the module. As the
-directory of the main program is automatically in ``sys.path``, that allow to
+directory of the main program is automatically in ``sys.path``, that allows to
 import modules relatively to the main program.
 
 For example, the directory structure of your program could be like this:
@@ -439,6 +453,7 @@ Keywords:
     * **help** (argparse)
     * **metavar** (argparse)
     * **parsers** (clg)
+    * **required** (clg)
 
 .. note:: It is possible to directly set parsers configurations (the content of
    **parsers** subsection) in this section. The module check for the presence
@@ -493,3 +508,8 @@ parsers
 ~~~~~~~
 This is a hash whose keys are the name of subcommands and values the
 configuration of the command.
+
+
+required
+~~~~~~~~
+Indicate whether a subcommand is required.
