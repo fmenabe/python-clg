@@ -139,7 +139,7 @@ def _format_optname(value):
 
 def _format_optdisplay(value, conf):
     """Format the display of an option in error message (short and long option
-    with dashe(s) separated by a slash."""
+    with dash(es) separated by a slash."""
     return ('-%s/--%s' % (conf['short'], _format_optname(value))
             if 'short' in conf
             else '--%s' % _format_optname(value))
@@ -299,6 +299,7 @@ def _exec_file(path, exec_conf, args_values):
 # Classes.
 #
 class NoAbbrevParser(argparse.ArgumentParser):
+    """Child class of **ArgumentParser** allowing to disable abbravetions."""
     def _get_option_tuples(self, option_string):
         return []
 
@@ -407,7 +408,7 @@ class CommandLine(object):
         """Add subparsers. Subparsers can have a global configuration or
         directly parsers configuration. This is the keyword **parsers** that
         indicate it."""
-        # Get add_subparsers parameters.
+        # Get arguments to pass to add_subparsers method.
         required = True
         subparsers_kwargs = {'dest': '%s%d' % (self.keyword, len(path) / 2)}
         if 'parsers' in subparsers_conf:
