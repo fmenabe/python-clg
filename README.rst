@@ -22,22 +22,22 @@ Releases notes
   * Add the parameter ``allow_abbrev`` in parser configuration, controlling
     abbrevations behaviour (http://bugs.python.org/issue14910).
 
-1.0
-~~~
+1.0 (2014-10-28)
+~~~~~~~~~~~~~~~~
   * Rewrite module for matching at best ``argparse``.
   * Allow bultins.
   * Drop compatibility to python2.6 (because of dict comprehension).
 
-0.5
-~~~
+0.5 (2013-11-25)
+~~~~~~~~~~~~~~~~
   * Port code to Python 3 (with compatiblity at least until Python 2.6).
 
-0.4
-~~~
+0.4 (2013-11-14)
+~~~~~~~~~~~~~~~~
   * Add description of parser (via *desc* keyword).
 
-0.3
-~~~
+0.3 (2013-08-09)
+~~~~~~~~~~~~~~~~
   * Add an iterable and accessible namespace for arguments.
   * Change behaviour of *parse* method (now return a namespace with arguments).
   * Set the default value for *list* type to an empty list.
@@ -48,8 +48,8 @@ Releases notes
     program.
   * Update the license to MIT.
 
-0.2
-~~~
+0.2 (2013-07-21)
+~~~~~~~~~~~~~~~~
   * **CommandLine** object doesn't take anymore a JSON or YAML file but a
     dictionary.
   * Add documentation.
