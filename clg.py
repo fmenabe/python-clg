@@ -589,20 +589,20 @@ class CommandLine(object):
             length = 0
             cmds = list(filter(lambda e: e != 'subparsers', path.split('/')))
             lengths.append(4 * (len(cmds)) + len(cmds[-1]))
-        start = int(math.ceil((max(lengths) + 2) / 5) * 5)
+        start = max(lengths) + 4
         desc_len = 80 - start
 
         # Print arboresence of commands with their descriptions. This use
         # closures so we don't have to pass whatmille arguments to functions.
         def parse_conf(cmd_conf, level, last_parent):
-            def print_line(cmd, line, first_cmd, last_cmd):
+            def print_line(cmd, line, first_line, last_cmd):
                 symbols = '│   ' * (level - 1)
                 symbols += ('    ' if last_parent else '│   ') if level else ''
-                symbols += ('└──' if last_cmd else '├──'
-                            if first_cmd
+                symbols += (('└──' if last_cmd else '├──')
+                            if first_line
                             else ('   ' if last_cmd else '│  '))
                 print('%s %s %s' % (symbols,
-                                    cmd if first_cmd else '',
+                                    cmd if first_line else '',
                                     '\033[%sG%s' % (start, line)))
 
             if not 'subparsers' in cmd_conf:
@@ -616,17 +616,17 @@ class CommandLine(object):
                 cmd_conf = subparsers_conf[cmd]
                 desc = cmd_conf.get('help', '').strip().split()
 
-                first_cmd = True
+                first_line = True
                 last_cmd = index == nb_cmds
                 cur_line = ''
                 while desc:
                     cur_word = desc.pop(0)
                     if (len(cur_line) + 1 + len(cur_word)) > desc_len:
-                        print_line(cmd, cur_line, first_cmd, last_cmd)
-                        first=False
+                        print_line(cmd, cur_line, first_line, last_cmd)
+                        first_line=False
                         cur_line = ''
                     cur_line += ' ' + cur_word
-                print_line(cmd, cur_line, first_cmd, last_cmd)
+                print_line(cmd, cur_line, first_line, last_cmd)
                 parse_conf(cmd_conf, level + 1, last_cmd)
         parse_conf(self.config, 0, False)
         sys.exit(0)
