@@ -47,6 +47,10 @@ KEYWORDS = {
              'post': ['match', 'need', 'conflict']},
     'execute': {'clg': ['module', 'file', 'function']}}
 
+# Help command description.
+HELP_PARSER = OrderedDict(
+    {'help': {'help': "Print commands' tree with theirs descriptions.",
+              'description': "Print commands' tree with theirs descriptions."}})
 
 # Errors messages.
 INVALID_SECTION = "this section is not of type '{type}'"
@@ -331,8 +335,28 @@ class CommandLine(object):
         path of subcommands (ie: 'command0', 'command1', ... in the namespace of
         arguments)."""
         self.config = config
+
+        # Manage the case when we want a help command that prints a description
+        # of all commands.
+        self.help_cmd = config.pop('add_help_cmd', False)
+        if self.help_cmd:
+            try:
+                subparsers_conf = self.config['subparsers']
+            except KeyError:
+                raise CLGError('unable to add help command: no subparsers')
+
+            if 'parsers' in subparsers_conf:
+                subparsers_conf['parsers'] = OrderedDict(
+                    list(HELP_PARSER.items())
+                    + list(subparsers_conf['parsers'].items()))
+            else:
+                subparsers_conf = OrderedDict(
+                    list(HELP_PARSER.items())
+                    + list(subparsers_conf.items()))
+            self.config['subparsers'] = subparsers_conf
+
         self.keyword = keyword
-        self._parsers = {}
+        self._parsers = OrderedDict()
         self.parser = None
         self._add_parser([])
 
@@ -516,6 +540,8 @@ class CommandLine(object):
         """Parse command-line."""
         # Parse command-line.
         args_values = Namespace(self.parser.parse_args(args).__dict__)
+        if self.help_cmd and args_values['command0'] == 'help':
+            self.print_help()
 
         # Get command configuration.
         path = [elt
@@ -552,3 +578,55 @@ class CommandLine(object):
                     getattr(SELF, '_exec_%s' % keyword)(*exec_params)
 
         return args_values
+
+
+    def print_help(self):
+        """Print commands' tree with theirs descriptions."""
+        # Get column at which we must start printing the description.
+        import math
+        lengths = []
+        for path in self._parsers:
+            length = 0
+            cmds = list(filter(lambda e: e != 'subparsers', path.split('/')))
+            lengths.append(4 * (len(cmds)) + len(cmds[-1]))
+        start = int(math.ceil((max(lengths) + 2) / 5) * 5)
+        desc_len = 80 - start
+
+        # Print arboresence of commands with their descriptions. This use
+        # closures so we don't have to pass whatmille arguments to functions.
+        def parse_conf(cmd_conf, level, last_parent):
+            def print_line(cmd, line, first_cmd, last_cmd):
+                symbols = '│   ' * (level - 1)
+                symbols += ('    ' if last_parent else '│   ') if level else ''
+                symbols += ('└──' if last_cmd else '├──'
+                            if first_cmd
+                            else ('   ' if last_cmd else '│  '))
+                print('%s %s %s' % (symbols,
+                                    cmd if first_cmd else '',
+                                    '\033[%sG%s' % (start, line)))
+
+            if not 'subparsers' in cmd_conf:
+                return
+
+            subparsers_conf = (cmd_conf['subparsers']['parsers']
+                               if 'parsers' in cmd_conf['subparsers']
+                               else cmd_conf['subparsers'])
+            nb_cmds = len(subparsers_conf) - 1
+            for index, cmd in enumerate(subparsers_conf):
+                cmd_conf = subparsers_conf[cmd]
+                desc = cmd_conf.get('help', '').strip().split()
+
+                first_cmd = True
+                last_cmd = index == nb_cmds
+                cur_line = ''
+                while desc:
+                    cur_word = desc.pop(0)
+                    if (len(cur_line) + 1 + len(cur_word)) > desc_len:
+                        print_line(cmd, cur_line, first_cmd, last_cmd)
+                        first=False
+                        cur_line = ''
+                    cur_line += ' ' + cur_word
+                print_line(cmd, cur_line, first_cmd, last_cmd)
+                parse_conf(cmd_conf, level + 1, last_cmd)
+        parse_conf(self.config, 0, False)
+        sys.exit(0)

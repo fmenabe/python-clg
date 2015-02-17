@@ -16,6 +16,9 @@ Releases notes
 1.1
 ~~~
   * Add a ``version`` keyword for options, allowing to use ``version`` action.
+  * Allow an option ``add_help_cmd`` in the root of the configuration that
+    automatically add a ``help`` command that show the arborescence of all
+    commands with their descriptions.
   * Allow to use ``argparse.SUPPRESS`` by using ``__SUPPRESS__`` "builtin".
   * Replace the "builtins" __CHOICES__, __MATCH__ and __FILE__ in the help
     message by the respectives values of these keywords.

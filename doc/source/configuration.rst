@@ -15,6 +15,7 @@ are:
     * **argument_default** (argparse)
     * **conflict_handler** (argparse)
     * **add_help** (argparse)
+    * **add_help_cmd** (clg)
     * **allow_abbrev** (clg)
     * **anchors** (clg)
     * **options** (clg)
@@ -108,6 +109,12 @@ short option, ...). You can manually set this option by using theses values:
           help: show this help message and exit
         ...
 
+
+
+add_help_cmd
+------------
+This automatically add a ``help`` subcommands at the root of the parser. This
+command print the tree of commands and the respectives descriptions.
 
 
 allow_abbrev
