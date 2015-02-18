@@ -284,7 +284,7 @@ This indicate what to do with the value.
 version
 ~~~~~~~
 When using ``version`` action, this argument is expected. ``version`` action
-allow to prints the version information and exits.
+allows to print the version information and exits.
 
 The ``argparse`` example look like this:
 
@@ -305,9 +305,8 @@ And the ``clg`` equivalent (in YAML) is this:
             action: version
             version: "%(prog)s 2.0"
 
-.. note:: Like the ``--help`` option (see **add_help**), a default help message
-    is set. But, like other option, you can define the help you want with the
-    **help** keyword.
+.. note:: Like the ``--help`` option , a default help message is set. But, like
+   any other option, you can define the help you want with the **help** keyword.
 
 
 nargs
