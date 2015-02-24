@@ -13,6 +13,10 @@ Documentation is available on readthedocs (https://clg.readthedocs.org/en/latest
 
 Releases notes
 --------------
+1.1.1 (2015-02-24)
+~~~~~~~~~~~~~~~~
+  * Correct a bug when using ``version`` action.
+
 1.1 (2015-02-17)
 ~~~~~~~~~~~~~~~~
   * Add a ``version`` keyword for options, allowing to use ``version`` action.
