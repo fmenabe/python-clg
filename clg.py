@@ -589,7 +589,7 @@ class CommandLine(object):
         for path in self._parsers:
             length = 0
             cmds = list(filter(lambda e: e != 'subparsers', path.split('/')))
-            lengths.append(4 * (len(cmds)) + len(cmds[-1]))
+            lengths.append(3 * (len(cmds)) + len(cmds[-1]))
         start = max(lengths) + 4
         desc_len = 80 - start
 
@@ -597,12 +597,12 @@ class CommandLine(object):
         # closures so we don't have to pass whatmille arguments to functions.
         def parse_conf(cmd_conf, level, last_parent):
             def print_line(cmd, line, first_line, last_cmd):
-                symbols = '│   ' * (level - 1)
-                symbols += ('    ' if last_parent else '│   ') if level else ''
-                symbols += (('└──' if last_cmd else '├──')
+                symbols = '│ ' * (level - 1)
+                symbols += ('  ' if last_parent else '│ ') if level else ''
+                symbols += (('└─' if last_cmd else '├─')
                             if first_line
-                            else ('   ' if last_cmd else '│  '))
-                print('%s %s %s' % (symbols,
+                            else ('  ' if last_cmd else '│ '))
+                print('%s%s %s' % (symbols,
                                     cmd if first_line else '',
                                     '\033[%sG%s' % (start, line)))
 
