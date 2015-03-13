@@ -55,7 +55,7 @@ HELP_PARSER = OrderedDict(
 # Errors messages.
 INVALID_SECTION = "this section is not of type '{type}'"
 EMPTY_CONF = 'configuration is empty'
-UNKNOWN_KEYWORD = "unknown keyword '{keyword}'"
+INVALID_KEYWORD = "invalid keyword '{keyword}'"
 ONE_KEYWORDS = "this section need (only) one of theses keywords: '{keywords}'"
 MISSING_KEYWORD = "keyword '{keyword}' is missing"
 UNKNOWN_ARG = "unknown {type} '{arg}'"
@@ -174,7 +174,7 @@ def _check_keywords(path, conf, section, one=None, need=None):
 
     for keyword in conf:
         if keyword not in valid_keywords:
-            raise CLGError(path, UNKNOWN_KEYWORD.format(keyword=keyword))
+            raise CLGError(path, INVALID_KEYWORD.format(keyword=keyword))
         _check_empty(path + [keyword], conf[keyword])
 
     if one and len([arg for arg in conf if arg in one]) != 1:
