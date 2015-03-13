@@ -34,7 +34,7 @@ KEYWORDS = {
                                 'metavar'],
                    'clg': ['required', 'parsers']},
     'groups': {'argparse': ['title', 'description'],
-               'clg': ['options']},
+               'clg': ['options', 'args', 'exclusive_groups']},
     'exclusive_groups': {'argparse': ['required'],
                          'clg': ['options']},
     'options': {'argparse': ['action', 'nargs', 'const', 'default', 'choices',
@@ -366,11 +366,14 @@ class CommandLine(object):
         configuration."""
         config = self.config
         for idx, elt in enumerate(path):
-            config = (config['parsers'][elt]
-                      if (not ignore
-                          and path[idx-1] == 'subparsers'
-                          and 'parsers' in config)
-                      else config[elt])
+            if elt.startswith('#'):
+                config = config[int(elt[1:])]
+            else:
+                config = (config['parsers'][elt]
+                          if (not ignore
+                              and path[idx-1] == 'subparsers'
+                              and 'parsers' in config)
+                          else config[elt])
         return config
 
 
@@ -413,19 +416,19 @@ class CommandLine(object):
                                  path + ['subparsers'],
                                  parser_conf['subparsers'])
 
-        # Add groups and exclusive groups.
-        parser_args = _get_args(parser_conf)
-        for grp_type in ('groups', 'exclusive_groups'):
-            if grp_type in parser_conf:
-                self._add_groups(parser,
-                                 path + [grp_type],
-                                 parser_conf[grp_type],
-                                 grp_type,
-                                 parser_args)
-
         # Add options and arguments.
+        parser_args = _get_args(parser_conf)
         for arg in parser_args:
             self._add_arg(parser, path, arg, parser_args)
+
+        # Add groups.
+        for grp_type in ('groups', 'exclusive_groups'):
+            if grp_type in parser_conf:
+                _check_empty(path, parser_conf[grp_type])
+                _check_type(path, parser_conf[grp_type], list)
+                for index, group in enumerate(parser_conf[grp_type]):
+                    grp_path = path + [grp_type, '#%d' % index]
+                    self._add_group(parser, grp_path, group, grp_type)
 
 
     def _add_subparsers(self, parser, path, subparsers_conf):
@@ -460,30 +463,16 @@ class CommandLine(object):
             self._add_parser(path + [parser_name], subparser)
 
 
-    def _add_groups(self, parser, path, groups_conf, grp_type, parser_args):
-        """Add groups and mutually exclusive groups."""
-        _check_empty(path, groups_conf)
-        _check_type(path, groups_conf, list)
-        for grp_number, grp_conf in enumerate(groups_conf):
-            grp_path = path + ["#%d" % grp_number]
-            _check_section(grp_path, grp_conf, grp_type, need=['options'])
-
-            if grp_type == 'groups':
-                grp_kwargs = {param: value
-                              for param, value in iteritems(grp_conf)
-                              if param in KEYWORDS['groups']['argparse']}
-                group = parser.add_argument_group(**grp_kwargs)
-            elif grp_type == 'exclusive_groups':
-                grp_kwargs = {'required': grp_conf.get('required', False)}
-                group = parser.add_mutually_exclusive_group(**grp_kwargs)
-
-            for opt in grp_conf['options']:
-                if opt not in parser_args or (grp_type == 'exclusive_groups'
-                                              and parser_args[opt][0] != 'options'):
-                    raise CLGError(grp_path, UNKNOWN_ARG.format(type='option',
-                                                                arg=opt))
-                self._add_arg(group, path[:-1], opt, parser_args)
-                del parser_args[opt]
+    def _add_group(self, parser, path, conf, grp_type):
+        _check_section(path, conf, grp_type)
+        params = {keyword: conf.pop(keyword)
+                  for keyword in KEYWORDS[grp_type]['argparse']
+                  if keyword in conf}
+        grp_method = {'groups': 'add_argument_group',
+                      'exclusive_groups': 'add_mutually_exclusive_group'
+                     }[grp_type]
+        group = getattr(parser, grp_method)(**params)
+        self._add_parser(path, group)
 
 
     def _add_arg(self, parser, path, arg, parser_args):
