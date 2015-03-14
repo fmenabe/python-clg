@@ -417,9 +417,13 @@ class CommandLine(object):
                                  parser_conf['subparsers'])
 
         # Add options and arguments.
-        parser_args = _get_args(parser_conf)
-        for arg in parser_args:
-            self._add_arg(parser, path, arg, parser_args)
+        for arg_type in ('options', 'args'):
+            arg_path = path + [arg_type]
+            arg_type_conf = parser_conf.get(arg_type, {})
+            _check_type(arg_path, arg_type_conf, dict)
+            for arg, arg_conf in iteritems(arg_type_conf):
+                arg_path.append(arg)
+                self._add_arg(parser, arg_path, arg, arg_type, arg_conf)
 
         # Add groups.
         for grp_type in ('groups', 'exclusive_groups'):
@@ -475,11 +479,8 @@ class CommandLine(object):
         self._add_parser(path, group)
 
 
-    def _add_arg(self, parser, path, arg, parser_args):
+    def _add_arg(self, parser, path, arg, arg_type, arg_conf):
         """Add an option/argument to **parser**."""
-        arg_type, arg_conf = parser_args[arg]
-        arg_path = path + [arg_type, arg]
-
         # Check configuration.
         _check_section(path, arg_conf, arg_type)
         for keyword in ('need', 'conflict'):
@@ -553,10 +554,8 @@ class CommandLine(object):
 
             for keyword in KEYWORDS[arg_type]['post']:
                 if keyword in arg_conf:
-                    getattr(SELF, '_post_%s' % keyword)(parser,
-                                                        parser_args,
-                                                        args_values,
-                                                        arg)
+                    post_args = (parser, parser_args, args_values, arg)
+                    getattr(SELF, '_post_%s' % keyword)(*post_args)
 
         # Execute.
         if 'execute' in parser_conf:
