@@ -1,13 +1,10 @@
 prog: PROG
 
-options:
-    foo:
-        action: store_true
-
-    bar:
-        action: store_false
-
 exclusive_groups:
-    - options:
-        - foo
-        - bar
+    - required: True
+      options:
+          foo:
+              action: store_true
+
+          bar:
+              action: store_false

@@ -1,187 +1,354 @@
+add_help_cmd: True
+allow_abbrev: False
+description: Utility for managing KVM hosts.
+
+anchors:
+    main: &MAIN
+        help:
+            short: h
+            action: help
+            default: __SUPPRESS__
+            help: Show this help message and exit.
+        conf_file:
+            help: 'Configuration file (default: __DEFAULT__).'
+            default: __FILE__/conf/conf.yml
+        logdir:
+            help: 'Log directory (default: __DEFAULT__).'
+            default: __FILE__/logs
+        loglevel:
+            choices:
+                - verbose
+                - debug
+                - info
+                - warn
+                - error
+                - none
+            default: info
+            help: 'Log level on console (default: __DEFAULT__).'
+
 subparsers:
-     deploy: &DEPLOY
-         usage: |
-             {
-                 -n NAME -d DEST -t MODEL
-                 -i IP,NETMASK,GATEWAY,VLAN [IP2,NETMASK2,VLAN2 ...]
-             } | { -f YAML_FILE [-d DEST] [-t model] }
-             [-c CORES] [-m MEMORY] [--resize SIZE] [--format FORMAT]
-             [--disks SUFFIX1,SIZE1 [SUFFIX2,SIZE2 ...]]
-             [--force] [--no_check] [--nbd DEV] [--no-autostart]
-             [--vgroot VGROOT] [--lvroot LVROOT]
-             [--src-host HOST] [--src-conf PATH] [--src-disks PATH]
-             [--dst-conf PATH] [--dst-disks PATH]
+    pools:
+        help: Manage pools of hypervisors.
+        description: Manage pools of hypervisors.
+        subparsers:
+            list:
+                add_help: False
+                help: List pools.
+                description: List pools.
+                execute:
+                    module: commands.pools.list
+                groups:
+                    - title: Common options
+                      options: *MAIN
+            add:
+                add_help: False
+                help: Add a new pool.
+                description: Add a new pool.
+                execute:
+                    module: commands.pools.add
+                groups:
+                    - title: Common options
+                      options: *MAIN
+                    - title: Arguments
+                      args:
+                        name:
+                            help: Name of the pool to add.
+                        hypervisors:
+                            nargs: "?"
+                            help: Hypervisors in the pool.
+            delete:
+                add_help: False
+                help: Delete a pool.
+                description: Delete a pool.
+                execute:
+                    module: commands.pools.delete
+                groups:
+                    - title: Common options
+                      options: *MAIN
+                    - title: Arguments
+                      args:
+                        name:
+                            help: Name of the pool to delete.
+            update:
+                add_help: False
+                help: Update a pool.
+                description: Update a pool.
+                execute:
+                    module: commands.pools.update
+                groups:
+                    - title: Common options
+                      options: *MAIN
+                    - title: Options
+                      options:
+                        add:
+                            nargs: "*"
+                            help: Hypervisors to add to the pool.
+                        delete:
+                            nargs: "*"
+                            help: Hypervisors to delete to the pool.
+                    - title: Arguments
+                      args:
+                        name:
+                            help: Name of the pool to update.
+    guests:
+        help: Manage guests.
+        description: Manage guests.
+        subparsers:
+            deploy:
+                help: Deploy a new guest on an hyperviror based on a model.
+                description: Deploy a new guest on an hypervisor based on a model.
+                add_help: False
+                formatter_class: RawTextHelpFormatter
+                execute:
+                    module: commands.guests.deploy
 
-         description: Deploy new KVM guests from a model.
+                groups:
+                    - title: Common options
+                      options: *MAIN
+                    - title: Optional options
+                      options:
+                        cores:
+                            short: c
+                            type: int
+                            default: 2
+                            help: |
+                                Number of cores assigned to the guest (default:
+                                __DEFAULT__).
+                        memory:
+                            short: m
+                            type: float
+                            default: 2
+                            help: |
+                                Memory in Gb assigned to the guest (default: __DEFAULT__).
+                        format:
+                            type: Format
+                            metavar: FORMAT,OPT1=VALUE,OPT2=VALUE,...
+                            help: |
+                                Format of the main image. Each format has options
+                                that can be specified, separated by commas. By default
+                                models use qcow2 images without options.
+                        resize:
+                            type: int
+                            help: |
+                                Resize (in fact, only increase) the main disk image.
+                                For linux system, it will allocate the new size on the
+                                root LVM Volume Group. This option only work on KVM
+                                hypervisors which have a version of qemu >= 0.15.0.
+                        disks:
+                            nargs: '+'
+                            type: Disk
+                            metavar: DISK
+                            help: |
+                                Add new disk(s). Format of DISK is:
+                                  SUFFIX,SIZE[,FORMAT,OTP1=VAL, OPT2=VAL,...]
+                                Where:
+                                    * SUFFIX is used for generating the filename of
+                                      the image. The filename is: NAME-SUFFIX.FORMAT
+                                    * SIZE is the size in Gb
+                                    * FORMAT is the format of the image (default is
+                                      'qcow2')
+                                    * OPT=VAL are the options of the format
+                        force:
+                            action: store_true
+                            help: |
+                                If a guest or some images already exists on the
+                                destination, configuration and disk images are
+                                automaticaly backuped, then overwrited, without
+                                confirmation.
+                        no_check:
+                            action: store_true
+                            help: |
+                                Ignore checking of resources (use with cautions as
+                                overloading an hypervisor could lead to bad
+                                performance!).
+                        no_autostart:
+                            action: store_true
+                            help: Don't set autostart for the new guest.
+                        nbd:
+                            default: nbd0
+                            help: |
+                                NBD device (in /dev) to use (default: '__DEFAULT__').
+                        vgroot:
+                            default: sys
+                            help: |
+                                Name of the LVM root Volume Group (default: '__DEFAULT__').
+                        lvroot:
+                            default: root
+                            help: |
+                                Name of the LVM root Logical Volume (default:
+                                '__DEFAULT__').
+                        src_host:
+                            short: s
+                            default: bes1
+                            help: |
+                                Host on which models are stored (default: '__DEFAULT__').
+                        src_disks:
+                            default: /vm/disk
+                            help: |
+                                Path of images files on the source hypervisor (default:
+                                '__DEFAULT__').
+                        dst_conf:
+                            default: /vm/conf
+                            help: |
+                                Path of configurations files on the destination
+                                hypervisor (default: '__DEFAULT__').
+                        dst_disks:
+                            default: /vm/disk
+                            help: |
+                                Path of disks files on the destination hypervisor (default:
+                                '__DEFAULT__')
+                    - title: Arguments
+                      args:
+                        name:
+                            help: Name of the new guest.
+                        dst_host:
+                            help: Hypervisor on which deploy the new guest.
+                        model:
+                            metavar: MODEL
+                            choices:
+                                - ubuntu-lucid
+                                - ubuntu-precise
+                                - ubuntu-trusty
+                                - redhat-5.8
+                                - redhat-6.3
+                                - centos-5
+                                - w2003
+                                - w2008r2
+                            help: |
+                                Model on which the new guest is based. Choices are:
+                                    * ubuntu-precise
+                                    * ubuntu-trusty
+                                    * redhat-5.8
+                                    * redhat-6.3
+                                    * centos-5
+                                    * w2003
+                                    * w2008-r2
+                        interfaces:
+                            nargs: '+'
+                            type: Interface
+                            metavar: INTERFACE
+                            help: |
+                                Network configuration. This is a list of network
+                                interfaces configurations. Each interface
+                                configuration is a list of parameters separated by
+                                commas. Parameters are:
+                                    * the network type ('network' (NAT) or 'bridge'),
+                                    * the source (network name for 'network' type
+                                      or vlan number for 'bridge' type),
+                                    * the IP address,
+                                    * the netmask,
+                                    * the gateway (only for the first interface)
+                                For example, for deploying a guest with an inteface
+                                in the public network and an interface in the storage
+                                network:
+                                    * bridge,br903,130.79.200.1,255.255.254.0,130.79.201.254,801
+                                    * bridge,br896,172.30.0.1,255.255.254.0,896
+                                    * network,default,192.168.122.2,255.255.255.0,192.168.122.1
 
-         execute:
-             module: commands.deploy
+            clone:
+                add_help: False
+                description: Clone a guest.
+                help: Clone a guest.
+                execute:
+                    module: commands.guests.clone
+                groups:
+                    - title: Common options
+                      options: *MAIN
+                    - title: Optional options
+                      options:
+                        cores:
+                            short: c
+                            type: int
+                            default: 2
+                            help: |
+                                Number of cores assigned to the guest (default:
+                                __DEFAULT__).
+                        memory:
+                            short: m
+                            type: int
+                            default: 2
+                            help: |
+                                Memory in Gb assigned to the guest (default: __DEFAULT__).
+                        force:
+                            action: store_true
+                            help: |
+                                If a guest or some images already exists on the
+                                destination, configuration and disk images are
+                                automaticaly backuped, then overwrited, without
+                                confirmation.
+                    - title: Arguments
+                      args:
+                        src:
+                            type: URI
+                            help: Source guest.
+                        dst:
+                            type: URI
+                            help: Destination guest.
+                        interfaces:
+                            nargs: '+'
+                            type: Interface
+                            metavar: INTERFACE
+                            help: |
+                                Network configuration. This is a list of network
+                                interfaces configurations. Each interface
+                                configuration is a list of parameters separated by
+                                commas. Parameters are:
+                                    * the IP address,
+                                    * the netmask,
+                                    * the gateway (only for the first interface)
+                                    * the VLAN
+                                For example, for deploying a guest with an inteface
+                                in the public network and an interface in the storage
+                                network:
+                                    * 130.79.200.1,255.255.254.0,130.79.201.254,801
+                                    * 172.30.0.1,255.255.254.0,896
 
-         exclusive_groups:
-             -
-                 required: True
-                 options:
-                     - name
-                     - file
-
-         options:
-             name:
-                 short: n
-                 help: "Name of the VM to deploy (default: __DEFAULT__)."
-                 need:
-                     - dst_host
-                     - interfaces
-                     - model
-             dst_host:
-                 short: d
-                 help: "Host on which deploy the new VM."
-             interfaces:
-                 short: i
-                 nargs: "*"
-                 help: >
-                     Network interfaces separated by spaces. Parameters of
-                     each interfaces are separated by commas. The first interface
-                     has four parameters: IP address, netmask, gateway and VLAN.
-                     The others interfaces have the same parameters except the
-                     gateway.
-             model:
-                 short: t
-                 help: "Model on which the new VM is based."
-                 choices:
-                     - redhat5.8
-                     - redhat6.3
-                     - centos5
-                     - ubuntu-lucid
-                     - ubuntu-natty
-                     - ubuntu-oneiric
-                     - ubuntu-precise
-                     - w2003
-                     - w2008-r2
-             file:
-                 short: f
-                 help: >
-                     YAML File for deploying many hosts. Required parameters
-                     on the file are the name and the network configuration.
-                     The others parameters are retrieving from the command line (or
-                     default values). However, destination and model have
-                     no defaults values and must be defined somewhere!
-                 conflict:
-                     - interfaces
-             cores:
-                 short: c
-                 default: 2
-                 type: int
-                 help: "Number of cores assigned to the VM."
-             memory:
-                 short: m
-                 default: 1
-                 type: int
-                 help: "Memory (in Gb) assigned to the VM."
-             format:
-                 help: >
-                     Format of the image(s). If format is different from '__DEFAULT__',
-                     the image is converting to the specified format (this could be a
-                     little long!).
-                 choices:
-                     - raw
-                     - qcow2
-                 default: qcow2
-             resize:
-                 help: >
-                     Resize (in fact, only increase) the main disk image and,
-                     for linux system, allocate the new size on the root LVM Volume
-                     Group. This option only work on KVM host which have a version
-                     of qemu superior to 0.??!
-                 type: int
-             disks:
-                 nargs: "*"
-                 help: >
-                     Add new disk(s). Parameters are a suffix and the size. Filename of
-                     the created image is NAME-SUFFIX.FORMAT (ex: mavm-datas.qcow2).
-             force:
-                 action: store_true
-                 help: >
-                     If a virtual machine already exists on destination host,
-                     configuration and disk images are automaticaly backuped
-                     then overwrited!
-             no_check:
-                 action: store_true
-                 help: Ignore checking of resources (Use with cautions!).
-             no_autostart:
-                 action: store_true
-                 help: "Don't set autostart of the VM."
-             nbd:
-                 default: /dev/nbd0
-                 help: "NBD device to use."
-             vgroot:
-                 default: sys
-                 help: "Name of the LVM root Volume Group."
-             lvroot:
-                 default: root
-                 help: "Name of the LVM root Logical Volume"
-             src_host:
-                 default: bes1
-                 help: "Host on which models are stored"
-             src_conf:
-                 default: /vm/conf
-                 help: >
-                     Path of configurations files on the source host.
-             src_disks:
-                 default: /vm/disk
-                 help: >
-                     Path of images files on the source host.
-             dst_conf:
-                 default: /vm/conf
-                 help: >
-                     Path of configurations files on the destination host.
-             dst_disks:
-                 default: /vm/disk
-                 help: >
-                     Path of disks files on the destination host.
-
-     migrate:
-         usage: |
-             { -n NAME -s SRC_HOST -d DST_HOST }
-             | { -f YAML_FILE [-s SRC_HOST] [-d DST_HOST] }
-             [--no-check] [--no-pc-check] [--remove] [--force]
-
-         execute:
-             module: commands.migrate
-
-         options:
-             name:
-                 short: n
-                 help: Name of the VM to migrate.
-                 need:
-                     - src_host
-                     - dst_host
-                 conflict:
-                     - file
-             src_host:
-                 short: s
-                 help: Host on which the VM is actually running.
-             dst_host:
-                 short: d
-                 help: "Host on which migrating the VM."
-             file:
-                 short: f
-                 help: >
-                     YAML File for migrating many hosts. Only the name is require in the
-                     file and the other parameters are retrieving from the command line.
-                     However, in all case, source and destination hosts must be defined!
-             no_check:
-                 action: store_true
-                 help: Ignore checking of resources (Use with cautions!).
-             no_pc_check:
-                 action: store_true
-                 help: Ignore checking of "pc" parameter.
-             force:
-                 action: store_true
-                 help: >
-                     If a virtual machine already exists on destination host,
-                     configuration and disk images are automaticaly backuped
-                     then overwrited!
-             remove:
-                 short: r
-                 action: store_true
-                 help: "Remove VM on the source host when migration is over."
+            migrate:
+                add_help: False
+                description: >
+                    Move a guest to an other hypervisor. This command manage
+                    both cold and live migration.
+                help: Move a guest to an other hypervisor.
+                execute:
+                    module: commands.guests.migrate
+                groups:
+                    - title: Common options
+                      options: *MAIN
+                    - title: Optional options
+                      options:
+                        no_check:
+                            action: store_true
+                            help: >
+                                Don't check for valid resources in the destination
+                                hypervisor.
+                        force:
+                            action: store_true
+                            help:
+                                If a guest or some images already exists on the
+                                destination, configuration and disk images are
+                                automaticaly backuped, then overwrited, without
+                                confirmation.
+                        remove:
+                            short: r
+                            action: store_true
+                            help: Remove guest on source hypervisor after migration.
+                    - title: Migration type (exclusive and required)
+                      exclusive_groups:
+                          - required: True
+                            options:
+                                cold:
+                                    short: c
+                                    action: store_true
+                                    help: Cold migration.
+                                live:
+                                    short: l
+                                    action: store_true
+                                    help: Live migration.
+                    - title: Arguments
+                      args:
+                        src_host:
+                            help: Hypervisor source.
+                        name:
+                            help: Name of the guest.
+                        dst_host:
+                            help: Hypervisor destination.
