@@ -13,8 +13,15 @@ Documentation is available on readthedocs (https://clg.readthedocs.org/en/latest
 
 Releases notes
 --------------
+1.2.0 (unreleased)
+~~~~~~~~~~~~~~~~~~
+    * Change behaviour of groups: groups now act like parsers rather than just
+      referencing previously defined options. **It breaks files of previous
+      versions.**
+    * Update design of the 'help' command added by the 'add_help_cmd' keyword.
+
 1.1.1 (2015-02-24)
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
   * Correct a bug when using ``version`` action.
 
 1.1 (2015-02-17)
