@@ -109,6 +109,9 @@ def _get_args(parser_conf):
     for arg_type in ('options', 'args'):
         for arg, arg_conf in iteritems(parser_conf.get(arg_type, {})):
             args[arg] = (arg_type, OrderedDict(arg_conf))
+    for grp_type in ('groups', 'exclusive_groups'):
+        for group in parser_conf.get(grp_type, {}):
+            args.update(_get_args(group))
     return args
 
 
