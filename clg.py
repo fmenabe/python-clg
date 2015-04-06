@@ -420,12 +420,18 @@ class CommandLine(object):
                                  parser_conf['subparsers'])
 
         # Add options and arguments.
+        if isinstance(parser, (NoAbbrevParser, argparse.ArgumentParser)):
+            try:
+                self._parser_args = _get_args(parser_conf)
+            except Exception:
+                # Ignore errors here as they will be raised later.
+                self._parser_args = {}
         for arg_type in ('options', 'args'):
-            arg_path = path + [arg_type]
+            arg_type_path = path + [arg_type]
             arg_type_conf = parser_conf.get(arg_type, {})
-            _check_type(arg_path, arg_type_conf, dict)
+            _check_type(arg_type_path, arg_type_conf, dict)
             for arg, arg_conf in iteritems(arg_type_conf):
-                arg_path.append(arg)
+                arg_path = arg_type_path + [arg]
                 self._add_arg(parser, arg_path, arg, arg_type, arg_conf)
 
         # Add groups.
@@ -491,10 +497,9 @@ class CommandLine(object):
                 continue
             _check_type(path + [keyword], arg_conf[keyword], list)
             for cur_arg in arg_conf[keyword]:
-                if cur_arg not in parser_args:
-                    cur_arg_type = parser_args[cur_arg][0][:-1]
-                    raise CLGError(arg_path + [keyword],
-                                   UNKNOWN_ARG.format(type=cur_arg_type,
+                if cur_arg not in self._parser_args:
+                    raise CLGError(path + [keyword],
+                                   UNKNOWN_ARG.format(type='option/argument',
                                                       arg=cur_arg))
 
         # Get argument parameters.
