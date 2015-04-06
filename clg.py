@@ -346,7 +346,7 @@ class CommandLine(object):
             try:
                 subparsers_conf = self.config['subparsers']
             except KeyError:
-                raise CLGError('unable to add help command: no subparsers')
+                raise CLGError([], 'unable to add help command: no subparsers')
 
             if 'parsers' in subparsers_conf:
                 subparsers_conf['parsers'] = OrderedDict(
