@@ -592,12 +592,14 @@ class CommandLine(object):
         # Print arboresence of commands with their descriptions. This use
         # closures so we don't have to pass whatmille arguments to functions.
         def parse_conf(cmd_conf, level, last_parent):
-            def print_line(cmd, line, first_line, last_cmd):
+            def print_line(cmd, line, first_line, last_cmd, has_childs):
                 symbols = '│ ' * (level - 1)
                 symbols += ('  ' if last_parent else '│ ') if level else ''
                 symbols += (('└─' if last_cmd else '├─')
                             if first_line
                             else ('  ' if last_cmd else '│ '))
+                if not first_line and has_childs:
+                    symbols += '│ '
                 print('%s%s %s' % (symbols,
                                     cmd if first_line else '',
                                     '\033[%sG%s' % (start, line)))
@@ -612,6 +614,7 @@ class CommandLine(object):
             for index, cmd in enumerate(subparsers_conf):
                 cmd_conf = subparsers_conf[cmd]
                 desc = cmd_conf.get('help', '').strip().split()
+                has_childs = 'subparsers' in cmd_conf
 
                 first_line = True
                 last_cmd = index == nb_cmds
@@ -619,11 +622,11 @@ class CommandLine(object):
                 while desc:
                     cur_word = desc.pop(0)
                     if (len(cur_line) + 1 + len(cur_word)) > desc_len:
-                        print_line(cmd, cur_line, first_line, last_cmd)
+                        print_line(cmd, cur_line, first_line, last_cmd, has_childs)
                         first_line=False
                         cur_line = ''
                     cur_line += ' ' + cur_word
-                print_line(cmd, cur_line, first_line, last_cmd)
+                print_line(cmd, cur_line, first_line, last_cmd, has_childs)
                 parse_conf(cmd_conf, level + 1, last_cmd)
         parse_conf(self.config, 0, False)
         sys.exit(0)
