@@ -4,7 +4,7 @@ from distutils.core import setup
 
 setup(
     name='clg',
-    version='1.1.1',
+    version='2.0.0',
     author='François Ménabé',
     author_email='francois.menabe@gmail.com',
     url='https://clg.readthedocs.org/en/latest/',

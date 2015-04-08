@@ -13,10 +13,10 @@ Documentation is available on readthedocs (https://clg.readthedocs.org/en/latest
 
 Releases notes
 --------------
-1.2.0 (unreleased)
+2.0.0 (unreleased)
 ~~~~~~~~~~~~~~~~~~
     * Change behaviour of groups: groups now act like parsers rather than just
-      referencing previously defined options. **It breaks files of previous
+      referencing previously defined options. **It breaks files used by previous
       versions.**
     * Update design of the 'help' command added by the 'add_help_cmd' keyword.
 
