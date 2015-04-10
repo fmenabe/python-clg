@@ -594,18 +594,17 @@ class CommandLine(object):
 
         # Print arboresence of commands with their descriptions. This use
         # closures so we don't have to pass whatmille arguments to functions.
-        def parse_conf(cmd_conf, level, last_parent):
-            def print_line(cmd, line, first_line, last_cmd, has_childs):
-                symbols = '│ ' * (level - 1)
-                symbols += ('  ' if last_parent else '│ ') if level else ''
-                symbols += (('└─' if last_cmd else '├─')
-                            if first_line
-                            else ('  ' if last_cmd else '│ '))
+        def parse_conf(cmd_conf, last):
+            def print_line(cmd, line, first_line, has_childs):
+                symbols = ['  ' if elt else '│ ' for elt in last[:-1]]
+                symbols.append(('└─' if last[-1] else '├─')
+                               if first_line
+                               else ('  ' if last[-1] else '│ '))
                 if not first_line and has_childs:
-                    symbols += '│ '
-                print('%s%s %s' % (symbols,
-                                    cmd if first_line else '',
-                                    '\033[%sG%s' % (start, line)))
+                    symbols.append('│ ')
+                print('%s%s %s' % (''.join(symbols),
+                                   cmd if first_line else '',
+                                   '\033[%sG%s' % (start, line)))
 
             if not 'subparsers' in cmd_conf:
                 return
@@ -613,6 +612,7 @@ class CommandLine(object):
             subparsers_conf = (cmd_conf['subparsers']['parsers']
                                if 'parsers' in cmd_conf['subparsers']
                                else cmd_conf['subparsers'])
+            last = last + [False]
             nb_cmds = len(subparsers_conf) - 1
             for index, cmd in enumerate(subparsers_conf):
                 cmd_conf = subparsers_conf[cmd]
@@ -620,16 +620,16 @@ class CommandLine(object):
                 has_childs = 'subparsers' in cmd_conf
 
                 first_line = True
-                last_cmd = index == nb_cmds
+                last[-1] = index == nb_cmds
                 cur_line = ''
                 while desc:
                     cur_word = desc.pop(0)
                     if (len(cur_line) + 1 + len(cur_word)) > desc_len:
-                        print_line(cmd, cur_line, first_line, last_cmd, has_childs)
+                        print_line(cmd, cur_line, first_line, has_childs)
                         first_line=False
                         cur_line = ''
                     cur_line += ' ' + cur_word
-                print_line(cmd, cur_line, first_line, last_cmd, has_childs)
-                parse_conf(cmd_conf, level + 1, last_cmd)
-        parse_conf(self.config, 0, False)
+                print_line(cmd, cur_line, first_line, has_childs)
+                parse_conf(cmd_conf, last)
+        parse_conf(self.config, [])
         sys.exit(0)
