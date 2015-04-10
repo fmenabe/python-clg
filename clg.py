@@ -419,13 +419,16 @@ class CommandLine(object):
                                  path + ['subparsers'],
                                  parser_conf['subparsers'])
 
-        # Add options and arguments.
+        # Get all arguments and options of the parser for some later checks.
+        # If there is an error, the configuration is bad and an error will be
+        # raised later.
         if isinstance(parser, (NoAbbrevParser, argparse.ArgumentParser)):
             try:
                 self._parser_args = _get_args(parser_conf)
             except Exception:
-                # Ignore errors here as they will be raised later.
                 self._parser_args = {}
+
+        # Add options and arguments.
         for arg_type in ('options', 'args'):
             arg_type_path = path + [arg_type]
             arg_type_conf = parser_conf.get(arg_type, {})
