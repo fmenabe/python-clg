@@ -122,7 +122,7 @@ def _set_builtin(value):
         return TYPES[re.search('^__([A-Z]*)__$', value).group(1).lower()]
     except (AttributeError, TypeError):
         return (value.replace('__FILE__', sys.path[0])
-                if type(value) is str
+                if isinstance(value, str)
                 else value)
 
 
@@ -510,7 +510,7 @@ class CommandLine(object):
         if arg_type == 'options':
             if 'short' in arg_conf:
                 if len(arg_conf['short']) != 1:
-                    raise CLGError(arg_path + ['short'], SHORT_ERR)
+                    raise CLGError(path + ['short'], SHORT_ERR)
                 arg_args.append('-%s' % arg_conf['short'])
                 del arg_conf['short']
             arg_args.append('--%s' % _format_optname(arg))
@@ -583,10 +583,8 @@ class CommandLine(object):
     def print_help(self):
         """Print commands' tree with theirs descriptions."""
         # Get column at which we must start printing the description.
-        import math
         lengths = []
         for path in self._parsers:
-            length = 0
             cmds = list(filter(lambda e: e != 'subparsers', path.split('/')))
             lengths.append(3 * (len(cmds)) + len(cmds[-1]))
         start = max(lengths) + 4
