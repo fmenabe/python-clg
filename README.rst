@@ -18,7 +18,8 @@ Releases notes
     * Change behaviour of groups: groups now act like parsers rather than just
       referencing previously defined options. **It breaks files used by previous
       versions.**
-    * Update design of the 'help' command added by the 'add_help_cmd' keyword.
+    * Update design and correct bugs of the ``help`` command added by the
+      *add_help_cmd* keyword.
 
 1.1.1 (2015-02-24)
 ~~~~~~~~~~~~~~~~~~

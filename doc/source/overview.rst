@@ -2,54 +2,40 @@
 Overview
 ********
 
-This module is a wrapper to `argparse <http://docs.python.org/dev/library/argparse.html>`_
-module. Its goal is to generate a custom and advanced command-line from a
-formatted dictionary. As python dictionnaries are easily exportable to
-configuration files (like YAML or JSON), the idea is to outsource the
-command-line definition to a file instead of writing dozens or hundreds lines
+This module is a wrapper to the `argparse <http://docs.python.org/dev/library/argparse.html>`_
+module. It aims to generate a custom and advanced command-line by defining the
+configuration in a formatted dictionary. It is easy to export Python
+dictionnaries to files (like YAML or JSON) so the idea is to outsource the
+command-line definition to a file instead of writting dozens or hundreds lines
 of code.
 
-Almost everything available with ``argparse`` module is possible with this
-module. This include:
+Almost everything possible with ``argparse`` can be done with this module. This
+include:
 
-    * use of builtins,
-    * parsers with both options, arguments and subparsers,
+    * parsers with both `options <configuration.html#options>`_,
+      `arguments <configuration.html#args>`_ and
+      `subparsers <configuration.html#subparsers>`_,
     * no limit for the arborescence of subparsers,
-    * use of groups and exclusive groups,
+    * use of `groups <configuration.html#groups>`_ and `exclusive groups <configuration.html#exclusive-groups>`_,
+    * use of `builtins <configuration.html#options>`_,
+    * use of `custom types <configuration.html#type>`_,
     * ...
-For some complex behaviour, some additional checks have been implemented.
 
-It also may be nice to have the list of subparsers/options/arguments ordered
-when printing the help. The **OrderedDict** object from the ``collection``
-module allow this. JSON module has an option (``object_pairs_hook``) for using
-it. For YAML, you can use the module
-`yamlorderedictloader <https://pypi.python.org/pypi/yamlordereddictloader>`_.
+Some additionnal features have also been implemented.
+
+.. note:: When printing the help message, order of options/arguments/commands
+   may be important. ``json`` module has an option (``object_pairs_hook``) for
+   keeping the order of keys when loading a file. For YAML, it is possible to
+   use the module `yamlorderedictloader <https://pypi.python.org/pypi/yamlordereddictloader>`_
+   which provide a **Loader** allowing to keep order.
 
 Installation
 ============
-This module is compatible with python 2.7 and python 3+. It is on
+This module is compatible with python2.7 and python3+. It is on
 `PyPi <https://pypi.python.org/pypi/clg>`_ so you can use the ``pip``
 command for installing it. If you use YAML for your configuration file, you need
 to install the ``pyyaml`` module too (and ``yamlordereddictloader`` for ordered
 configuration). ``json`` module is a standard module since python2.7.
-
-For example, to use ``clg`` with YAML in a virtualenv:
-
-.. code:: bash
-
-   $ virtualenv env/ --prompt "(myprog)"
-   $ . ./env/bin/activate
-   (myprog) $ pip install pyyaml yamlordereddictloader clg
-
-
-.. note:: The version of python in the virtualenv depend of your system. Some
-   systems like archlinux have two commands (``virtualenv`` for python3 and
-   ``virtualenv2`` for python2), others only have one command. In all case using
-   the `-p` option for indicating the python executable must work (but,
-   evidently, the python version you want must be installed in the system):
-
-     ``virtualenv -p /usr/bin/python3.3 env/ --prompt "(myprog)"``
-
 
 Otherwise sources are on `github <https://github.com/fmenabe/python-clg>`_
 
@@ -57,14 +43,15 @@ Usage
 =====
 The main program is very simple. You need to import the necessaries modules
 (``clg`` and the modules for loading the configuration from a file). Then, you
-initialize the **CommandLine** with the dictionary containing the configuration.
-The last step is calling the *parse* method for parsing the arguments. This
-method returns in all case the arguments of the command-line but, if there is an
-`execute <configuration.html#execute>`_ section for the command, this will be
-executed first. The arguments are returned in a **Namespace** object inheriting
-from `argparse <http://docs.python.org/dev/library/argparse.html#argparse.Namespace>`_
-object but with additionals methods (*__getitem__*, *__setitem__* and *__iter__*)
-for making it iterable and access arguments both with attributes or list syntax.
+initialize the **CommandLine** object with the dictionary containing the
+configuration. Finally, like ``argparse`` module, you call the **parse** method for
+parsing the command-line. This method returns in all case the arguments of the
+command-line but, if there is an `execute <configuration.html#execute>`_ section
+for the command, this will be executed first. The arguments are returned in a
+**Namespace** object inheriting from ``argparse``
+`Namespace <http://docs.python.org/dev/library/argparse.html#argparse.Namespace>`_
+object but with additionals methods for making it iterable and allow to access
+arguments with both attributes and list syntax.
 
 
 With YAML
@@ -92,6 +79,8 @@ With YAML
     cmd_conf = yaml.load(open('cmd'), Loader=yamlordereddictloader.Loader)
     cmd = clg.CommandLine(cmd_conf)
     args = cmd.parse()
+
+    # From here, we treat the arguments.
     print("Namespace object: %s" % args)
     print("Namespace attributes: %s" % vars(args))
     print("Iter arguments:")
@@ -147,6 +136,8 @@ With JSON
     cmd_conf = json.load(open('cmd'), object_pairs_hook=OrderedDict)
     cmd = clg.CommandLine(cmd_conf)
     args = cmd.parse()
+
+    # From here, we treat the arguments.
     print("Namespace object: %s" % args)
     print("Namespace attributes: %s" % vars(args))
     print("Iter arguments:")

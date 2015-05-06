@@ -10,7 +10,7 @@ First argparse example
 ----------------------
 This is the first `argparse example
 <https://docs.python.org/dev/library/argparse.html#example>`_. This show a
-simple command with an option and an argument, and the use of builtins.
+simple command with an option, an argument and the use of builtins.
 
 *Python program*:
 
@@ -84,7 +84,7 @@ The python program initialize ``clg`` and print arguments:
 Without custom help
 ~~~~~~~~~~~~~~~~~~~
 We begin by a simple configuration without personalizing subparsers help.
-``subparsers`` section directly contain the configuration of commands.
+``subparsers`` section just contains the configuration of commands.
 
 *Configuration file*:
 
@@ -206,21 +206,17 @@ This is the same example that `argparse groups documentation
 
 .. code-block:: yaml
 
-    options:
-        foo:
-            help: foo help
-
-    args:
-        bar:
-            help: bar help
-            nargs: "?"
-
     groups:
         - title: group
           description: group description
           options:
-              - foo
-              - bar
+            foo:
+                help: foo help
+          args:
+            bar:
+                help: bar help
+                nargs: "?"
+
 
 *Execution*:
 
@@ -249,17 +245,12 @@ This is the same example that `argparse exclusives groups documentation
 
     prog: PROG
 
-    options:
-        foo:
-            action: store_true
-
-        bar:
-            action: store_false
-
     exclusive_groups:
         - options:
-            - foo
-            - bar
+            foo:
+                action: store_true
+            bar:
+                action: store_false
 
 *Executions*:
 
