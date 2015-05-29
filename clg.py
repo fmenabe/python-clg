@@ -7,6 +7,7 @@ import os
 import re
 import sys
 import imp
+import copy
 import argparse
 from six import iteritems
 from collections import OrderedDict
@@ -493,6 +494,13 @@ class CommandLine(object):
 
     def _add_arg(self, parser, path, arg, arg_type, arg_conf):
         """Add an option/argument to **parser**."""
+        # When using YAML anchors, parts of configurations are just references
+        # to an other part. CLG parameters (like 'short') of an option are
+        # deleted from the current configuration, so theses informations are
+        # lost in parts of configuration using anchors... So we work on a copy
+        # of the current configuration.
+        arg_conf = copy.deepcopy(arg_conf)
+
         # Check configuration.
         _check_section(path, arg_conf, arg_type)
         for keyword in ('need', 'conflict'):
