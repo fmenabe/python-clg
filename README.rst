@@ -23,6 +23,8 @@ Releases notes
     * Improve control of abbrevations behaviour. When ``allow_abbrev`` parameter
       was activate, it was not possible to concatenate single options or split
       with an '=' long options. This is now the case.
+    * Correct a bug with YAML anchors which causes loss of informations (like
+      the short option).
 
 1.1.1 (2015-02-24)
 ~~~~~~~~~~~~~~~~~~

@@ -371,19 +371,33 @@ class Namespace(argparse.Namespace):
         return ((key, value) for key, value in iteritems(self.__dict__))
 
 
+def _deepcopy(config):
+    """When using YAML anchors, parts of configurations are just references to
+    an other part. CLG parameters (like the 'short' parameter of an option or
+    the title of a group) are deleted from the current configuration, so theses
+    informations are lost in parts of configuration using anchors... This
+    function replace references by a copy of the datas.
+    """
+    new_config = copy.deepcopy(config)
+    for key, value in new_config.items():
+        if isinstance(value, dict):
+            new_config[key] = _deepcopy(value)
+    return new_config
+
+
 class CommandLine(object):
     """CommandLine object that parse a preformatted dictionnary and generate
     ``argparse`` parser."""
-    def __init__(self, config, keyword='command'):
+    def __init__(self, config, keyword='command', deepcopy=True):
         """Initialize the command from **config** which is a dictionnary
         (preferably an OrderedDict). **keyword** is the name use for knowing the
         path of subcommands (ie: 'command0', 'command1', ... in the namespace of
         arguments)."""
-        self.config = config
+        self.config = _deepcopy(config) if deepcopy else config
 
         # Manage the case when we want a help command that prints a description
         # of all commands.
-        self.help_cmd = config.pop('add_help_cmd', False)
+        self.help_cmd = self.config.pop('add_help_cmd', False)
         if self.help_cmd:
             try:
                 subparsers_conf = self.config['subparsers']
@@ -522,6 +536,7 @@ class CommandLine(object):
 
 
     def _add_group(self, parser, path, conf, grp_type):
+        """Add a group (normal or exclusive) to **parser**"""
         _check_section(path, conf, grp_type)
         params = {keyword: conf.pop(keyword)
                   for keyword in KEYWORDS[grp_type]['argparse']
@@ -535,13 +550,6 @@ class CommandLine(object):
 
     def _add_arg(self, parser, path, arg, arg_type, arg_conf):
         """Add an option/argument to **parser**."""
-        # When using YAML anchors, parts of configurations are just references
-        # to an other part. CLG parameters (like 'short') of an option are
-        # deleted from the current configuration, so theses informations are
-        # lost in parts of configuration using anchors... So we work on a copy
-        # of the current configuration.
-        arg_conf = copy.deepcopy(arg_conf)
-
         # Check configuration.
         _check_section(path, arg_conf, arg_type)
         for keyword in ('need', 'conflict'):
