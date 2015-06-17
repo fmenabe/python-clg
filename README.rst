@@ -20,6 +20,9 @@ Releases notes
       versions.**
     * Update design and correct bugs of the ``help`` command added by the
       *add_help_cmd* keyword.
+    * Improve control of abbrevations behaviour. When ``allow_abbrev`` parameter
+      was activate, it was not possible to concatenate single options or split
+      with an '=' long options. This is now the case.
 
 1.1.1 (2015-02-24)
 ~~~~~~~~~~~~~~~~~~
