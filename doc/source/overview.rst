@@ -50,8 +50,8 @@ command-line but, if there is an `execute <configuration.html#execute>`_ section
 for the command, this will be executed first. The arguments are returned in a
 **Namespace** object inheriting from ``argparse``
 `Namespace <http://docs.python.org/dev/library/argparse.html#argparse.Namespace>`_
-object but with additionals methods for making it iterable and allow to access
-arguments with both attributes and list syntax.
+object but with additionals methods for making it iterable and allowing to
+access arguments with both attributes and list syntax.
 
 
 With YAML

@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import sys
+sys.path.append('../..')
 import clg
 import yaml
 import yamlordereddictloader
@@ -8,12 +10,8 @@ from os import path
 CMD_FILE = path.abspath(path.join(path.dirname(__file__), 'kvm.yml'))
 
 # Add custom command-line types.
-from commands.guests.deploy import InterfaceType, DiskType, FormatType
-from commands.guests.clone import URIType
-clg.TYPES.update({'Interface': InterfaceType,
-                  'Disk': DiskType,
-                  'Format': FormatType,
-                  'URI': URIType})
+from commands.deploy import InterfaceType, DiskType, FormatType
+clg.TYPES.update({'Interface': InterfaceType, 'Disk': DiskType, 'Format': FormatType})
 
 def main():
     cmd = clg.CommandLine(yaml.load(open('kvm.yml'),

@@ -28,7 +28,7 @@ module. Keywords for a command are:
 
 prog
 ----
-**argparse link**: `<http://docs.python.org/dev/library/argparse.html#prog>`_
+**argparse link**: `<https://docs.python.org/dev/library/argparse.html#prog>`_
 
 Set the name of the program (default: ``sys.argv[0]``).
 
@@ -36,7 +36,7 @@ Set the name of the program (default: ``sys.argv[0]``).
 
 usage
 -----
-**argparse link**: `<http://docs.python.org/dev/library/argparse.html#usage>`_
+**argparse link**: `<https://docs.python.org/dev/library/argparse.html#usage>`_
 
 The string describing the program usage (default: generated from arguments added
 to parser).
@@ -45,7 +45,7 @@ to parser).
 
 description
 -----------
-**argparse link**: `<http://docs.python.org/dev/library/argparse.html#description>`_
+**argparse link**: `<https://docs.python.org/dev/library/argparse.html#description>`_
 
 Text to display before the argument help (default: none).
 
@@ -53,7 +53,7 @@ Text to display before the argument help (default: none).
 
 epilog
 ------
-**argparse link**: `<http://docs.python.org/dev/library/argparse.html#epilog>`_
+**argparse link**: `<https://docs.python.org/dev/library/argparse.html#epilog>`_
 
 Text to display after the argument help (default: none).
 
@@ -61,7 +61,7 @@ Text to display after the argument help (default: none).
 
 formatter_class
 ---------------
-**argparse link**: `<http://docs.python.org/dev/library/argparse.html#formatter-class>`_
+**argparse link**: `<https://docs.python.org/dev/library/argparse.html#formatter-class>`_
 
 A class for customizing the help output. It takes the name of one of the class
 defining in ``argparse``:
@@ -74,15 +74,15 @@ defining in ``argparse``:
 
 argument_default
 ----------------
-**argparse link**: `<http://docs.python.org/dev/library/argparse.html#argument-default>`_
+**argparse link**: `<https://docs.python.org/dev/library/argparse.html#argument-default>`_
 
-The global default value for arguments (default: None).
+The global default value for arguments (default: *None*).
 
 
 
 conflict_handler
 ----------------
-**argparse link**: `<http://docs.python.org/dev/library/argparse.html#conflict-handler>`_
+**argparse link**: `<https://docs.python.org/dev/library/argparse.html#conflict-handler>`_
 
 The strategy for resolving conflicting optionals (usually unnecessary).
 
@@ -90,9 +90,9 @@ The strategy for resolving conflicting optionals (usually unnecessary).
 
 add_help
 --------
-**argparse link**: `<http://docs.python.org/dev/library/argparse.html#add-help>`_
+**argparse link**: `<https://docs.python.org/dev/library/argparse.html#add-help>`_
 
-Add a ``-h``/``–help`` option to the parser (default: True) that allow to print
+Add a ``-h``/``–help`` option to the parser (default: *True*) that allow to print
 the help. You may need to have a better control on this option
 (for putting the option in a group, customizing the help message, removing the
 short option, ...). You can manually set this option by using theses values:
@@ -202,21 +202,21 @@ with a single dash) of the current option.
 
 help
 ~~~~
-**argparse link**: `<http://docs.python.org/dev/library/argparse.html#help>`_
+**argparse link**: `<https://docs.python.org/dev/library/argparse.html#help>`_
 
 A brief description of what the argument does.
 
 
 required
 ~~~~~~~~
-**argparse link**: `<http://docs.python.org/dev/library/argparse.html#required>`_
+**argparse link**: `<https://docs.python.org/dev/library/argparse.html#required>`_
 
 Whether or not the command-line option may be omitted.
 
 
 type
 ~~~~
-**argparse link**: `<http://docs.python.org/dev/library/argparse.html#type>`_
+**argparse link**: `<https://docs.python.org/dev/library/argparse.html#type>`_
 
 The type to which the command-line argument should be converted. As this is
 necessarily a builtin, this is not necessary to use the ``__BULTIN__`` syntax.
@@ -260,21 +260,21 @@ returning a ``datetime`` object:
 
 default
 ~~~~~~~
-**argparse link**: `<http://docs.python.org/dev/library/argparse.html#default>`_
+**argparse link**: `<https://docs.python.org/dev/library/argparse.html#default>`_
 
 The value produced if the argument is absent from the command line.
 
 
 choices
 ~~~~~~~
-**argparse link**: `<http://docs.python.org/dev/library/argparse.html#choices>`_
+**argparse link**: `<https://docs.python.org/dev/library/argparse.html#choices>`_
 
 A container of the allowable values for the argument.
 
 
 action
 ~~~~~~
-**argparse link**: `<http://docs.python.org/dev/library/argparse.html#action>`_
+**argparse link**: `<https://docs.python.org/dev/library/argparse.html#action>`_
 
 The basic type of action to be taken when this argument is encountered at the
 command line.
@@ -310,14 +310,14 @@ And the ``clg`` equivalent (in YAML) is this:
 
 nargs
 ~~~~~
-**argparse link**: `<http://docs.python.org/dev/library/argparse.html#nargs>`_
+**argparse link**: `<https://docs.python.org/dev/library/argparse.html#nargs>`_
 
 The number of command-line arguments that should be consumed.
 
 
 const
 ~~~~~
-**argparse link**: `<http://docs.python.org/dev/library/argparse.html#const>`_
+**argparse link**: `<https://docs.python.org/dev/library/argparse.html#const>`_
 
 Value in the resulted **Namespace** if the option is not set in the command-line
 (*None* by default).
@@ -328,7 +328,7 @@ Value in the resulted **Namespace** if the option is not set in the command-line
 
 metavar
 ~~~~~~~
-**argparse link**: `<http://docs.python.org/dev/library/argparse.html#metavar>`_
+**argparse link**: `<https://docs.python.org/dev/library/argparse.html#metavar>`_
 
 A name for the argument in usage messages.
 
@@ -373,10 +373,12 @@ can have theses keywords:
 .. note:: All ``argparse`` examples set ``add_help`` to *False*. If this is set,
    ``help`` option is put in *optional arguments*. If you want to put the
    ``help`` option in a group, you need to set the help option
-   `manually <configuration.html#add_help>`_.
+   `manually <configuration.html#add-help>`_.
 
-.. note:: Behaviour of groups have changed since the version 1.2.0. Previous
-   version just reference previously defined options.
+.. note:: Behaviour of groups have changed. The previous versions (1.*) just
+   references previously defined options. Now, this section act like a parser,
+   and *options* and *arguments* sections defines options and arguments of the
+   group. **This break compatibility with previous versions.**
 
 title
 ~~~~~
@@ -471,7 +473,7 @@ Customize the help with a title.
 
 description
 ~~~~~~~~~~~
-Customize the help with a description
+Customize the help with a description.
 
 
 help
@@ -502,7 +504,7 @@ configuration of the command.
 
 required
 ~~~~~~~~
-Indicate whether a subcommand is required.
+Indicate whether a subcommand is required (default: *True*).
 
 
 

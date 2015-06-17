@@ -270,27 +270,19 @@ This is the same example that `argparse exclusives groups documentation
 Utility for managing KVM virtuals machines
 ------------------------------------------
 This example is a program I made for managing KVM guests. Actually, there is
-only two commands for deploying or migrating guests. For each of theses
-commands, it is possible to deploy/migrate one guest or to use a YAML file which
-allow to deploy/migrate multiple guests successively. For example, for deploying
-a new guest, we need the name of the guest (``--name``), the hypervisor on
-which it will be deploy (``--dst-host``), the model on which it is based
-(``--model``) and the network configuration (``--interfaces``). In per guest
-deployment, all theses parameters must be in the command-line. When using a YAML
-file (``--file``), the name and the network configuration must absolutely be
-defined in the deployment file. Others parameters will be retrieved from the
-command-line if they are not defined in the file.
+only two commands for deploying or migrating guests. Each command use an
+external module for implemented the logic. A *main* function, taking the
+command-line Namespace as argument, has been implemented. For the example,
+theses functions will only pprint the command-line arguments.
 
-To summarize, ``--name`` and ``--file`` options can't be used at the same time.
-If ``--name`` is used, ``--dst-host``, ``--model``, ``--interfaces`` options
-must be in the command-line. If ``--file`` is used, ``--interfaces`` option must
-no be in the command-line but ``--dst-host`` and ``--model`` options may be in
-the command. There also are many options which are rarely used because they are
-optionals or have default values.
-
-Each command use an external module for implemented the logic. A *main*
-function, taking the command-line Namespace as argument, has been implemented.
-For the example, theses functions will only pprint the command-line arguments.
+This example use:
+    * YAML anchors
+    * subparsers, options, arguments, groups and exclusives groups
+    * custom types
+    * special "builtins",
+    * the root 'help' command
+    * specific formatter class
+    * ...
 
 *Directory structure*:
 
@@ -304,11 +296,74 @@ For the example, theses functions will only pprint the command-line arguments.
     ├── kvm.py
     └── kvm.yml
 
+*kvm.py*:
+
+.. code-block:: python
+
+    import clg
+    import yaml
+    import yamlordereddictloader
+    from os import path
+
+    CMD_FILE = path.abspath(path.join(path.dirname(__file__), 'kvm.yml'))
+
+    # Add custom command-line types.
+    from commands.deploy import InterfaceType, DiskType, FormatType
+    clg.TYPES.update({'Interface': InterfaceType, 'Disk': DiskType, 'Format': FormatType})
+
+    def main():
+        cmd = clg.CommandLine(yaml.load(open('kvm.yml'),
+                                        Loader=yamlordereddictloader.Loader))
+        cmd.parse()
+
+    if __name__ == '__main__':
+        main()
+
 *commands/deploy.py*
 
 .. code-block:: python
 
     from pprint import pprint
+
+    SELF = sys.modules[__name__]
+    first_interface = True
+    def InterfaceType(value):
+        """Custom type for '--interfaces' option with a ugly hack for knowing
+        whether this is the first interface."""
+        int_conf = dict(inet='static')
+        if SELF.first_interface:
+            nettype, source, address, netmask, gateway = value.split(',')
+            SELF.first_interface = False
+            int_conf.update(address=address, netmask=netmask, gateway=gateway)
+        else:
+            nettype, source, address, netmask = value.split(',')
+            int_conf.update(address=address, netmask=netmask)
+        return dict(kvm=dict(type=nettype, source=source), conf=int_conf)
+
+    def DiskType(value):
+        """Custom type for '--disks' option."""
+        value = value.split(',')
+        suffix, size = value[:2]
+        try:
+            fmt = value[2]
+            options = {opt: value
+                       for elt in value[3:]
+                       for opt, value in [elt.split('=')]}
+        except IndexError:
+            fmt, options = locals().get('fmt', 'qcow2'), {}
+
+        return dict(suffix=suffix, size=size, format=fmt, options=options)
+
+    def FormatType(value):
+        """Custom type for '--format' option."""
+        value = value.split(',')
+        fmt = value.pop(0)
+        if fmt not in ('qcow2', 'raw'):
+            import argparse
+            raise argparse.ArgumentTypeError("format must either 'qcow2' or 'raw'")
+        options = {opt: opt_val for elt in value for opt, opt_val in [elt.split('=')]}
+        return dict(type=fmt, options=options)
+
 
     def main(args):
         pprint(vars(args))
@@ -317,301 +372,375 @@ For the example, theses functions will only pprint the command-line arguments.
 
 .. code-block:: yaml
 
+    add_help_cmd: True
+    allow_abbrev: False
+    description: Utility for managing KVM hosts.
+
+    anchors:
+        main: &MAIN
+            help:
+                short: h
+                action: help
+                default: __SUPPRESS__
+                help: Show this help message and exit.
+            conf_file:
+                help: 'Configuration file (default: __DEFAULT__).'
+                default: __FILE__/conf/conf.yml
+            logdir:
+                help: 'Log directory (default: __DEFAULT__).'
+                default: __FILE__/logs
+            loglevel:
+                choices: [verbose, debug, info, warn, error, none]
+                default: info
+                help: 'Log level on console (default: __DEFAULT__).'
+
     subparsers:
         deploy:
-            description: Deploy new KVM guests from a model.
-
-            usage: |
-                {
-                    -n NAME -d DEST -t MODEL
-                    -i IP,NETMASK,GATEWAY,VLAN [IP2,NETMASK2,VLAN2 ...]
-                } | { -f YAML_FILE [-d DEST] [-t model] }
-                [-c CORES] [-m MEMORY] [--resize SIZE] [--format FORMAT]
-                [--disks SUFFIX1,SIZE1 [SUFFIX2,SIZE2 ...]]
-                [--force] [--no_check] [--nbd DEV] [--no-autostart]
-                [--vgroot VGROOT] [--lvroot LVROOT]
-                [--src-host HOST] [--src-conf PATH] [--src-disks PATH]
-                [--dst-conf PATH] [--dst-disks PATH]
-
+            help: Deploy a new guest on an hyperviror based on a model.
+            description: Deploy a new guest on an hypervisor based on a model.
+            add_help: False
+            formatter_class: RawTextHelpFormatter
             execute:
                 module: commands.deploy
 
-            exclusive_groups:
-                -
-                    required: True
-                    options:
-                        - name
-                        - file
-
-            options:
-                name:
-                    short: n
-                    help: "Name of the VM to deploy (default: __DEFAULT__)."
-                    need:
-                        - dst_host
-                        - interfaces
-                        - model
-                dst_host:
-                    short: d
-                    help: "Host on which deploy the new VM."
-                interfaces:
-                    short: i
-                    nargs: "*"
-                    help: >
-                        Network interfaces separated by spaces. Parameters of
-                        each interfaces are separated by commas. The first interface
-                        has four parameters: IP address, netmask, gateway and VLAN.
-                        The others interfaces have the same parameters except the
-                        gateway.
-                model:
-                    short: t
-                    help: "Model on which the new VM is based."
-                    choices:
-                        - redhat5.8
-                        - redhat6.3
-                        - centos5
-                        - ubuntu-lucid
-                        - ubuntu-natty
-                        - ubuntu-oneiric
-                        - ubuntu-precise
-                        - w2003
-                        - w2008-r2
-                file:
-                    short: f
-                    help: >
-                        YAML File for deploying many hosts. Required parameters
-                        on the file are the name and the network configuration.
-                        The others parameters are retrieving from the command line (or
-                        default values). However, destination and model have
-                        no defaults values and must be defined somewhere!
-                    conflict:
-                        - interfaces
-                ...
+            groups:
+                - title: Common options
+                  options: *MAIN
+                - title: Optional options
+                  options:
+                    cores:
+                        short: c
+                        type: int
+                        default: 2
+                        help: |
+                            Number of cores assigned to the guest (default:
+                            __DEFAULT__).
+                    memory:
+                        short: m
+                        type: float
+                        default: 2
+                        help: |
+                            Memory in Gb assigned to the guest (default: __DEFAULT__).
+                    format:
+                        type: Format
+                        metavar: FORMAT,OPT1=VALUE,OPT2=VALUE,...
+                        help: |
+                            Format of the main image. Each format has options
+                            that can be specified, separated by commas. By default
+                            models use qcow2 images without options.
+                    resize:
+                        type: int
+                        help: |
+                            Resize (in fact, only increase) the main disk image.
+                            For linux system, it will allocate the new size on the
+                            root LVM Volume Group. This option only work on KVM
+                            hypervisors which have a version of qemu >= 0.15.0.
+                    disks:
+                        nargs: '+'
+                        type: Disk
+                        metavar: DISK
+                        help: |
+                            Add new disk(s). Format of DISK is:
+                              SUFFIX,SIZE[,FORMAT,OTP1=VAL, OPT2=VAL,...]
+                            Where:
+                                * SUFFIX is used for generating the filename of
+                                  the image. The filename is: NAME-SUFFIX.FORMAT
+                                * SIZE is the size in Gb
+                                * FORMAT is the format of the image (default is
+                                  'qcow2')
+                                * OPT=VAL are the options of the format
+                    force:
+                        action: store_true
+                        help: |
+                            If a guest or some images already exists on the
+                            destination, configuration and disk images are
+                            automaticaly backuped, then overwrited, without
+                            confirmation.
+                    no_check:
+                        action: store_true
+                        help: |
+                            Ignore checking of resources (use with cautions as
+                            overloading an hypervisor could lead to bad
+                            performance!).
+                    no_autostart:
+                        action: store_true
+                        help: Don't set autostart for the new guest.
+                    ...
+                - title: Arguments
+                  args:
+                    name:
+                        help: Name of the new guest.
+                    dst_host:
+                        help: Hypervisor on which deploy the new guest.
+                    model:
+                        metavar: MODEL
+                        choices:
+                            - ubuntu-lucid
+                            - ubuntu-precise
+                            - ubuntu-trusty
+                            - redhat-5.8
+                            - redhat-6.3
+                            - centos-5
+                            - w2003
+                            - w2008r2
+                        help: |
+                            Model on which the new guest is based. Choices are:
+                                * ubuntu-precise
+                                * ubuntu-trusty
+                                * redhat-5.8
+                                * redhat-6.3
+                                * centos-5
+                                * w2003
+                                * w2008-r2
+                    interfaces:
+                        nargs: '+'
+                        type: Interface
+                        metavar: INTERFACE
+                        help: |
+                            Network configuration. This is a list of network
+                            interfaces configurations. Each interface
+                            configuration is a list of parameters separated by
+                            commas. Parameters are:
+                                * the network type ('network' (NAT) or 'bridge'),
+                                * the source (network name for 'network' type
+                                  or vlan number for 'bridge' type),
+                                * the IP address,
+                                * the netmask,
+                                * the gateway (only for the first interface)
+                            For example, for deploying a guest with an inteface
+                            in the public network and an interface in the storage
+                            network:
+                                * bridge,br903,130.79.200.1,255.255.254.0,130.79.201.254,801
+                                * bridge,br896,172.30.0.1,255.255.254.0,896
+                                * network,default,192.168.122.2,255.255.255.0,192.168.122.1
 
         migrate:
-            description: Hot migrate a KVM guests from an hypervisor to another.
-            usage: |
-                { -n NAME -s SRC_HOST -d DST_HOST }
-                | { -f YAML_FILE [-s SRC_HOST] [-d DST_HOST] }
-                [--no-check] [--no-pc-check] [--remove] [--force]
-
+            description: >
+                Move a guest to an other hypervisor. This command manage
+                both cold and live migration.
+            help: Move a guest to an other hypervisor.
+            add_help: False
             execute:
                 module: commands.migrate
+            groups:
+                - title: Common options
+                  options: *MAIN
+                - title: Optional options
+                  options:
+                    no_check:
+                        action: store_true
+                        help: >
+                            Don't check for valid resources in the destination
+                            hypervisor.
+                    force:
+                        action: store_true
+                        help:
+                            If a guest or some images already exists on the
+                            destination, configuration and disk images are
+                            automaticaly backuped, then overwrited, without
+                            confirmation.
+                    remove:
+                        short: r
+                        action: store_true
+                        help: Remove guest on source hypervisor after migration.
+                - title: Migration type (exclusive and required)
+                  exclusive_groups:
+                      - required: True
+                        options:
+                            cold:
+                                short: c
+                                action: store_true
+                                help: Cold migration.
+                            live:
+                                short: l
+                                action: store_true
+                                help: Live migration.
+                - title: Arguments
+                  args:
+                    src_host:
+                        help: Hypervisor source.
+                    name:
+                        help: Name of the guest.
+                    dst_host:
+                        help: Hypervisor destination.
 
-            options:
-                name:
-                    short: n
-                    help: Name of the VM to migrate.
-                    need:
-                        - src_host
-                        - dst_host
-                    conflict:
-                        - file
-                src_host:
-                    short: s
-                    help: Host on which the VM is actually running.
-                dst_host:
-                    short: d
-                    help: "Host on which migrating the VM."
-                file:
-                    short: f
-                    help: >
-                        YAML File for migrating many hosts. Only the name is require in the
-                        file and the other parameters are retrieving from the command line.
-                        However, in all case, source and destination hosts must be defined!
-                ...
 
 *Executions*:
-    .. code-block:: bash
 
-        # python prog.py
-        usage: prog.py [-h] {deploy,migrate} ...
-        prog.py: error: too few arguments
+.. code-block:: bash
 
-        # python vm.py deploy --help
-        usage: vm.py deploy
-                 {
-                     -n NAME -d DEST -t MODEL
-                     -i IP,NETMASK,GATEWAY,VLAN [IP2,NETMASK2,VLAN2 ...]
-                 } | { -f YAML_FILE [-d DEST] [-t model] }
-                 [-c CORES] [-m MEMORY] [--resize SIZE] [--format FORMAT]
-                 [--disks SUFFIX1,SIZE1 [SUFFIX2,SIZE2 ...]]
-                 [--force] [--no_check] [--nbd DEV] [--no-autostart]
-                 [--vgroot VGROOT] [--lvroot LVROOT]
-                 [--src-host HOST] [--src-conf PATH] [--src-disks PATH]
-                 [--dst-conf PATH] [--dst-disks PATH]
+    # python kvm.py
+    usage: kvm.py [-h] {help,deploy,migrate} ...
+    kvm.py: error: too few arguments
 
-        optional arguments:
-          -h, --help            show this help message and exit
-          -n NAME, --name NAME  Name of the VM to deploy.
-          -f FILE, --file FILE  YAML File for deploying many hosts. Required
-                                parameters on the file are the name and the network
-                                configuration. The others parameters are retrieving
-                                from the command line (or default values). However,
-                                destination and model have no defaults values and must
-                                be defined somewhere!
-          -d DST_HOST, --dst-host DST_HOST
-                                Host on which deploy the new VM.
-          -i [INTERFACES [INTERFACES ...]], --interfaces [INTERFACES [INTERFACES ...]]
-                                Network interfaces separated by spaces. Parameters of
-                                each interfaces are separated by commas. The first
-                                interface has four parameters: IP address, netmask,
-                                gateway and VLAN. The others interfaces have the same
-                                parameters except the gateway.
-          -t {redhat5.8,redhat6.3,centos5,ubuntu-lucid,ubuntu-natty,ubuntu-oneiric,ubuntu-precise,w2003,w2008-r2}, --model {redhat5.8,redhat6.3,centos5,ubuntu-lucid,ubuntu-natty,ubuntu-oneiric,ubuntu-precise,w2003,w2008-r2}
-                                Model on which the new VM is based.
-          -c CORES, --cores CORES
-                                Number of cores assigned to the VM (default: 2).
-          -m MEMORY, --memory MEMORY
-                                Memory (in Gb) assigned to the VM (default: 1).
-          --format {raw,qcow2}  Format of the image(s). If format is different from
-                                'qcow2', the image is converting to the specified
-                                format (this could be a little long!).
-          --resize RESIZE       Resize (in fact, only increase) the main disk image
-                                and, for linux system, allocate the new size on the
-                                root LVM Volume Group. This option only work on KVM
-                                host which have a version of qemu superior to 0.??!
-          --disks [DISKS [DISKS ...]]
-                                Add new disk(s). Parameters are a suffix and the size.
-                                Filename of the created image is NAME-SUFFIX.FORMAT
-                                (ex: mavm-datas.qcow2).
-          --force               If a virtual machine already exists on destination
-                                host, configuration and disk images are automaticaly
-                                backuped then overwrited!
-          --no-check            Ignore checking of resources (Use with cautions!).
-          --no-autostart        Don't set autostart of the VM.
-          --nbd NBD             NBD device to use (default: '/dev/nbd0').
-          --vgroot VGROOT       Name of the LVM root Volume Group (default: 'sys').
-          --lvroot LVROOT       Name of the LVM root Logical Volume (default: 'root')
-          --src-host SRC_HOST   Host on which models are stored (default: 'bes1')
-          --src-conf SRC_CONF   Path of configurations files on the source host
-                                (default: '/vm/conf').
-          --src-disks SRC_DISKS
-                                Path of images files on the source host (default:
-                                '/vm/disk').
-          --dst-conf DST_CONF   Path of configurations files on the destination host
-                                (default: '/vm/conf').
-          --dst-disks DST_DISKS
-                                Path of disks files on the destination host (default:
-                                '/vm/disk')
+    # python kvm.py help
+    ├─help               Print commands' tree with theirs descriptions.
+    ├─deploy             Deploy a new guest on an hyperviror based on a model.
+    └─migrate            Move a guest to an other hypervisor.
 
-        # python vm.py deploy
-        usage: vm.py deploy
-                 {
-                     -n NAME -d DEST -t MODEL
-                     -i IP,NETMASK,GATEWAY,VLAN [IP2,NETMASK2,VLAN2 ...]
-                 } | { -f YAML_FILE [-d DEST] [-t model] }
-                 [-c CORES] [-m MEMORY] [--resize SIZE] [--format FORMAT]
-                 [--disks SUFFIX1,SIZE1 [SUFFIX2,SIZE2 ...]]
-                 [--force] [--no_check] [--nbd DEV] [--no-autostart]
-                 [--vgroot VGROOT] [--lvroot LVROOT]
-                 [--src-host HOST] [--src-conf PATH] [--src-disks PATH]
-                 [--dst-conf PATH] [--dst-disks PATH]
-        vm.py deploy: error: one of the arguments -n/--name -f/--file is required
+    # python kvm.py deploy --help
+    usage: kvm.py deploy [-h] [--conf-file CONF_FILE] [--logdir LOGDIR]
+                         [--loglevel {verbose,debug,info,warn,error,none}]
+                         [-c CORES] [-m MEMORY]
+                         [--format FORMAT,OPT1=VALUE,OPT2=VALUE,...]
+                         [--resize RESIZE] [--disks DISK [DISK ...]] [--force]
+                         [--no-check] [--no-autostart] [--no-chef] [--nbd NBD]
+                         [--vgroot VGROOT] [--lvroot LVROOT] [-s SRC_HOST]
+                         [--src-disks SRC_DISKS] [--dst-conf DST_CONF]
+                         [--dst-disks DST_DISKS]
+                         name dst_host MODEL INTERFACE [INTERFACE ...]
 
-        # python vm.py deploy -n guest1
-        usage: vm.py deploy
-                 {
-                     -n NAME -d DEST -t MODEL
-                     -i IP,NETMASK,GATEWAY,VLAN [IP2,NETMASK2,VLAN2 ...]
-                 } | { -f YAML_FILE [-d DEST] [-t model] }
-                 [-c CORES] [-m MEMORY] [--resize SIZE] [--format FORMAT]
-                 [--disks SUFFIX1,SIZE1 [SUFFIX2,SIZE2 ...]]
-                 [--force] [--no_check] [--nbd DEV] [--no-autostart]
-                 [--vgroot VGROOT] [--lvroot LVROOT]
-                 [--src-host HOST] [--src-conf PATH] [--src-disks PATH]
-                 [--dst-conf PATH] [--dst-disks PATH]
-        vm.py deploy: error: argument --n/--name: need --d/--dst-host argument
+    Deploy a new guest on an hypervisor based on a model.
 
-        # python vm.py deploy -n guest1 -d hypervisor1 -i 192.168.122.1,255.255.255.0,192.168.122.1,500 -t test
-        usage: vm.py deploy
-                 {
-                     -n NAME -d DEST -t MODEL
-                     -i IP,NETMASK,GATEWAY,VLAN [IP2,NETMASK2,VLAN2 ...]
-                 } | { -f YAML_FILE [-d DEST] [-t model] }
-                 [-c CORES] [-m MEMORY] [--resize SIZE] [--format FORMAT]
-                 [--disks SUFFIX1,SIZE1 [SUFFIX2,SIZE2 ...]]
-                 [--force] [--no_check] [--nbd DEV] [--no-autostart]
-                 [--vgroot VGROOT] [--lvroot LVROOT]
-                 [--src-host HOST] [--src-conf PATH] [--src-disks PATH]
-                 [--dst-conf PATH] [--dst-disks PATH]
-        vm.py deploy: error: argument -t/--model: invalid choice: 'test' (choose from 'redhat5.8', 'redhat6.3', 'centos5', 'ubuntu-lucid', 'ubuntu-natty', 'ubuntu-oneiric', 'ubuntu-precise', 'w2003', 'w2008-r2')
+    Common options:
+      -h, --help            Show this help message and exit.
+      --conf-file CONF_FILE
+                            Configuration file (default: /home/francois/dev/python-clg/examples/kvm/conf/conf.yml).
+      --logdir LOGDIR       Log directory (default: /home/francois/dev/python-clg/examples/kvm/logs).
+      --loglevel {verbose,debug,info,warn,error,none}
+                            Log level on console (default: info).
 
-        # python vm.py deploy -n guest1 -d hypervisor1 -i 192.168.122.2,255.255.255.0,192.168.122.1,500 -t ubuntu-precise -c 4 -m 4
-        'main' function on 'deploy' module
-        {'command0': 'deploy',
-         'cores': 4,
-         'disks': [],
-         'dst_conf': '/vm/conf',
-         'dst_disks': '/vm/disk',
-         'dst_host': 'hypervisor1',
-         'force': False,
-         'format': 'qcow2',
-         'interfaces': ['192.168.122.1,255.255.255.0,192.168.122.1,500'],
-         'lvroot': 'root',
-         'memory': 4,
-         'model': 'ubuntu-precise',
-         'name': 'guest1',
-         'nbd': '/dev/nbd0',
-         'no_autostart': True,
-         'no_check': False,
-         'resize': None,
-         'src_conf': '/vm/conf',
-         'src_disks': '/vm/disk',
-         'src_host': 'bes1',
-         'vgroot': 'sys'}
+    Optional options:
+      -c CORES, --cores CORES
+                            Number of cores assigned to the guest (default:
+                            2).
+      -m MEMORY, --memory MEMORY
+                            Memory in Gb assigned to the guest (default: 2).
+      --format FORMAT,OPT1=VALUE,OPT2=VALUE,...
+                            Format of the main image. Each format has options
+                            that can be specified, separated by commas. By default
+                            models use qcow2 images without options.
+      --resize RESIZE       Resize (in fact, only increase) the main disk image.
+                            For linux system, it will allocate the new size on the
+                            root LVM Volume Group. This option only work on KVM
+                            hypervisors which have a version of qemu >= 0.15.0.
+      --disks DISK [DISK ...]
+                            Add new disk(s). Format of DISK is:
+                              SUFFIX,SIZE[,FORMAT,OTP1=VAL, OPT2=VAL,...]
+                            Where:
+                                * SUFFIX is used for generating the filename of
+                                  the image. The filename is: NAME-SUFFIX.FORMAT
+                                * SIZE is the size in Gb
+                                * FORMAT is the format of the image (default is
+                                  'qcow2')
+                                * OPT=VAL are the options of the format
+      --force               If a guest or some images already exists on the
+                            destination, configuration and disk images are
+                            automaticaly backuped, then overwrited, without
+                            confirmation.
+      --no-check            Ignore checking of resources (use with cautions as
+                            overloading an hypervisor could lead to bad
+                            performance!).
+      --no-autostart        Don't set autostart for the new guest.
+      --no-chef             Don't update chef configuration.
+      --nbd NBD             NBD device (in /dev) to use (default: 'nbd0').
+      --vgroot VGROOT       Name of the LVM root Volume Group (default: 'sys').
+      --lvroot LVROOT       Name of the LVM root Logical Volume (default:
+                            'root').
+      -s SRC_HOST, --src-host SRC_HOST
+                            Host on which models are stored (default: 'bes1').
+      --src-disks SRC_DISKS
+                            Path of images files on the source hypervisor (default:
+                            '/vm/disk').
+      --dst-conf DST_CONF   Path of configurations files on the destination
+                            hypervisor (default: '/vm/conf').
+      --dst-disks DST_DISKS
+                            Path of disks files on the destination hypervisor (default:
+                            '/vm/disk')
 
-        # python vm.py deploy -f test.yml -n guest1
-        usage: vm.py deploy
-                 {
-                     -n NAME -d DEST -t MODEL
-                     -i IP,NETMASK,GATEWAY,VLAN [IP2,NETMASK2,VLAN2 ...]
-                 } | { -f YAML_FILE [-d DEST] [-t model] }
-                 [-c CORES] [-m MEMORY] [--resize SIZE] [--format FORMAT]
-                 [--disks SUFFIX1,SIZE1 [SUFFIX2,SIZE2 ...]]
-                 [--force] [--no_check] [--nbd DEV] [--no-autostart]
-                 [--vgroot VGROOT] [--lvroot LVROOT]
-                 [--src-host HOST] [--src-conf PATH] [--src-disks PATH]
-                 [--dst-conf PATH] [--dst-disks PATH]
-        vm.py deploy: error: argument -n/--name: not allowed with argument -f/--file
+    Arguments:
+      name                  Name of the new guest.
+      dst_host              Hypervisor on which deploy the new guest.
+      MODEL                 Model on which the new guest is based. Choices are:
+                                * ubuntu-precise
+                                * ubuntu-trusty
+                                * redhat-5.8
+                                * redhat-6.3
+                                * centos-5
+                                * w2003
+                                * w2008-r2
+      INTERFACE             Network configuration. This is a list of network
+                            interfaces configurations. Each interface
+                            configuration is a list of parameters separated by
+                            commas. Parameters are:
+                                * the network type ('network' (NAT) or 'bridge'),
+                                * the source (network name for 'network' type
+                                  or vlan number for 'bridge' type),
+                                * the IP address,
+                                * the netmask,
+                                * the gateway (only for the first interface)
+                            For example, for deploying a guest with an inteface
+                            in the public network and an interface in the storage
+                            network:
+                                * bridge,br903,130.79.200.1,255.255.254.0,130.79.201.254,801
+                                * bridge,br896,172.30.0.1,255.255.254.0,896
+                                * network,default,192.168.122.2,255.255.255.0,192.168.122.1
 
-        # python vm.py deploy -f test.yml -i 192.168.122.2,255.255.255.0,192.168.122.1,500
-        usage: vm.py deploy
-                 {
-                     -n NAME -d DEST -t MODEL
-                     -i IP,NETMASK,GATEWAY,VLAN [IP2,NETMASK2,VLAN2 ...]
-                 } | { -f YAML_FILE [-d DEST] [-t model] }
-                 [-c CORES] [-m MEMORY] [--resize SIZE] [--format FORMAT]
-                 [--disks SUFFIX1,SIZE1 [SUFFIX2,SIZE2 ...]]
-                 [--force] [--no_check] [--nbd DEV] [--no-autostart]
-                 [--vgroot VGROOT] [--lvroot LVROOT]
-                 [--src-host HOST] [--src-conf PATH] [--src-disks PATH]
-                 [--dst-conf PATH] [--dst-disks PATH]
-        vm.py deploy: error: argument --f/--file: conflict with --i/--interfaces argument
+    # python kvm.py deploy
+    usage: kvm.py deploy [-h] [--conf-file CONF_FILE] [--logdir LOGDIR]
+                         [--loglevel {verbose,debug,info,warn,error,none}]
+                         [-c CORES] [-m MEMORY]
+                         [--format FORMAT,OPT1=VALUE,OPT2=VALUE,...]
+                         [--resize RESIZE] [--disks DISK [DISK ...]] [--force]
+                         [--no-check] [--no-autostart] [--no-chef] [--nbd NBD]
+                         [--vgroot VGROOT] [--lvroot LVROOT] [-s SRC_HOST]
+                         [--src-disks SRC_DISKS] [--dst-conf DST_CONF]
+                         [--dst-disks DST_DISKS]
+                         name dst_host MODEL INTERFACE [INTERFACE ...]
+    kvm.py deploy: error: the following arguments are required: name, dst_host, MODEL, INTERFACE
 
-        # python vm.py deploy -f test.yml -d hypervisor1
-        {'command0': 'deploy',
-         'cores': 2,
-         'disks': [],
-         'dst_conf': '/vm/conf',
-         'dst_disks': '/vm/disk',
-         'dst_host': 'hypervisor1',
-         'file': 'test.yml',
-         'force': False,
-         'format': 'qcow2',
-         'interfaces': None,
-         'lvroot': 'root',
-         'memory': 1,
-         'model': None,
-         'name': None,
-         'nbd': '/dev/nbd0',
-         'no_autostart': True,
-         'no_check': False,
-         'resize': None,
-         'src_conf': '/vm/conf',
-         'src_disks': '/vm/disk',
-         'src_host': 'bes1',
-         'vgroot': 'sys'}
+    # python kvm.py deploy guest1
+    usage: kvm.py deploy [-h] [--conf-file CONF_FILE] [--logdir LOGDIR]
+                         [--loglevel {verbose,debug,info,warn,error,none}]
+                         [-c CORES] [-m MEMORY]
+                         [--format FORMAT,OPT1=VALUE,OPT2=VALUE,...]
+                         [--resize RESIZE] [--disks DISK [DISK ...]] [--force]
+                         [--no-check] [--no-autostart] [--no-chef] [--nbd NBD]
+                         [--vgroot VGROOT] [--lvroot LVROOT] [-s SRC_HOST]
+                         [--src-disks SRC_DISKS] [--dst-conf DST_CONF]
+                         [--dst-disks DST_DISKS]
+                         name dst_host MODEL INTERFACE [INTERFACE ...]
+    kvm.py deploy: error: the following arguments are required: dst_host, MODEL, INTERFACE
 
-.. A way to organize files
-.. -----------------------
+    # python kvm.py deploy guest1 hypervisors1  192.168.122.1,255.255.255.0,192.168.122.1,500
+    usage: kvm.py deploy [-h] [--conf-file CONF_FILE] [--logdir LOGDIR]
+                         [--loglevel {verbose,debug,info,warn,error,none}]
+                         [-c CORES] [-m MEMORY]
+                         [--format FORMAT,OPT1=VALUE,OPT2=VALUE,...]
+                         [--resize RESIZE] [--disks DISK [DISK ...]] [--force]
+                         [--no-check] [--no-autostart] [--no-chef] [--nbd NBD]
+                         [--vgroot VGROOT] [--lvroot LVROOT] [-s SRC_HOST]
+                         [--src-disks SRC_DISKS] [--dst-conf DST_CONF]
+                         [--dst-disks DST_DISKS]
+                         name dst_host MODEL INTERFACE [INTERFACE ...]
+    kvm.py deploy: error: argument MODEL: invalid choice: '192.168.122.1,255.255.255.0,192.168.122.1,500' (choose from 'ubuntu-lucid', 'ubuntu-precise', 'ubuntu-trusty', 'redhat-5.8', 'redhat-6.3', 'centos-5', 'w2003', 'w2008r2')
+
+    # python kvm.py deploy guest1 hypervisors1 ubuntu-trusty bridge,192.168.122.1,255.255.255.0,192.168.122.1,500 -c 4 -m 4
+    {'command0': 'deploy',
+     'conf_file': '/home/francois/dev/python-clg/examples/kvm/conf/conf.yml',
+     'cores': 4,
+     'disks': [],
+     'dst_conf': '/vm/conf',
+     'dst_disks': '/vm/disk',
+     'dst_host': 'hypervisors1',
+     'force': False,
+     'format': None,
+     'interfaces': [{'conf': {'address': '255.255.255.0',
+                              'gateway': '500',
+                              'inet': 'static',
+                              'netmask': '192.168.122.1'},
+                     'kvm': {'source': '192.168.122.1', 'type': 'bridge'}}],
+     'logdir': '/home/francois/dev/python-clg/examples/kvm/logs',
+     'loglevel': 'info',
+     'lvroot': 'root',
+     'memory': 4,
+     'model': 'ubuntu-trusty',
+     'name': 'guest1',
+     'nbd': 'nbd0',
+     'no_autostart': False,
+     'no_check': False,
+     'no_chef': False,
+     'resize': None,
+     'src_disks': '/vm/disk',
+     'src_host': 'bes1',
+     'vgroot': 'sys'}

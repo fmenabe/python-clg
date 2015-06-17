@@ -2,6 +2,7 @@
 
 """Command for deploying a new guest."""
 
+from pprint import pprint
 
 def main(args):
-    print(vars(args))
+    pprint(vars(args))

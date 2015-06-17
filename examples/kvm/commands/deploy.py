@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
+from pprint import pprint
 
 """Command for deploying a new guest."""
 
@@ -45,4 +46,4 @@ def FormatType(value):
 
 
 def main(args):
-    print(vars(args))
+    pprint(vars(args))
