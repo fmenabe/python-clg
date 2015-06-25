@@ -92,10 +92,10 @@ add_help
 --------
 **argparse link**: `<https://docs.python.org/dev/library/argparse.html#add-help>`_
 
-Add a ``-h``/``–help`` option to the parser (default: *True*) that allow to print
-the help. You may need to have a better control on this option
-(for putting the option in a group, customizing the help message, removing the
-short option, ...). You can manually set this option by using theses values:
+Add a ``-h``/``–help`` option to the parser (default: *True*) that allows to
+print the help. You may need to have a better control on this option (for
+putting the option in a group, customizing the help message, removing the short
+option, ...). You can manually set this option by using theses values:
 
 .. code:: yaml
 

@@ -271,7 +271,7 @@ Utility for managing KVM virtuals machines
 ------------------------------------------
 This example is a program I made for managing KVM guests. Actually, there is
 only two commands for deploying or migrating guests. Each command use an
-external module for implemented the logic. A *main* function, taking the
+external module for implementing the logic. A ``main`` function, taking the
 command-line Namespace as argument, has been implemented. For the example,
 theses functions will only pprint the command-line arguments.
 
@@ -328,7 +328,7 @@ This example use:
     SELF = sys.modules[__name__]
     first_interface = True
     def InterfaceType(value):
-        """Custom type for '--interfaces' option with a ugly hack for knowing
+        """Custom type for '--interfaces' option with an ugly hack for knowing
         whether this is the first interface."""
         int_conf = dict(inet='static')
         if SELF.first_interface:

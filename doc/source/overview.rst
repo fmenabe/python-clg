@@ -24,7 +24,7 @@ include:
 Some additionnal features have also been implemented.
 
 .. note:: When printing the help message, order of options/arguments/commands
-   may be important. ``json`` module has an option (``object_pairs_hook``) for
+   may be important. ``json`` module has a parameter (``object_pairs_hook``) for
    keeping the order of keys when loading a file. For YAML, it is possible to
    use the module `yamlorderedictloader <https://pypi.python.org/pypi/yamlordereddictloader>`_
    which provide a **Loader** allowing to keep order.
@@ -49,7 +49,7 @@ parsing the command-line. This method returns in all case the arguments of the
 command-line but, if there is an `execute <configuration.html#execute>`_ section
 for the command, this will be executed first. The arguments are returned in a
 **Namespace** object inheriting from ``argparse``
-`Namespace <http://docs.python.org/dev/library/argparse.html#argparse.Namespace>`_
+`Namespace <https://docs.python.org/dev/library/argparse.html#argparse.Namespace>`_
 object but with additionals methods for making it iterable and allowing to
 access arguments with both attributes and list syntax.
 
