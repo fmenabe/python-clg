@@ -13,7 +13,7 @@ Documentation is available on readthedocs (https://clg.readthedocs.org/en/latest
 
 Releases notes
 --------------
-2.0.0 (unreleased)
+2.0.0 (2015-06-25)
 ~~~~~~~~~~~~~~~~~~
     * Change behaviour of groups: groups now act like parsers rather than just
       referencing previously defined options. **It breaks files used by previous
