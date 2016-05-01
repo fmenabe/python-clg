@@ -208,14 +208,12 @@ def _check_section(path, conf, section, one=None, need=None):
 #
 def _has_value(value, conf):
     """The value of an argument not passed in the command is *None*, except:
-        * if **nargs** is ``*`` or ``+``: in this case, the value is an empty
-          list (this is set by this module),
         * if **action** is ``store_true`` or ``store_false``: in this case, the
           value is respectively ``False`` and ``True``.
     This function take theses cases in consideration and check if an argument
     really has a value.
     """
-    if value is None or (isinstance(value, list) and not value):
+    if value is None:
         return False
 
     if 'action' in conf:
@@ -274,7 +272,7 @@ def _post_match(parser, parser_args, args_values, arg):
 
     msg_elts = {'type': arg_type, 'arg': arg, 'pattern': pattern}
     if arg_conf.get('nargs', None) in ('*', '+'):
-        for value in args_values[arg]:
+        for value in (args_values[arg] or []):
             if not re.match(pattern, value):
                 _print_error(parser, MATCH_ERR.format(val=value, **msg_elts))
     elif not re.match(pattern, args_values[arg]):
@@ -640,8 +638,6 @@ class CommandLine(object):
                     arg_conf.get('action', '') == 'version')):
                 continue
             if not _has_value(args_values[arg], arg_conf):
-                if arg_conf.get('nargs', None) in ('*', '+'):
-                    args_values[arg] = []
                 continue
 
             for keyword in KEYWORDS[arg_type]['post']:
