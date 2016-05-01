@@ -8,6 +8,7 @@ import re
 import sys
 import imp
 import copy
+import pydoc
 import argparse
 from six import iteritems
 from collections import OrderedDict
@@ -355,6 +356,22 @@ class NoAbbrevParser(argparse.ArgumentParser):
 
         # return the collected option tuples
         return result
+
+
+# Use Pager for showing help.
+class HelpPager(argparse.Action):
+    def __init__(self, option_strings, dest=argparse.SUPPRESS, default=argparse.SUPPRESS, help=None):
+        argparse.Action.__init__(self,
+                                 option_strings=option_strings,
+                                 dest=dest,
+                                 default=default,
+                                 nargs=0,
+                                 help=help)
+
+    def __call__(self, parser, namespace, values, option_string=None):
+            pydoc.pager(parser.format_help())
+            parser.exit()
+ACTIONS.update(page_help=HelpPager)
 
 
 class Namespace(argparse.Namespace):
