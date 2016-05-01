@@ -21,6 +21,10 @@ BUILTINS = sys.modules['builtins'
                        else '__builtin__']
 TYPES = {builtin: getattr(BUILTINS, builtin) for builtin in vars(BUILTINS)}
 TYPES['suppress'] = argparse.SUPPRESS
+
+# Allow custom actions.
+ACTIONS = {}
+
 # Get current module.
 SELF = sys.modules[__name__]
 
@@ -456,6 +460,9 @@ class CommandLine(object):
                            if parser_conf.pop('allow_abbrev', False)
                            else NoAbbrevParser)(**_gen_parser(parser_conf))
             parser = self.parser
+        # Add custom actions.
+        for name, obj in ACTIONS.items():
+            parser.register('action', name, obj)
 
         # Index parser (based on path) as it may be necessary to access it
         # later (manage case where subparsers does not have configuration).
