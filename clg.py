@@ -8,7 +8,6 @@ import re
 import sys
 import imp
 import copy
-import pydoc
 import argparse
 from six import iteritems
 from collections import OrderedDict
@@ -367,10 +366,12 @@ class HelpPager(argparse.Action):
                                  help=help)
 
     def __call__(self, parser, namespace, values, option_string=None):
-            pydoc.pager(parser.format_help())
-            parser.exit()
+        import os
+        import pydoc
+        os.environ['PAGER'] = 'less -c'
+        pydoc.pager(parser.format_help())
+        parser.exit()
 ACTIONS.update(page_help=HelpPager)
-
 
 class Namespace(argparse.Namespace):
     """Iterable namespace."""
