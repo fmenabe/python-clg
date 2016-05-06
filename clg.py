@@ -392,6 +392,10 @@ class CommandLine(object):
         self._parsers = OrderedDict()
         self.parser = None
 
+        # Allows to page to all helps by replacing the default 'help' action.
+        if self.config.pop('page_help', False):
+            ACTIONS.update(help=HelpPager)
+
         # Manage the case when we want a help command that prints a description
         # of all commands.
         self.help_cmd = self.config.pop('add_help_cmd', False)
