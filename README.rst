@@ -1,6 +1,34 @@
 Command-line generator in python
 ================================
 
+.. image:: https://img.shields.io/pypi/l/clg.svg
+		   :target: https://opensource.org/licenses/MIT
+		   :alt: License
+
+.. image:: https://img.shields.io/pypi/pyversions/clg.svg
+           :target: https://pypi.python.org/pypi/clg
+           :alt: Versions
+
+.. image:: https://img.shields.io/pypi/v/clg.svg
+           :target: https://pypi.python.org/pypi/clg
+           :alt: PyPi
+
+.. image:: https://img.shields.io/badge/github-repo-yellow.jpg
+           :target: https://github.com/fmenabe/python-clg
+           :alt: Code repo
+
+.. image:: https://readthedocs.org/projects/clg/badge/?version=latest
+           :target: http://clg.readthedocs.org/en/latest/
+           :alt: Documentation
+
+.. image:: https://landscape.io/github/fmenabe/python-clg/master/landscape.svg?style=flat
+           :target: https://landscape.io/github/fmenabe/python-clg/master
+           :alt: Code Health
+
+.. image:: https://img.shields.io/pypi/dm/clg.svg
+           :target: https://pypi.python.org/pypi/clg
+           :alt: Downloads
+
 This module is a wrapper to **argparse** module. Its goal is to generate a
 custom and advanced command-line from a formatted dictionary. As python
 dictionnaries are easily exportable to configuration files (like YAML or JSON),
