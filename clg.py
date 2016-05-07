@@ -8,6 +8,7 @@ import re
 import sys
 import imp
 import copy
+import pydoc
 import argparse
 from collections import OrderedDict
 
@@ -138,6 +139,28 @@ def _set_builtin(value):
                 if isinstance(value, str)
                 else value)
 
+def _page_help(parser):
+    """Page help using `pydoc.pager` method (which use $PAGER environment
+    variable)."""
+    os.environ['PAGER'] = 'less -c'
+    pydoc.pager(parser.format_help())
+    parser.exit()
+
+def _print_help(page_help=False):
+    """Called when `print_help` parameter of the main parser configuration
+    is set *True*. This allows to print help when no arguments is set for a
+    command. This is done by overloading the ``_parse_known_args`` method
+    of the `ArgumentParser` object."""
+    default_method = argparse.ArgumentParser._parse_known_args
+    def _parse_known_args(self, arg_strings, namespace):
+        if not arg_strings:
+            if page_help:
+                _page_help(self)
+            else:
+                self.print_help()
+                self.exit()
+        return default_method(self, arg_strings, namespace)
+    argparse.ArgumentParser._parse_known_args = _parse_known_args
 
 #
 # Formatting functions.
@@ -349,11 +372,7 @@ class HelpPager(argparse.Action):
                                  help=help)
 
     def __call__(self, parser, namespace, values, option_string=None):
-        import os
-        import pydoc
-        os.environ['PAGER'] = 'less -c'
-        pydoc.pager(parser.format_help())
-        parser.exit()
+        _page_help(parser)
 ACTIONS.update(page_help=HelpPager)
 
 class Namespace(argparse.Namespace):
@@ -385,6 +404,10 @@ class CommandLine(object):
         self.keyword = keyword
         self._parsers = OrderedDict()
         self.parser = None
+
+        # Allows to print help when no arguments is set for a command.
+        if self.config.pop('print_help', False):
+            _print_help(self.config.get('page_help', False))
 
         # Allows to page to all helps by replacing the default 'help' action.
         if self.config.pop('page_help', False):
