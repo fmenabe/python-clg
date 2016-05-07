@@ -224,12 +224,6 @@ def _has_value(value, conf):
          or (action and action == 'store_true' and value)
          or (action and action == 'store_false' and not value))
 
-def _print_error(parser, msg):
-    """Print parser usage and an error message, then exit."""
-    parser.print_usage()
-    print("%s: error: %s" % (parser.prog, msg))
-    sys.exit(1)
-
 def _post_need(parser, parser_args, args_values, arg):
     """Post processing that check all for needing options."""
     arg_type, arg_conf = parser_args[arg]
@@ -240,7 +234,7 @@ def _post_need(parser, parser_args, args_values, arg):
                        'arg': _format_arg(arg, arg_conf, arg_type),
                        'need_type': cur_arg_type[:-1],
                        'need_arg': _format_arg(cur_arg, cur_arg_conf, cur_arg_type)}
-            _print_error(parser, _NEED_ERR.format(**strings))
+            parser.error(_NEED_ERR.format(**strings))
 
 def _post_conflict(parser, parser_args, args_values, arg):
     """Post processing that check for conflicting options."""
@@ -252,7 +246,7 @@ def _post_conflict(parser, parser_args, args_values, arg):
                        'arg': _format_arg(arg, arg_conf, arg_type),
                        'conflict_type': cur_arg_type[:-1],
                        'conflict_arg': _format_arg(cur_arg, cur_arg_conf, cur_arg_type)}
-            _print_error(parser, _CONFLICT_ERR.format(**strings))
+            parser.error(_CONFLICT_ERR.format(**strings))
 
 def _post_match(parser, parser_args, args_values, arg):
     """Post processing that check the value."""
@@ -263,9 +257,9 @@ def _post_match(parser, parser_args, args_values, arg):
     if arg_conf.get('nargs', None) in ('*', '+'):
         for value in args_values[arg] or []:
             if not re.match(pattern, value):
-                _print_error(parser, _MATCH_ERR.format(val=value, **msg_elts))
+                parser.error(_MATCH_ERR.format(val=value, **msg_elts))
     elif not re.match(pattern, args_values[arg]):
-        _print_error(parser, _MATCH_ERR.format(val=args_values[arg], **msg_elts))
+        parser.error(_MATCH_ERR.format(val=args_values[arg], **msg_elts))
 
 def _exec_module(path, exec_conf, args_values):
     """Load and execute a function of a module according to **exec_conf**."""
