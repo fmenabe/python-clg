@@ -13,11 +13,28 @@ Documentation is available on readthedocs (https://clg.readthedocs.org/en/latest
 
 Releases notes
 --------------
+2.1.0 (not released)
+~~~~~~~~~~~~~~~~~~~~
+    * Remove empty list for default value when ``nargs`` is set to *\** or *+*
+      (`4102816 <https://github.com/fmenabe/python-clg/commit/4102816>`_).
+    * Allows to add custom actions by updating ``ACTIONS`` dictionnary
+      (`65d7480 <https://github.com/fmenabe/python-clg/commit/65d7480>`_).
+    * Add a ``page_help`` action allowing to page help
+      (`818383b <https://github.com/fmenabe/python-clg/commit/818383b>`_,
+      `f788f35 <https://github.com/fmenabe/python-clg/commit/f788f35>`_).
+    * Add the parameter ``page_help`` at the root of the configuration allowing
+      to page the help of all commands (by replacing the default ``help`` action
+      by the ``page_help`` action;
+      `9454f7a <https://github.com/fmenabe/python-clg/commit/9454f7a>`_).
+    * Add the parameter ``print_help`` at the root of the configuration
+      allowing to print help when no arguments is set (also work for subcommands;
+      `5ea6fe8 <https://github.com/fmenabe/python-clg/commit/5ea6fe8>`_)
+
 2.0.0 (2015-06-25)
 ~~~~~~~~~~~~~~~~~~
     * Change behaviour of groups: groups now act like parsers rather than just
       referencing previously defined options. **It breaks files used by previous
-      versions.**
+      versions**.
     * Update design and correct bugs of the ``help`` command added by the
       *add_help_cmd* keyword.
     * Improve control of abbrevations behaviour. When ``allow_abbrev`` parameter
