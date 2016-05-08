@@ -41,6 +41,13 @@ Documentation is available on readthedocs (https://clg.readthedocs.org/en/latest
 
 Releases notes
 --------------
+2.1.1 (2016-05-08)
+~~~~~~~~~~~~~~~~~~
+    * ``print_help`` parameter is not anymore a root parameter but a per command
+      parameter and simulate the use of the `--help` option if not arguments are
+      supplied (`6bee4d9 <https://github.com/fmenabe/python-clg/commit/6bee4d9>`_).
+      This allows flexibiliy for (sub)commands that do not require any input.
+
 2.1.0 (2016-05-08)
 ~~~~~~~~~~~~~~~~~~
     * Remove empty list for default value when ``nargs`` is set to *\** or *+*
