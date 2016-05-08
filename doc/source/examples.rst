@@ -9,7 +9,7 @@ describe here use a YAML file.
 First argparse example
 ----------------------
 This is the first `argparse example
-<https://docs.python.org/dev/library/argparse.html#example>`_. This show a
+<https://docs.python.org/dev/library/argparse.html#example>`_. This shows a
 simple command with an option, an argument and the use of builtins.
 
 *Python program*:
@@ -71,7 +71,7 @@ Subparsers example
 This is the same example that `argparse subparsers documentation
 <https://docs.python.org/dev/library/argparse.html#sub-commands>`_.
 
-The python program initialize ``clg`` and print arguments:
+The python program initialize ``clg`` and prints arguments:
 
 .. code-block:: python
 
@@ -84,7 +84,7 @@ The python program initialize ``clg`` and print arguments:
 Without custom help
 ~~~~~~~~~~~~~~~~~~~
 We begin by a simple configuration without personalizing subparsers help.
-``subparsers`` section just contains the configuration of commands.
+`subparsers` section just contains the configuration of commands.
 
 *Configuration file*:
 
@@ -136,7 +136,7 @@ We begin by a simple configuration without personalizing subparsers help.
 With custom help
 ~~~~~~~~~~~~~~~~
 Now we customize the help. The configuration of commands is put in the
-``parsers`` section and other keywords are used for customizing help.
+`parsers` section and other keywords are used for customizing help.
 
 *Configuration file*:
 
@@ -273,7 +273,7 @@ This example is a program I made for managing KVM guests. Actually, there is
 only two commands for deploying or migrating guests. Each command use an
 external module for implementing the logic. A ``main`` function, taking the
 command-line Namespace as argument, has been implemented. For the example,
-theses functions will only pprint the command-line arguments.
+theses functions will only ``pprint`` the command-line arguments.
 
 This example use:
     * YAML anchors

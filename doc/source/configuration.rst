@@ -6,23 +6,25 @@ The configuration of the command-line is done with a dictionnary that recursivel
 defines commands. Each command is a mix of keywords from ``argparse`` and this
 module. Keywords for a command are:
 
-    * **prog** (``argparse``)
-    * **usage** (``argparse``)
-    * **description** (``argparse``)
-    * **epilog** (``argparse``)
-    * **formatter_class** (``argparse``)
-    * **argument_default** (``argparse``)
-    * **conflict_handler** (``argparse``)
-    * **add_help** (``argparse``)
-    * **add_help_cmd** (``clg``)
-    * **allow_abbrev** (``clg``)
-    * **anchors** (``clg``)
-    * **options** (``clg``)
-    * **args** (``clg``)
-    * **groups** (``clg``)
-    * **exclusive_groups** (``clg``)
-    * **subparsers** (``clg``)
-    * **execute** (``clg``)
+    * `prog` (``argparse``)
+    * `usage` (``argparse``)
+    * `description` (``argparse``)
+    * `epilog` (``argparse``)
+    * `formatter_class` (``argparse``)
+    * `argument_default` (``argparse``)
+    * `conflict_handler` (``argparse``)
+    * `add_help` (``argparse``)
+    * `page_help` (``clg``)
+    * `print_help` (``clg``)
+    * `add_help_cmd` (``clg``)
+    * `allow_abbrev` (``clg``)
+    * `anchors` (``clg``)
+    * `options` (``clg``)
+    * `args` (``clg``)
+    * `groups` (``clg``)
+    * `exclusive_groups` (``clg``)
+    * `subparsers` (``clg``)
+    * `execute` (``clg``)
 
 
 
@@ -109,17 +111,31 @@ option, ...). You can manually set this option by using theses values:
 
 
 
+page_help
+---------
+Force the use of the command `less -c` when printing the help of a command. It
+is done by using `pydoc.pager` method and by forcing the value of the ``$PAGER``
+environment variable.
+
+
+
+print_help
+----------
+Force the printing of the help when no arguments is supplied for a command.
+
+
+
 add_help_cmd
 ------------
-Add a ``help`` subcommand at the root of the parser that print the arborsence of
+Add a `help` subcommand at the root of the parser that print the arborsence of
 commands with their description.
 
 
 allow_abbrev
 -------------
-Boolean (default: *False*) indicating whether `abrevations
+Boolean indicating whether `abrevations
 <https://docs.python.org/dev/library/argparse.html#argument-abbreviations-prefix-matching>`_
-are allowed.
+are allowed (default: *False*).
 
 .. note:: The default behavior of ``argparse`` is to allow abbrevation but
     ``clg`` module disable this "feature" by default.
@@ -140,33 +156,33 @@ options
 -------
 This section defines the options of the current command. It is a dictionnary
 whose keys are the name of the option and values a hash with the configuration of
-the option. In ``argparse`` module, **dest** keyword defines the keys in the
+the option. In ``argparse`` module, `dest` keyword defines the keys in the
 resulted Namespace. It is not possible to overload this parameter as the name of
 the option in the configuration is used as destination.
 
 Keywords:
 
-    * **short** (``clg``)
-    * **help** (``argparse``)
-    * **required** (``argparse``)
-    * **default** (``argparse``)
-    * **choices** (``argparse``)
-    * **action** (``argparse``)
-    * **version** (``argparse``)
-    * **nargs** (``argparse``)
-    * **const** (``argparse``)
-    * **metavar** (``argparse``)
-    * **type** (``argparse``)
-    * **need** (``clg``)
-    * **conflict** (``clg``)
-    * **match** (``clg``)
+    * `short` (``clg``)
+    * `help` (``argparse``)
+    * `required` (``argparse``)
+    * `default` (``argparse``)
+    * `choices` (``argparse``)
+    * `action` (``argparse``)
+    * `version` (``argparse``)
+    * `nargs` (``argparse``)
+    * `const` (``argparse``)
+    * `metavar` (``argparse``)
+    * `type` (``argparse``)
+    * `need` (``clg``)
+    * `conflict` (``clg``)
+    * `match` (``clg``)
 
 .. note:: Options with underscores and spaces in the configuration are replaced
    by dashes in the command (but not in the resulted Namespace). For example,
    an option ``my_opt`` in the configuration will be rendered as ``--my-opt`` in
    the command.
 
-Some options (like **default**, **const**, ...) can use builtins values. For
+Some options (like `default`, `const`, ...) can use builtins values. For
 managing it, a special syntax is used: the builtin can be defined in uppercase,
 prefixed and sufixed by double underscores (``__BUILTIN__``). For example:
 
@@ -181,13 +197,13 @@ prefixed and sufixed by double underscores (``__BUILTIN__``). For example:
 
 In the same way, there are specials "builtins":
     * ``__DEFAULT__``: this is replaced in the help message by the value of the
-      **default** option.
+      `default` parameter.
     * ``__MATCH__``: this is replaced in the help message by the value of the
-      **match** option.
+      `match` parameter.
     * ``__CHOICES__``: this is replace in the help message by the value of the
-      **choices** option (choices are separated by commas).
+      `choices` parameter (choices are separated by commas).
     * ``__FILE__``: this "builtin" is replaced by the path of the main program
-      (**sys.path[0]**). This allow to define file relatively to the main
+      (``sys.path[0]``). This allow to define file relatively to the main
       program (ex: *__FILE__/conf/someconf.yml*, *__FILE__/logs/*).
     * ``__SUPPRESS__``: identical to ``argparse.SUPPRESS`` (no attribute is
       added to the resulted Namespace if the command-line argument is not
@@ -222,10 +238,10 @@ The type to which the command-line argument should be converted. As this is
 necessarily a builtin, this is not necessary to use the ``__BULTIN__`` syntax.
 
 In some case, you may need to create custom types. For this, you just have to
-add your new type to the variable ``clg.TYPES``. A type is just a function that
-takes the value of the option in parameter and returns what you want. For
-example, to add a custom ``Date`` type based on french date format (DD/MM/YYYY) and
-returning a ``datetime`` object:
+add your new type to the `TYPES` variable of the ``clg`` module. A type is just
+a function that takes the value of the option in parameter and returns what you
+want. For example, to add a custom `Date` type based on french date format
+(DD/MM/YYYY) and returning a ``datetime`` object:
 
 *Python program*:
 
@@ -279,10 +295,58 @@ action
 The basic type of action to be taken when this argument is encountered at the
 command line.
 
+As for the types, you may need to defined some custom actions. The end of the
+`action` section of the ``argparse`` documentation shows how to build a custom
+action. For using it with ``clg`` you need to add it to the `ACTIONS` variable
+of the module.
+
+For example, to add an action that page help (using `less -c` command):
+
+*Python program*:
+
+.. code-block:: python
+
+    import os
+    import clg
+    import yaml
+    import pydoc
+    import argparse
+
+    class HelpPager(argparse.Action):
+        """Action allow to page help."""
+        def __init__(self, option_strings, dest=argparse.SUPPRESS, default=argparse.SUPPRESS, help=None):
+            argparse.Action.__init__(self, option_strings=option_strings, dest=dest, default=default, nargs=0, help=help)
+
+        def __call__(self, parser, namespace, values, option_string=None):
+            os.environ['PAGER'] = 'less -c'
+            pydoc.pager(parser.format_help())
+            parser.exit()
+    clg.ACTIONS.update(page_help=HelpPager)
+
+    command = clg.CommandLine(yaml.load(open('cmd.yml'))
+    args = command.parse()
+
+*YAML configuration*:
+
+.. code-block:: yaml
+
+    ...
+    options:
+        help:
+            short: h
+            action: page_help
+            default: __SUPPRESS__
+            help: My help message.
+    ...
+
+
+.. note:: The `page_help` action is implemented and added by default in the
+   ``clg`` module.
+
 
 version
 ~~~~~~~
-When using the ``version`` action, this argument is expected. ``version`` action
+When using the `version` action, this argument is expected. `version` action
 allows to print the version information and exits.
 
 The ``argparse`` example look like this:
@@ -295,7 +359,7 @@ The ``argparse`` example look like this:
     >>> parser.parse_args(['--version'])
     PROG 2.0
 
-And the ``clg`` equivalent (in YAML) is this:
+And the ``clg`` equivalent in YAML is this:
 
 .. code:: python
 
@@ -305,7 +369,7 @@ And the ``clg`` equivalent (in YAML) is this:
             version: "%(prog)s 2.0"
 
 .. note:: Like the ``--help`` option , a default help message is set. But, like
-   any other option, you can define the help you want with the **help** keyword.
+   any other option, you can define the help you want with the `help` keyword.
 
 
 nargs
@@ -319,11 +383,8 @@ const
 ~~~~~
 **argparse link**: `<https://docs.python.org/dev/library/argparse.html#const>`_
 
-Value in the resulted **Namespace** if the option is not set in the command-line
+Value in the resulted `Namespace` if the option is not set in the command-line
 (*None* by default).
-
-.. note:: If **nargs** is defined for the option, the default value will be an
-   empty list.
 
 
 metavar
@@ -352,8 +413,8 @@ Regular expression that the option's value must match.
 args
 ----
 This section define arguments of the current command. It is identical as the
-`options`_ section at the exception of the **short** and **version** keywords
-which are not available.
+`options`_ section except that the `short`, `action` and `version` keywords are
+not available.
 
 
 
@@ -364,21 +425,21 @@ options and arguments in the help message. Each
 `group <https://docs.python.org/dev/library/argparse.html#argument-groups>`_
 can have theses keywords:
 
-    * **title** (``argparse``)
-    * **description** (``argparse``)
-    * **options** (``clg``)
-    * **args** (``clg``)
-    * **exclusive_groups** (``clg``)
+    * `title` (``argparse``)
+    * `description` (``argparse``)
+    * `options` (``clg``)
+    * `args` (``clg``)
+    * `exclusive_groups` (``clg``)
 
-.. note:: All ``argparse`` examples set ``add_help`` to *False*. If this is set,
-   ``help`` option is put in *optional arguments*. If you want to put the
-   ``help`` option in a group, you need to set the help option
+.. note:: All ``argparse`` examples set `add_help` to *False*. If this is set,
+   the `help` option is put in *optional arguments*. If you want to put the
+   `help` option in a group, you need to set the help option
    `manually <configuration.html#add-help>`_.
 
-.. note:: Behaviour of groups have changed. The previous versions (1.*) just
+.. note:: Behaviour of groups have changed. The previous versions (*1.\**) just
    references previously defined options. Now, this section act like a parser,
    and *options* and *arguments* sections defines options and arguments of the
-   group. **This break compatibility with previous versions.**
+   group. **This break compatibility with previous versions of this module.**
 
 title
 ~~~~~
@@ -409,15 +470,14 @@ Exclusive groups in the group. This section is identical to the
 
 
 
-
 exclusive groups
 ----------------
 This section is a list of
 `exclusive groups <https://docs.python.org/dev/library/argparse.html#mutual-exclusion>`_.
 Each group can have theses keywords:
 
-    * **required** (``argparse``)
-    * **options** (``clg``)
+    * `required` (``argparse``)
+    * `options` (``clg``)
 
 
 required
@@ -436,29 +496,30 @@ subparsers
 ----------
 **argparse link**: `<https://docs.python.org/dev/library/argparse.html#argparse.ArgumentParser.add_subparsers>`_
 
-This allow to add subcommands to the current command.
+This allows to add subcommands to the current command.
 
 Keywords:
-    * **help** (``argparse``)
-    * **title** (``argparse``)
-    * **description** (``argparse``)
-    * **prog** (``argparse``)
-    * **help** (``argparse``)
-    * **metavar** (``argparse``)
-    * **parsers** (``clg``)
-    * **required** (``clg``)
+    * `help` (``argparse``)
+    * `title` (``argparse``)
+    * `description` (``argparse``)
+    * `prog` (``argparse``)
+    * `help` (``argparse``)
+    * `metavar` (``argparse``)
+    * `parsers` (``clg``)
+    * `required` (``clg``)
 
-.. note:: It is possible to directly set parsers configurations (the content of
-   **parsers** subsection) in this section. The module check for the presence
-   of **parsers** section and, if not present, consider this is subcommands
-   configurations.
+.. note:: It is possible to directly set subcommands configurations (the content
+   of the `parsers` parameter). The module check for the presence of the `parsers`
+   parameter and, if it is not present, consider this is the subcommands
+   configurations. This prevent the use of the extra keyword `parsers` if none
+   of the other parameters need to be set).
 
-.. note:: When using subparsers and for being able to retrieves configuration of
-   the used (sub)command, **dest** argument of ``add_subparsers`` method is used.
-   It add in the resulted **Namespace** an entry which key is the value of **dest**
-   and the value the used subparser. The key is generated from the **keyword**
-   argument (default: *command*) of the **CommandLine** object, incremented at each
-   level of the arborescence. For example:
+.. note:: When using subparsers and for being able to retrieve configuration of
+   the used (sub)command, `dest` argument of `argparse.ArgumentParser.add_subparsers`
+   method is used. It adds in the resulted `Namespace` an entry which the key is
+   `dest` value and the value the used subparser. `dest` value is generated from
+   the `keyword` argument (default: *command*) of the `CommandLine` object,
+   incremented at each level of the arborescence. For example:
 
    .. code:: bash
 
@@ -476,14 +537,10 @@ description
 Customize the help with a description.
 
 
-help
-~~~~
-Additional help message.
-
-
 prog
 ~~~~
-Customize usage in help.
+usage information that will be displayed with sub-command help, by default the
+name of the program and any positional arguments before the subparser argument
 
 
 help
@@ -498,8 +555,9 @@ String presenting available sub-commands in help
 
 parsers
 ~~~~~~~
-This is a hash whose keys are the name of subcommands and values the
-configuration of the command.
+This is a dictionnary whose keys are the name of subcommands and values the
+configuration of the command. The configuration of a command is the same
+configuration of a parser (`options`, `args`, `groups`, `subparsers`, ...).
 
 
 required
@@ -510,28 +568,28 @@ Indicate whether a subcommand is required (default: *True*).
 
 execute
 -------
-This section indicate what must be done after the command is parsed. It
-allow to import a file or a module and launch a function in it. This function
-only take one argument which is the **Namespace** containing arguments.
+This section indicates what must be done after the command is parsed. It
+allows to import a file or a module and launch a function in it. This function
+takes only one argument which is the `Namespace` containing the arguments.
 
 Keywords:
-    * **module**
-    * **file**
-    * **function**
+    * `module`
+    * `file`
+    * `function`
 
-.. note:: **module** and **file** keywords can't be used simultaneously.
+.. note:: `module` and `file` keywords can't be used simultaneously.
 
 file
 ~~~~
-This is a string indicating the path of a python file.
+Path of the python file to load.
 
 
 module
 ~~~~~~
-This is a string indicating the module to load (ex: *package.subpackage.module*).
-This recursively load all intermediary packages until the module. As the
-directory of the main program is automatically in ``sys.path``, that allows to
-import modules relatively to the main program.
+Module to load (ex: *package.subpackage.module*). This recursively loads all
+intermediary packages until the module. As the directory of the main program is
+automatically in ``sys.path``, that allows to import modules relatively to the
+main program.
 
 For example, the directory structure of your program could be like this:
 
