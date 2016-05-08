@@ -29,7 +29,7 @@ ACTIONS = {}
 KEYWORDS = {
     'parsers': {'argparse': ['prog', 'usage', 'description', 'epilog', 'help',
                              'add_help', 'formatter_class', 'argument_default',
-                             'conflict_handler', 'allow_abbrev'],
+                             'conflict_handler', 'allow_abbrev', 'print_help'],
                 'clg': ['anchors', 'subparsers', 'options', 'args', 'groups',
                         'exclusive_groups', 'execute']},
     'subparsers': {'argparse': ['title', 'description', 'prog', 'help', 'metavar'],
@@ -139,28 +139,16 @@ def _set_builtin(value):
                 if isinstance(value, str)
                 else value)
 
-def _page_help(parser):
-    """Page help using `pydoc.pager` method (which use $PAGER environment
-    variable)."""
-    os.environ['PAGER'] = 'less -c'
-    pydoc.pager(parser.format_help())
-    parser.exit()
-
-def _print_help(page_help=False):
-    """Called when `print_help` parameter of the main parser configuration
-    is set *True*. This allows to print help when no arguments is set for a
-    command. This is done by overloading the ``_parse_known_args`` method
-    of the `ArgumentParser` object."""
-    default_method = argparse.ArgumentParser._parse_known_args
-    def _parse_known_args(self, arg_strings, namespace):
+def _print_help(parser):
+    """Manage 'print_help' parameter of a (sub)command. It monkey patch the
+    `_parse_known_args` method of the **parser** instance for simulating the
+    use of the --help option if no arguments is supplied for the command."""
+    default_method = parser._parse_known_args
+    def _parse_known_args(arg_strings, namespace):
         if not arg_strings:
-            if page_help:
-                _page_help(self)
-            else:
-                self.print_help()
-                self.exit()
-        return default_method(self, arg_strings, namespace)
-    argparse.ArgumentParser._parse_known_args = _parse_known_args
+            arg_strings = ['--help']
+        return default_method(arg_strings, namespace)
+    parser._parse_known_args = _parse_known_args
 
 
 #
@@ -362,7 +350,7 @@ class NoAbbrevParser(argparse.ArgumentParser):
 
 # Use Pager for showing help.
 class HelpPager(argparse.Action):
-    """Action allow to page help."""
+    """Action allowing to page help."""
     def __init__(self, option_strings,
                  dest=argparse.SUPPRESS, default=argparse.SUPPRESS, help=None):
         argparse.Action.__init__(self,
@@ -373,7 +361,11 @@ class HelpPager(argparse.Action):
                                  help=help)
 
     def __call__(self, parser, namespace, values, option_string=None):
-        _page_help(parser)
+        """Page help using `pydoc.pager` method (which use $PAGER environment
+        variable)."""
+        os.environ['PAGER'] = 'less -c'
+        pydoc.pager(parser.format_help())
+        parser.exit()
 ACTIONS.update(page_help=HelpPager)
 
 class Namespace(argparse.Namespace):
@@ -405,10 +397,6 @@ class CommandLine(object):
         self.keyword = keyword
         self._parsers = OrderedDict()
         self.parser = None
-
-        # Allows to print help when no arguments is set for a command.
-        if self.config.pop('print_help', False):
-            _print_help(self.config.get('page_help', False))
 
         # Allows to page to all helps by replacing the default 'help' action.
         if self.config.pop('page_help', False):
@@ -465,6 +453,7 @@ class CommandLine(object):
                           else NoAbbrevParser)
             self.parser = parser_obj(**_gen_parser(parser_conf))
             parser = self.parser
+
         # Add custom actions.
         for name, obj in ACTIONS.items():
             parser.register('action', name, obj)
@@ -475,6 +464,11 @@ class CommandLine(object):
                        for idx, elt in enumerate(path)
                        if not (path[idx-1] == 'subparsers' and elt == 'parsers')]
         self._parsers['/'.join(parser_path)] = parser
+
+        # Manage 'print_help' parameter which force the use '--help' if no
+        # arguments is supplied.
+        if parser_conf.get('print_help', False):
+            _print_help(parser)
 
         # Add custom usage.
         if 'usage' in parser_conf:
