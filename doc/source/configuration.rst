@@ -113,15 +113,17 @@ option, ...). You can manually set this option by using theses values:
 
 page_help
 ---------
-Force the use of the command `less -c` when printing the help of a command. It
-is done by using `pydoc.pager` method and by forcing the value of the ``$PAGER``
-environment variable.
+Boolean, that can only be set at the root of the configuration, indicating
+whether to page the help of commands (default: *False*). This is done by using
+the `pydoc.pager` method and by forcing the ``$PAGER`` environment variable to
+the `less -c` command.
 
 
 
 print_help
 ----------
-Force the printing of the help when no arguments is supplied for a command.
+Boolean that force the use of the ``--help`` option if no arguments are supplied
+for a (sub)command (default: *False*).
 
 
 
@@ -300,7 +302,7 @@ As for the types, you may need to defined some custom actions. The end of the
 action. For using it with ``clg`` you need to add it to the `ACTIONS` variable
 of the module.
 
-For example, to add an action that page help (using `less -c` command):
+For example, to add an action that page help (using the `less -c` command):
 
 *Python program*:
 
@@ -341,7 +343,7 @@ For example, to add an action that page help (using `less -c` command):
 
 
 .. note:: The `page_help` action is implemented and added by default in the
-   ``clg`` module.
+   ``clg`` module so you can use it without redefining it.
 
 
 version
