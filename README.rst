@@ -41,8 +41,8 @@ Documentation is available on readthedocs (https://clg.readthedocs.org/en/latest
 
 Releases notes
 --------------
-2.1.0 (not released)
-~~~~~~~~~~~~~~~~~~~~
+2.1.0 (2016-05-08)
+~~~~~~~~~~~~~~~~~~
     * Remove empty list for default value when ``nargs`` is set to *\** or *+*
       (`4102816 <https://github.com/fmenabe/python-clg/commit/4102816>`_).
     * Allows to add custom actions by updating ``ACTIONS`` dictionnary
