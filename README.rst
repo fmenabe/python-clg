@@ -41,10 +41,16 @@ Documentation is available on readthedocs (https://clg.readthedocs.org/en/latest
 
 Releases notes
 --------------
+2.2.0 (2016-06-09)
+~~~~~~~~~~~~~~~~~~
+    * Add a ``negative_value`` parameter for parsers allowing to redefine how
+      negatives values are distinguished from options
+      (`4c7e7be <https://github.com/fmenabe/python-clg/commit/4c7e7be>`_).
+
 2.1.1 (2016-05-08)
 ~~~~~~~~~~~~~~~~~~
     * ``print_help`` parameter is not anymore a root parameter but a per command
-      parameter and simulate the use of the `--help` option if not arguments are
+      parameter and simulate the use of the `--help` option if no arguments are
       supplied (`6bee4d9 <https://github.com/fmenabe/python-clg/commit/6bee4d9>`_).
       This allows flexibiliy for (sub)commands that do not require any input.
 
