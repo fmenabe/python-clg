@@ -18,6 +18,7 @@ module. Keywords for a command are:
     * `print_help` (``clg``)
     * `add_help_cmd` (``clg``)
     * `allow_abbrev` (``clg``)
+    * `negative_value` (``clg``)
     * `anchors` (``clg``)
     * `options` (``clg``)
     * `args` (``clg``)
@@ -133,14 +134,54 @@ Add a `help` subcommand at the root of the parser that print the arborsence of
 commands with their description.
 
 
+
 allow_abbrev
--------------
+------------
 Boolean indicating whether `abrevations
 <https://docs.python.org/dev/library/argparse.html#argument-abbreviations-prefix-matching>`_
 are allowed (default: *False*).
 
 .. note:: The default behavior of ``argparse`` is to allow abbrevation but
     ``clg`` module disable this "feature" by default.
+
+
+
+negative_value
+--------------
+Regular expression indicating how to match negatives values.
+
+To distinguish negatives values from options, ``argparse`` module use a regular
+expression (`^-\d+$|^-\d*\.\d+$` by default). This option allows to redefine, at a
+(sub)parser level, the regular expression used for matching negatives values.
+
+For example, I had the problem in a script for managing backup's selections of a host.
+I wanted an option `--paths` to specify both (absolute) paths to add (by prefixing them
+by a '+') and to remove (by prefixing them by a '-'). For managing this, I just redefine
+the parameter `negative_value` for matching absolutes paths prefixed by a dash (I kept
+the parts for matching integers and floats):
+
+*YAML configuration*:
+
+.. code-block:: yaml
+
+    negative_value: '^-\d+$|^-\d*\.\d+$|^-/.*$'
+    options:
+        paths:
+            nargs: '+'
+            help: >
+                Paths to add/remove for the host. Add paths by prefixing them
+                by a '+' and remove path by prefixing them by a '-'.
+
+    args:
+        host:
+            help: Manage selection for this host.
+
+*Execution*:
+
+.. code-block:: bash
+
+    $ python selections.py myhost --paths +/etc -/tmp
+    Namespace(host='myhost', paths=['+/etc', '-/tmp'])
 
 
 

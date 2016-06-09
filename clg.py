@@ -31,7 +31,7 @@ KEYWORDS = {
                              'add_help', 'formatter_class', 'argument_default',
                              'conflict_handler', 'allow_abbrev', 'print_help'],
                 'clg': ['anchors', 'subparsers', 'options', 'args', 'groups',
-                        'exclusive_groups', 'execute']},
+                        'exclusive_groups', 'execute', 'negative_value']},
     'subparsers': {'argparse': ['title', 'description', 'prog', 'help', 'metavar'],
                    'clg': ['required', 'parsers']},
     'groups': {'argparse': ['title', 'description'],
@@ -473,6 +473,10 @@ class CommandLine(object):
         # Add custom usage.
         if 'usage' in parser_conf:
             parser.usage = _format_usage(parser.prog, parser_conf['usage'])
+
+        # Manage definition of negative values.
+        if 'negative_value' in parser_conf:
+            parser._negative_number_matcher = re.compile(parser_conf['negative_value'])
 
         # Add subparsers.
         if 'subparsers' in parser_conf:
