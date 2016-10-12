@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import sys
 from distutils.core import setup
 
 setup(

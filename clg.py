@@ -71,6 +71,7 @@ _LOAD_ERR = "Unable to load module: {err}"
 _GRP_METHODS = {'groups': 'add_argument_group',
                 'exclusive_groups': 'add_mutually_exclusive_group'}
 
+
 #
 # Exceptions.
 #
@@ -101,6 +102,7 @@ def _deepcopy(config):
             new_config[key] = _deepcopy(value)
     return new_config
 
+
 def _gen_parser(parser_conf, subparser=False):
     """Retrieve arguments pass to **argparse.ArgumentParser** from
     **parser_conf**. A subparser can take an extra 'help' keyword."""
@@ -118,6 +120,7 @@ def _gen_parser(parser_conf, subparser=False):
         conf.update(help=parser_conf['help'])
     return conf
 
+
 def _get_args(parser_conf):
     """Get options and arguments from a parser configuration."""
     args = OrderedDict()
@@ -129,6 +132,7 @@ def _get_args(parser_conf):
             args.update(_get_args(group))
     return args
 
+
 def _set_builtin(value):
     """Replace configuration values which begin and end by ``__`` by the
     respective builtin function."""
@@ -139,11 +143,13 @@ def _set_builtin(value):
                 if isinstance(value, str)
                 else value)
 
+
 def _print_help(parser):
     """Manage 'print_help' parameter of a (sub)command. It monkey patch the
     `_parse_known_args` method of the **parser** instance for simulating the
     use of the --help option if no arguments is supplied for the command."""
     default_method = parser._parse_known_args
+
     def _parse_known_args(arg_strings, namespace):
         if not arg_strings:
             arg_strings = ['--help']
@@ -161,10 +167,12 @@ def _format_usage(prog, usage):
     usage_elts.extend(['%s %s' % (spaces, elt) for elt in usage.split('\n')[:-1]])
     return '\n'.join(usage_elts)
 
+
 def _format_optname(value):
     """Format the name of an option in the configuration file to a more
     readable option in the command-line."""
     return value.replace('_', '-').replace(' ', '-')
+
 
 def _format_optdisplay(value, conf):
     """Format the display of an option in error message (short and long option
@@ -172,6 +180,7 @@ def _format_optdisplay(value, conf):
     return ('-%s/--%s' % (conf['short'], _format_optname(value))
             if 'short' in conf
             else '--%s' % _format_optname(value))
+
 
 def _format_arg(arg, arg_conf, arg_type):
     return _format_optdisplay(arg, arg_conf) if arg_type == 'options' else arg
@@ -185,11 +194,13 @@ def _check_empty(path, conf):
     if conf is None or (hasattr(conf, '__iter__') and not len(conf)):
         raise CLGError(path, _EMPTY_CONF)
 
+
 def _check_type(path, conf, conf_type=dict):
     """Check the **conf** is of **conf_type** type and raise an error if not."""
     if not isinstance(conf, conf_type):
         type_str = str(conf_type).split()[1][1:-2]
         raise CLGError(path, _INVALID_SECTION.format(type=type_str))
+
 
 def _check_keywords(path, conf, section, one=None, need=None):
     """Check items of **conf** from **KEYWORDS[section]**. **one** indicate
@@ -210,6 +221,7 @@ def _check_keywords(path, conf, section, one=None, need=None):
         for keyword in need:
             if keyword not in conf:
                 raise CLGError(path, _MISSING_KEYWORD.format(keyword=keyword))
+
 
 def _check_section(path, conf, section, one=None, need=None):
     """Check section is not empty, is a dict and have not extra keywords."""
@@ -232,9 +244,10 @@ def _has_value(value, conf):
         return False
 
     action = conf.get('action', None)
-    return ((not action and value)
-         or (action and action == 'store_true' and value)
-         or (action and action == 'store_false' and not value))
+    return ((not action and value) or
+            (action and action == 'store_true' and value) or
+            (action and action == 'store_false' and not value))
+
 
 def _post_need(parser, parser_args, args_values, arg):
     """Post processing that check all for needing options."""
@@ -248,6 +261,7 @@ def _post_need(parser, parser_args, args_values, arg):
                        'need_arg': _format_arg(cur_arg, cur_arg_conf, cur_arg_type)}
             parser.error(_NEED_ERR.format(**strings))
 
+
 def _post_conflict(parser, parser_args, args_values, arg):
     """Post processing that check for conflicting options."""
     arg_type, arg_conf = parser_args[arg]
@@ -259,6 +273,7 @@ def _post_conflict(parser, parser_args, args_values, arg):
                        'conflict_type': cur_arg_type[:-1],
                        'conflict_arg': _format_arg(cur_arg, cur_arg_conf, cur_arg_type)}
             parser.error(_CONFLICT_ERR.format(**strings))
+
 
 def _post_match(parser, parser_args, args_values, arg):
     """Post processing that check the value."""
@@ -273,6 +288,7 @@ def _post_match(parser, parser_args, args_values, arg):
     elif not re.match(pattern, args_values[arg]):
         parser.error(_MATCH_ERR.format(val=args_values[arg], **msg_elts))
 
+
 def _exec_module(path, exec_conf, args_values):
     """Load and execute a function of a module according to **exec_conf**."""
     mdl_func = exec_conf.get('function', 'main')
@@ -286,6 +302,7 @@ def _exec_module(path, exec_conf, args_values):
         except (ImportError, AttributeError) as err:
             raise CLGError(path, _LOAD_ERR.format(err=err))
     getattr(mdl, mdl_func)(args_values)
+
 
 def _exec_file(path, exec_conf, args_values):
     """Load and execute a function of a file according to **exec_conf**."""
@@ -348,7 +365,8 @@ class NoAbbrevParser(argparse.ArgumentParser):
         # return the collected option tuples
         return result
 
-# Use Pager for showing help.
+
+# Use Pager for showing help.
 class HelpPager(argparse.Action):
     """Action allowing to page help."""
     def __init__(self, option_strings,
@@ -368,6 +386,7 @@ class HelpPager(argparse.Action):
         parser.exit()
 ACTIONS.update(page_help=HelpPager)
 
+
 class Namespace(argparse.Namespace):
     """Iterable namespace."""
     def __init__(self, args):
@@ -385,6 +404,7 @@ class Namespace(argparse.Namespace):
     def __iter__(self):
         return ((key, value) for key, value in self.__dict__.items())
 
+
 class CommandLine(object):
     """CommandLine object that parse a preformatted dictionnary and generate
     ``argparse`` parser."""
@@ -398,12 +418,12 @@ class CommandLine(object):
         self._parsers = OrderedDict()
         self.parser = None
 
-        # Allows to page to all helps by replacing the default 'help' action.
+        # Allows to page to all helps by replacing the default 'help' action.
         if self.config.pop('page_help', False):
             ACTIONS.update(help=HelpPager)
 
-        # Manage the case when we want a help command that prints a description
-        # of all commands.
+        # Manage the case when we want a help command that prints a description
+        # of all commands.
         self.help_cmd = self.config.pop('add_help_cmd', False)
         if self.help_cmd:
             subparsers_conf = self.config.get('subparsers', None)
@@ -466,7 +486,7 @@ class CommandLine(object):
         self._parsers['/'.join(parser_path)] = parser
 
         # Manage 'print_help' parameter which force the use '--help' if no
-        # arguments is supplied.
+        # arguments is supplied.
         if parser_conf.get('print_help', False):
             _print_help(parser)
 
@@ -474,12 +494,12 @@ class CommandLine(object):
         if 'usage' in parser_conf:
             parser.usage = _format_usage(parser.prog, parser_conf['usage'])
 
-        # Manage definition of negative values.
+        # Manage definition of negative values.
         if 'negative_value' in parser_conf:
             parser._negative_number_matcher = re.compile(parser_conf['negative_value'])
 
-        # Get all arguments and options of the parser for some later checks.
-        # If there is an error, the configuration is bad and an error will be
+        # Get all arguments and options of the parser for some later checks.
+        # If there is an error, the configuration is bad and an error will be
         # raised later.
         if isinstance(parser, (NoAbbrevParser, argparse.ArgumentParser)):
             try:
@@ -577,19 +597,19 @@ class CommandLine(object):
         choices = ', '.join(map(str, arg_conf.get('choices', ['?'])))
         for param, value in sorted(arg_conf.items()):
             if param not in KEYWORDS[arg_type]['post']:
-                arg_params[param] = {'type': lambda: TYPES[value],
-                                     'help': lambda: value.replace('__DEFAULT__', default)
-                                                          .replace('__CHOICES__', choices)
-                                                          .replace('__MATCH__', match)
-                                                          .replace('__FILE__', sys.path[0])
-                                    }.get(param, lambda: _set_builtin(value))()
+                arg_params[param] = {
+                    'type': lambda: TYPES[value],
+                    'help': lambda: value.replace('__DEFAULT__', default)
+                                         .replace('__CHOICES__', choices)
+                                         .replace('__MATCH__', match)
+                                         .replace('__FILE__', sys.path[0])
+                    }.get(param, lambda: _set_builtin(value))()
 
         # Add argument to parser.
         parser.add_argument(*arg_args, **arg_params)
 
     def parse(self, args=None):
         """Parse command-line."""
-        # Parse command-line.
         args_values = Namespace(self.parser.parse_args(args).__dict__)
         if self.help_cmd and args_values['command0'] == 'help':
             self.print_help()
@@ -636,7 +656,7 @@ class CommandLine(object):
         desc_len = 80 - start
 
         # Print arboresence of commands with their descriptions. This use
-        # closures so we don't have to pass whatmille arguments to functions.
+        # closures so we don't have to pass whatmille arguments to functions.
         def parse_conf(cmd_conf, last):
             def print_line(cmd, line, first_line, has_childs):
                 symbols = ['  ' if elt else '│ ' for elt in last[:-1]]
@@ -649,7 +669,7 @@ class CommandLine(object):
                                    cmd if first_line else '',
                                    '\033[%sG%s' % (start, line)))
 
-            if not 'subparsers' in cmd_conf:
+            if 'subparsers' not in cmd_conf:
                 return
 
             subparsers_conf = (cmd_conf['subparsers']['parsers']
