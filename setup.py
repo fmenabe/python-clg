@@ -25,6 +25,5 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Topic :: Utilities'
     ],
-    py_modules=['clg'],
-    scripts=['gencomp.py']
+    py_modules=['clg']
 )
