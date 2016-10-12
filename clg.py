@@ -478,10 +478,6 @@ class CommandLine(object):
         if 'negative_value' in parser_conf:
             parser._negative_number_matcher = re.compile(parser_conf['negative_value'])
 
-        # Add subparsers.
-        if 'subparsers' in parser_conf:
-            self._add_subparsers(parser, path + ['subparsers'], parser_conf['subparsers'])
-
         # Get all arguments and options of the parser for some later checks.
         # If there is an error, the configuration is bad and an error will be
         # raised later.
@@ -498,6 +494,10 @@ class CommandLine(object):
             _check_type(arg_type_path, arg_type_conf, dict)
             for arg, arg_conf in arg_type_conf.items():
                 self._add_arg(parser, arg_type_path + [arg], arg, arg_type, arg_conf)
+
+        # Add subparsers.
+        if 'subparsers' in parser_conf:
+            self._add_subparsers(parser, path + ['subparsers'], parser_conf['subparsers'])
 
         # Add groups.
         for grp_type in ('groups', 'exclusive_groups'):
