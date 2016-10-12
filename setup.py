@@ -26,5 +26,5 @@ setup(
         'Topic :: Utilities'
     ],
     py_modules=['clg'],
-    scripts=['clg_gencomp.py']
+    scripts=['gencomp.py']
 )
