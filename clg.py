@@ -51,7 +51,10 @@ KEYWORDS = {
 # Help command description.
 _HELP_PARSER = OrderedDict(
     {'help': {'help': "Print commands' tree with theirs descriptions.",
-              'description': "Print commands' tree with theirs descriptions."}})
+              'description': "Print commands' tree with theirs descriptions.",
+              'options': {'page':{'short': 'p',
+                                  'action': 'store_true',
+                                  'help': 'page output'}}}})
 
 # Errors messages.
 _INVALID_SECTION = "this section is not of type '{type}'"
@@ -612,7 +615,7 @@ class CommandLine(object):
         """Parse command-line."""
         args_values = Namespace(self.parser.parse_args(args).__dict__)
         if self.help_cmd and args_values['command0'] == 'help':
-            self.print_help()
+            self.print_help(args_values)
 
         # Get command configuration.
         path = [elt
@@ -645,7 +648,7 @@ class CommandLine(object):
 
         return args_values
 
-    def print_help(self):
+    def print_help(self, args):
         """Print commands' tree with theirs descriptions."""
         # Get column at which we must start printing the description.
         lengths = []
@@ -657,6 +660,7 @@ class CommandLine(object):
 
         # Print arboresence of commands with their descriptions. This use
         # closures so we don't have to pass whatmille arguments to functions.
+        output = []
         def parse_conf(cmd_conf, last):
             def print_line(cmd, line, first_line, has_childs):
                 symbols = ['  ' if elt else '│ ' for elt in last[:-1]]
@@ -665,9 +669,9 @@ class CommandLine(object):
                                else ('  ' if last[-1] else '│ '))
                 if not first_line and has_childs:
                     symbols.append('│ ')
-                print('%s%s %s' % (''.join(symbols),
-                                   cmd if first_line else '',
-                                   '\033[%sG%s' % (start, line)))
+                output.append('%s%s %s' % (''.join(symbols),
+                                           cmd if first_line else '',
+                                           '\033[%sG%s' % (start, line)))
 
             if 'subparsers' not in cmd_conf:
                 return
@@ -695,4 +699,10 @@ class CommandLine(object):
                 print_line(cmd, cur_line, first_line, has_childs)
                 parse_conf(cmd_conf, last)
         parse_conf(self.config, [])
+        output = '\n'.join(output)
+        if args.page:
+            os.environ['PAGER'] = 'less -rc'
+            pydoc.pager(output)
+        else:
+            print(output)
         sys.exit(0)

@@ -133,6 +133,9 @@ add_help_cmd
 Add a `help` subcommand at the root of the parser that print the arborsence of
 commands with their description.
 
+The command has an ``--page`` option allowing to page the output of the command (using
+`less -c` command).
+
 
 
 allow_abbrev
