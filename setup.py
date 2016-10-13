@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import sys
-from distutils.core import setup
+
+from setuptools import setup
 
 setup(
     name='clg',
@@ -25,6 +25,5 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Topic :: Utilities'
     ],
-    py_modules=['clg'],
-    scripts=['gencomp.py']
+    py_modules=['clg']
 )

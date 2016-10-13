@@ -12,10 +12,9 @@ env*
 *.swp
 *.swo
 
-# Ignore build directory which is generated when
-# the package is installed.
-build
-dist
-MANIFEST
+# Distribution / packaging
+build/
+MANIFEST.in
+*.egg-info
 
 test/*
