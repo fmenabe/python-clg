@@ -150,14 +150,22 @@ def _set_builtin(value):
 def _print_help(parser):
     """Manage 'print_help' parameter of a (sub)command. It monkey patch the
     `_parse_known_args` method of the **parser** instance for simulating the
-    use of the --help option if no arguments is supplied for the command."""
-    default_method = parser._parse_known_args
+    use of the --help option if no arguments is supplied for the command.
 
-    def _parse_known_args(arg_strings, namespace):
+    It also manage the integration with ``argcomplete`` which also monkey
+    patch this method."""
+    import types
+
+    def _parse_known_args(self, arg_strings, namespace):
+        # Manage argcomplete monkey patching.
+        if self.__class__.__name__ == 'MonkeyPatchedIntrospectiveArgumentParser':
+            from argcomplete.my_argparse import IntrospectiveArgumentParser
+            return IntrospectiveArgumentParser._parse_known_args(self, arg_strings, namespace)
+
         if not arg_strings:
             arg_strings = ['--help']
-        return default_method(arg_strings, namespace)
-    parser._parse_known_args = _parse_known_args
+        return argparse.ArgumentParser._parse_known_args(self, arg_strings, namespace)
+    parser._parse_known_args = types.MethodType(_parse_known_args, parser)
 
 
 #
