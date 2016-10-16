@@ -431,6 +431,7 @@ class CommandLine(object):
 
         # Allows to page to all helps by replacing the default 'help' action.
         if self.config.pop('page_help', False):
+            argparse._HelpAction = HelpPager
             ACTIONS.update(help=HelpPager)
 
         # Manage the case when we want a help command that prints a description
