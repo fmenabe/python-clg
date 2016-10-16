@@ -39,8 +39,27 @@ Code is available on Github (http://github.com/fmenabe/python-clg).
 
 Documentation is available on readthedocs (https://clg.readthedocs.org/en/latest/).
 
-Releases notes
---------------
+Release notes
+-------------
+2.3.0 (not released)
+~~~~~~~~~~~~~~~~~~~~
+    * Add subparsers after args and options for improved behaviour
+      (`4c4471c <https://github.com/fmenabe/python-clg/commit/4c4471c>`_).
+    * Add a '-p/--page' option to the ``help`` command (added by the
+      `add_help_cmd <https://clg.readthedocs.io/en/latest/configuration.html#add-help-cmd>`_
+      parameter) allowing to page the output
+      (`8b2d9fd <https://github.com/fmenabe/python-clg/commit/8b2d9fd>`_).
+    * Remove obsolete script for generating bash and zsh completion
+      (`b7a06fb <https://github.com/fmenabe/python-clg/commit/b7a06fb>`_).
+    * Fix a bug that prevented the completion (using
+      `argcomplete <http://argcomplete.readthedocs.io/en/latest/>`_) to work when
+      ``print_help`` is used
+      (`d2590f7 <https://github.com/fmenabe/python-clg/commit/d2590f7>`_).
+    * Fix a bug that prevented paging of the help (behaviour induced by the
+      `page_help <https://clg.readthedocs.io/en/latest/configuration.html#page-help>`_
+      parameter) when the ``help`` option was not defined manually
+      (`0a1a0b4 <https://github.com/fmenabe/python-clg/commit/0a1a0b4>`_).
+
 2.2.0 (2016-06-09)
 ~~~~~~~~~~~~~~~~~~
     * Add a ``negative_value`` parameter for parsers allowing to redefine how
