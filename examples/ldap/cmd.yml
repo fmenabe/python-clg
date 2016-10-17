@@ -10,26 +10,23 @@ anchors:
             conf_file: &CONF
                 short: c
                 default: __FILE__/conf/conf.yml
-                help: "Configuration file to use."
+                help: "Configuration file to use (default: '__DEFAULT__')."
             env: &ENV
                 short: e
                 default: dev
                 help: >
-                    Environnement (dev, prod, ...) to use defined in the
-                    configuration file (default: '__DEFAULT__').
+                    Environnement (dev, prod, ...) to use defined in the configuration
+                    file (default: '__DEFAULT__').
             logdir: &LOGDIR
                 help: >
-                    Log directory (overwrite the value defined in the
-                    configuration file). All logs are logger in a file
-                    in this directory with 'INFO' loglevel.
+                    Log directory. All logs are logger in a file in this directory with
+                    'INFO' loglevel.
                 default: __FILE__/logs/
             loglevel: &LOGLEVEL
-                help: >
-                    Log level on console (none for not printing in
-                    console; overwrite the value defined in the
-                    configuration file; ).
                 choices: [none, verbose, debug, info, warn, error]
                 default: info
+                help: >
+                    Log level on console (choices: __CHOICES__, default: __DEFAULT__).
     help_group: &HELP_GRP
         - title: *MAIN_TITLE
           options:
@@ -40,8 +37,10 @@ anchors:
         title: Arguments
 
 description: Utility for managing the LDAP directory.
-add_help: False
-add_help_cmd: True
+print_help: true
+#page_help: true
+add_help: false
+add_help_cmd: true
 groups: *HELP_GRP
 
 subparsers:
@@ -50,7 +49,8 @@ subparsers:
         accounts:
             help: Manage accounts.
             description: Commands for managing accounts.
-            add_help: False
+            print_help: true
+            add_help: false
             groups: *HELP_GRP
             subparsers:
                 title: commands
@@ -58,9 +58,8 @@ subparsers:
                     clone:
                         help: Clone and anonymize accounts.
                         description: Clone and anonymize accounts.
-                        add_help: False
-                        execute:
-                            module: commands.accounts.clone
+                        add_help: false
+                        print_help: true
                         groups:
                             - *MAIN_GRP
                             - <<: *OPT_GRP
@@ -70,38 +69,34 @@ subparsers:
                                     type: int
                                     default: 2
                                     help: >
-                                        Number of time to clone account (default:
-                                        __DEFAULT__).
+                                        Number of time to clone account (default: __DEFAULT__).
                             - <<: *ARGS_GRP
                               args:
                                 logins:
                                     help: Logins to clone.
-                                    nargs: "+"
+                                    nargs: '+'
 
                     create:
                         help: Create accounts.
                         description: Create accounts.
-                        add_help: False
+                        print_help: true
+                        add_help: false
                         groups: *HELP_GRP
                         anchors:
                             create_account_opts: &CREATE_ACCOUNT_OPTS
                                 branch:
                                     short: b
-                                    help: LDAP branch on which put the account(s).
                                     default: autres
+                                    help: LDAP branch on which put the account(s).
                                 affiliations: &AFFILIATIONS
-                                    nargs: "+"
+                                    nargs: '+'
                                     short: a
-                                    help: >
-                                        Affiliations of the account (default:
-                                        __DEFAULT__).
-                                    required: True
+                                    required: true
+                                    help: 'Affiliations of the account (default: __DEFAULT__).'
                                 domain: &DOMAIN
                                     short: d
-                                    help: >
-                                        Domain for mail address (default:
-                                        __DEFAULT__)
                                     default: unistra.fr
+                                    help: 'Domain for mail address (default: __DEFAULT__).'
                                 expiration_date:
                                     short: E
                                     metavar: DATE
@@ -114,15 +109,13 @@ subparsers:
                                     help: VPN profile name.
                                 mailbox:
                                     short: m
-                                    help: Create a mailbox with the given domain.
                                     action: store_true
                                     need: [maildir, quota]
+                                    help: Create a mailbox with the given domain.
                                 maildir: &MAILDIR
-                                    help: >
-                                        Type of mailbox (default:
-                                        __DEFAULT__)
                                     choices: [pers, etud]
                                     default: pers
+                                    help: 'Type of mailbox (default: __DEFAULT__).'
                                 quota: &QUOTA
                                     help: >
                                         Quota of the mailbox in Gb (default: __DEFAULT__).
@@ -132,7 +125,7 @@ subparsers:
                                     short: W
                                     help: >
                                         values for 'udsWebGroup' attribute.
-                                    nargs: "*"
+                                    nargs: '*'
 
                             create_pers_account_options: &CREATE_PERS_ACCOUNT_OPTS
                                 <<: *CREATE_ACCOUNT_OPTS
@@ -152,16 +145,15 @@ subparsers:
                                         optional and login will be generated with
                                         the first letter of the firstname and the
                                         name striping spaces and special characters.
-                                    nargs: "?"
+                                    nargs: '?'
                         subparsers:
                             title: commands
                             parsers:
                                 manual:
                                     help: Create a manual account.
                                     description: Create a manual account.
-                                    add_help: False
-                                    execute:
-                                        module: commands.accounts.create.manual
+                                    add_help: false
+                                    print_help: true
                                     groups:
                                         - *MAIN_GRP
                                         - <<: *OPT_GRP
@@ -172,9 +164,8 @@ subparsers:
                                 non-nominatif:
                                     help: Create a non-nominative account.
                                     description: Create a non-nominative account.
-                                    add_help: False
-                                    execute:
-                                        module: commands.accounts.create.non-nominatif
+                                    add_help: false
+                                    print_help: true
                                     groups:
                                         - *MAIN_GRP
                                         - <<: *OPT_GRP
@@ -183,7 +174,7 @@ subparsers:
                                             affiliations:
                                                 <<: *AFFILIATIONS
                                                 default: [library-walk-in]
-                                                required: False
+                                                required: false
                                             mailbox:
                                                 short: m
                                                 help: >
@@ -201,9 +192,8 @@ subparsers:
                                 pers:
                                     help: Create an employee account.
                                     description: Create an employee account.
-                                    add_help: False
-                                    execute:
-                                        module: commands.accounts.create.pers
+                                    add_help: false
+                                    print_help: true
                                     groups:
                                         - *MAIN_GRP
                                         - <<: *OPT_GRP
@@ -212,9 +202,9 @@ subparsers:
                                             affiliations:
                                                 <<: *AFFILIATIONS
                                                 default: [employee, member]
-                                                required: False
+                                                required: false
                                             affectations:
-                                                nargs: "*"
+                                                nargs: '*'
                                                 default: [DI]
                                                 help: Affectation of the person.
                                         - <<: *ARGS_GRP
@@ -223,9 +213,8 @@ subparsers:
                                 student:
                                     help: Create a student account.
                                     description: Create a student account.
-                                    add_help: False
-                                    execute:
-                                        module: commands.accounts.create.student
+                                    add_help: false
+                                    print_help: true
                                     groups:
                                         - *MAIN_GRP
                                         - <<: *OPT_GRP
@@ -234,7 +223,7 @@ subparsers:
                                             affiliations:
                                                 <<: *AFFILIATIONS
                                                 default: [student]
-                                                required: False
+                                                required: false
                                             domain:
                                                 <<: *DOMAIN
                                                 default: etu.unistra.fr
@@ -268,7 +257,7 @@ subparsers:
                                                     Value of the 'supannCodeINE' attrubute (
                                                     default: __DEFAULT__).
                                             departments:
-                                                nargs: "*"
+                                                nargs: '*'
                                                 default: [ART]
                                                 help: >
                                                     Composante(s) of the student. It is use
@@ -281,9 +270,8 @@ subparsers:
                                 teacher:
                                     help: Create a teacher account.
                                     description: Create a teacher account.
-                                    add_help: False
-                                    execute:
-                                        module: commands.accounts.create.teacher
+                                    add_help: false
+                                    print_help: true
                                     groups:
                                         - *MAIN_GRP
                                         - <<: *OPT_GRP
@@ -292,9 +280,9 @@ subparsers:
                                             affiliations:
                                                 <<: *AFFILIATIONS
                                                 default: [faculty, researcher, member]
-                                                required: False
+                                                required: false
                                             affectations:
-                                                nargs: "*"
+                                                nargs: '*'
                                                 default: [EPE]
                                                 help: >
                                                     Composante(s) of the teacher. It is use to
@@ -309,51 +297,47 @@ subparsers:
                         help: Move accounts to the trash branch.
                         description: >
                             Move account(s) to the trash branch (ou=poubelle,o=annuaire).
-                        add_help: False
-                        execute:
-                            module: commands.accounts.delete
+                        add_help: false
+                        print_help: true
                         groups:
                             - *MAIN_GRP
                             - <<: *ARGS_GRP
                               args:
                                   filters:
                                       help: Filter(s) for retrieving accounts to delete.
-                                      nargs: "+"
+                                      nargs: '+'
 
                     purge:
                         help: Purge accounts.
                         description: Purge accounts.
-                        add_help: False
-                        execute:
-                            module: commands.accounts.purge
+                        add_help: false
+                        print_help: true
                         groups:
                             - *MAIN_GRP
                             - <<: *ARGS_GRP
                               args:
                                   filters:
                                       help: Filter(s) for retrieving accounts to purge.
-                                      nargs: "+"
+                                      nargs: '+'
 
                     lock:
                         help: Lock accounts.
                         description: Lock accounts.
-                        add_help: False
-                        execute:
-                            module: commands.accounts.lock
+                        add_help: false
+                        print_help: true
                         groups:
                             - *MAIN_GRP
                             - <<: *ARGS_GRP
                               args:
                                 logins:
                                     help: Logins to lock.
-                                    nargs: "+"
+                                    nargs: '+'
 
                     mailsearch:
                         help: Search accounts based on the mail address.
                         description: Search account(s) based on mail(s).
-                        add_help: False
-                        execute:
-                            module: commands.accounts.mailsearch
+                        add_help: false
+                        print_help: true
                         groups:
                             - <<: *MAIN_GRP
                               options:
@@ -365,14 +349,13 @@ subparsers:
                               args:
                                   mails:
                                       help: Mails addresses.
-                                      nargs: "+"
+                                      nargs: '+'
 
                     unlock:
                         help: Unlock accounts.
                         description: Unlock accounts.
-                        add_help: False
-                        execute:
-                            module: commands.accounts.unlock
+                        add_help: false
+                        print_help: true
                         groups:
                             - *MAIN_GRP
                             - <<: *OPT_GRP
@@ -385,16 +368,15 @@ subparsers:
                               args:
                                 logins:
                                     help: Logins to unlock
-                                    nargs: "+"
+                                    nargs: '+'
 
                     restore:
                         help: Restore accounts in the trash branch.
                         description: >
                             Restore a deleting account (in trash branch) to a
                             given branch.
-                        add_help: False
-                        execute:
-                            module: commands.accounts.restore
+                        add_help: false
+                        print_help: true
                         groups:
                             - *MAIN_GRP
                             - <<: *ARGS_GRP
@@ -406,35 +388,20 @@ subparsers:
                                         Branch on which restoring the account (default:
                                         __DEFAULT__).
                                     default: uds
-                                    nargs: "?"
-
-                    set_password:
-                        help: >
-                            Set the password of an account by calling 'univ-api'
-                            webservice.
-                        description: Set password by calling 'univ-api' webservice.
-                        add_help: False
-                        execute:
-                            module: commands.accounts.set_password
-                        groups:
-                            - *MAIN_GRP
-                            - <<: *ARGS_GRP
-                              args:
-                                login:
-                                    help: Account to generate password
+                                    nargs: '?'
 
         branch:
             help: Perform actions on branches.
             description: Perform actions on branches.
-            add_help: False
+            print_help: true
+            add_help: false
             groups: *HELP_GRP
             subparsers:
                 restore:
                     help: Restore a branch from a dump.
                     description: Restore a branch from a dump.
-                    add_help: False
-                    execute:
-                        module: commands.branch.restore
+                    add_help: false
+                    print_help: true
                     groups:
                         - *MAIN_GRP
                         - <<: *OPT_GRP
@@ -458,7 +425,7 @@ subparsers:
                                 help: Branch to restore.
                             day:
                                 metavar: day
-                                help: "Day of the dump (choices: __CHOICES__)."
+                                help: 'Day of the dump (choices: __CHOICES__).'
                                 choices: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
                             hour:
                                 help: Hour of the dump.
@@ -468,9 +435,8 @@ subparsers:
                     help: Synchronize a branch from an environment to another.
                     description: >
                         Synchronize a branch from an environment to another.
-                    add_help: False
-                    execute:
-                        module: commands.branch.sync
+                    add_help: false
+                    print_help: true
                     groups:
                         - *MAIN_GRP
                         - <<: *ARGS_GRP
@@ -485,68 +451,20 @@ subparsers:
                                     file).
                             filter:
                                 help: LDAP filter.
-                                nargs: "*"
-
-        lists:
-            help: Manage mailing lists.
-            description: Manage mailing lists.
-            add_help: False
-            groups: *HELP_GRP
-            subparsers:
-                sync:
-                    help: Synchronize SYMPA mailing lists.
-                    description: >
-                        Synchronize SYMPA mailing lists to aliases or groups in the
-                        LDAP directory. If the visibility of the list in SYMPA is
-                        private, an aliases will be created in the LDAP directory.
-                        If the list is public, a group will be created.
-                    add_help: False
-                    execute:
-                        module: commands.lists.sync
-                    groups:
-                        - *MAIN_GRP
-                        - <<: *OPT_GRP
-                          options:
-                            max_members:
-                                short: m
-                                type: int
-                                default: 200
-                                help: >
-                                    Synchronize lists that have less members than this
-                                    value (default: __DEFAULT__).
-                            tags:
-                                short: t
-                                help: >
-                                    Tag(s) to put in 'udsGroupApp' attribut (default:
-                                    __DEFAULT__).
-                                nargs: "*"
-                                default: [sogo-groupe-pers]
-                        - <<: *ARGS_GRP
-                          args:
-                              domain:
-                                  help: Sympa robot.
-                              branch:
-                                  help: >
-                                      LDAP branch (ex: 'uds' for
-                                      'ou=uds,ou=groups,o=annuaire')
-                              filters:
-                                  help: >
-                                      List of filters separated by spaces. If filter begin
-                                      by a '!', this in an exclusion filter.
-                                  nargs: "*"
+                                nargs: '*'
 
         operators:
             help: Manage operators accounts.
             description: Manage operators accounts.
-            add_help: False
+            add_help: false
+            print_help: true
             groups: *HELP_GRP
             subparsers:
                 add:
                     help: Add an operator account.
                     description: Add an operator account.
-                    add_help: False
-                    execute:
-                        module: commands.operators.add
+                    add_help: false
+                    print_help: true
                     groups:
                         - *MAIN_GRP
                         - <<: *OPT_GRP
@@ -573,9 +491,8 @@ subparsers:
                     description: >
                         Remove the rights for an account and, for an application
                         account, remove the account.
-                    add_help: False
-                    execute:
-                        module: commands.operators.del
+                    add_help: false
+                    print_help: true
                     groups:
                         - *MAIN_GRP
                         - <<: *ARGS_GRP
@@ -589,9 +506,7 @@ subparsers:
                 list:
                     help: List operators accounts.
                     description: List operators accounts.
-                    add_help: False
-                    execute:
-                        module: commands.operators.list
+                    add_help: false
                     groups:
                         - *MAIN_GRP
                         - <<: *OPT_GRP
@@ -619,9 +534,8 @@ subparsers:
                 set:
                     help: Set permission for an operator account.
                     description: Set permission for an operator account.
-                    add_help: False
-                    execute:
-                        module: commands.operators.set
+                    add_help: false
+                    print_help: true
                     groups:
                         - *MAIN_GRP
                         - <<: *ARGS_GRP
@@ -629,20 +543,19 @@ subparsers:
                             type:
                                 metavar: type
                                 choices: [app, pers]
-                                help: "Type of the accounts (choices: __CHOICES__)."
+                                help: 'Type of the accounts (choices: __CHOICES__).'
                             name:
                                 help: Name of the account.
                             permission:
                                 metavar: permission
                                 choices: [r, r-, w]
-                                help: "Permission to set (choices: __CHOICES__)."
+                                help: 'Permission to set (choices: __CHOICES__).'
 
         restore:
             help: Restore (completely) the LDAP directory from a dump.
             description: Restore a LDAP directory from a dump.
-            add_help: False
-            execute:
-                module: commands.restore
+            add_help: false
+            print_help: true
             groups:
                 - *MAIN_GRP
                 - <<: *OPT_GRP
@@ -658,9 +571,8 @@ subparsers:
         save:
             help: Create a dump of the LDAP directory.
             description: Make a dump of the LDAP directory.
-            add_help: False
-            execute:
-                module: commands.save
+            add_help: false
+            print_help: true
             groups:
                 - *MAIN_GRP
                 - <<: *OPT_GRP
@@ -672,107 +584,3 @@ subparsers:
                   args:
                     file:
                         help: Output file.
-
-        sifac:
-            help: Commands for SIFAC.
-            description: Commands for SIFAC.
-            add_help: False
-            groups: *HELP_GRP
-            subparsers:
-                users2xml:
-                    help: Generate an XML file with the users for SIFAC.
-                    description: Generate an XML file with LDAP users for SIFAC.
-                    add_help: False
-                    execute:
-                        module: commands.sifac.users2xml
-                    groups:
-                        - *MAIN_GRP
-                        - <<: *ARGS_GRP
-                          args:
-                            output_file:
-                                help: Output file.
-
-        students:
-            help: Manage students.
-            description: Manage students.
-            add_help: False
-            groups: *HELP_GRP
-            subparsers:
-                inform:
-                    help: Send warnings abount accounts deletion.
-                    description: Send warnings about accounts deletion.
-                    add_help: False
-                    execute:
-                        module: commands.students.inform
-                    groups:
-                        - *MAIN_GRP
-                        - <<: *OPT_GRP
-                          options:
-                            file:
-                                short: f
-                                required: True
-                                help: File with mail template.
-                            ignore:
-                                short: i
-                                help: Ignore uids in this file.
-                                default: __FILE__/conf/ignore.txt
-                            to_addr:
-                                short: t
-                                help: >
-                                    Sent mails to this address instead of sending them
-                                    to the students.
-                        - <<: *ARGS_GRP
-                          args:
-                            expire:
-                                help: Expiration date
-                            years:
-                                nargs: "*"
-                                help: Year
-
-        temp:
-            help: Temporary commands.
-            description: Temporary commands.
-            add_help: False
-            groups: *HELP_GRP
-            subparsers:
-                sync_memberof:
-                    help: >
-                        Hack for synchronizing the 'memberof' attribute of updated
-                        groups.
-                    description: >
-                        Hack for synchronizing the 'memberof' attribute of updated
-                        groups.
-                    add_help: False
-                    execute:
-                        module: commands.temp.sync_memberof
-                    groups:
-                        - *MAIN_GRP
-                        - <<: *OPT_GRP
-                          options:
-                            delta:
-                                short: d
-                                type: int
-                                default: 60
-                                help: Delta in minutes for retrieving updated accounts.
-                        - <<: *ARGS_GRP
-                          args:
-                            branch:
-                                help: Branch for search.
-
-        oneshot:
-            help: Oneshot commands.
-            description: Oneshot commands
-            add_help: False
-            groups: *HELP_GRP
-            subparsers:
-                crous:
-                    description: Create crous accounts.
-                    add_help: False
-                    execute:
-                        module: commands.oneshot.crous
-                    groups:
-                        - *MAIN_GRP
-                        - <<: *ARGS_GRP
-                          args:
-                            csv:
-                                help: CSV file

@@ -7,15 +7,14 @@ import yaml
 import yamlordereddictloader
 from os import path
 
-CMD_FILE = path.abspath(path.join(path.dirname(__file__), 'kvm.yml'))
+CMD_FILE = path.abspath(path.join(path.dirname(__file__), 'cmd.yml'))
 
 # Add custom command-line types.
 from commands.deploy import InterfaceType, DiskType, FormatType
 clg.TYPES.update({'Interface': InterfaceType, 'Disk': DiskType, 'Format': FormatType})
 
 def main():
-    cmd = clg.CommandLine(yaml.load(open('kvm.yml'),
-                                    Loader=yamlordereddictloader.Loader))
+    cmd = clg.CommandLine(yaml.load(open(CMD_FILE), Loader=yamlordereddictloader.Loader))
     cmd.parse()
 
 if __name__ == '__main__':

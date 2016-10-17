@@ -1,5 +1,7 @@
 add_help_cmd: True
 allow_abbrev: False
+print_help: True
+page_help: True
 description: Utility for managing KVM hosts.
 
 anchors:
@@ -25,6 +27,7 @@ subparsers:
         help: Deploy a new guest on an hyperviror based on a model.
         description: Deploy a new guest on an hypervisor based on a model.
         add_help: False
+        print_help: True
         formatter_class: RawTextHelpFormatter
         execute:
             module: commands.deploy
@@ -180,6 +183,7 @@ subparsers:
             both cold and live migration.
         help: Move a guest to an other hypervisor.
         add_help: False
+        print_help: True
         execute:
             module: commands.migrate
         groups:

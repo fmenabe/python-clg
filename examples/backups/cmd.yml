@@ -1,4 +1,6 @@
-add_help_cmd: True
+add_help_cmd: true
+print_help: true
+page_help: true
 
 anchors:
     main: &MAIN
@@ -23,46 +25,43 @@ description: Tool for managing backups.
 subparsers:
     add:
         help: Add datas.
+        print_help: true
         description: Command for adding datas on the database or Tina catalogs.
         subparsers:
             catalog:
                 help: Add a catalog.
+                print_help: true
                 description: Add a catalog in the database.
-                execute:
-                    module: commands.add.catalog
                 options:
                     <<: *MAIN
                     user:
                         short: u
                         default: admin
-                        help: >
-                            User for connecting to the catalog (default:
-                            __DEFAULT__).
+                        help: 'User for connecting to the catalog (default: __DEFAULT__).'
                     path:
                         short: p
                         default: /usr/Atempo
-                        help: "Installation path (default: __DEFAULT__)."
+                        help: 'Installation path (default: __DEFAULT__).'
                     env:
                         short: e
                         default: tina
-                        help: "Environment name (default: __DEFAULT__)."
+                        help: 'Environment name (default: __DEFAULT__).'
                 args:
                     name:
                         help: Name of the catalog to add.
                     host:
                         help: Server hosting the catalog.
                     active:
-                        help: Indicate whether the catalog is active or not.
                         type: int
                         choices: [0, 1]
+                        help: Indicate whether the catalog is active or not.
                     password:
                         help: Password for connecting to the catalog.
 
             mail:
                 help: Associate a mail address to a host.
                 description: Associate a mail address to a host with a verbosity.
-                execute:
-                    module: commands.add.mail
+                print_help: true
                 options:
                     <<: *MAIN
                 args:
@@ -72,20 +71,21 @@ subparsers:
                             value '*' associate the mail address to each hosts
                             of each catalogs.
                     mail:
+                        match: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+[.][a-zA-Z]{2,}$'
                         help: Mail address to associate.
                     verbosity:
-                        help: "Verbosity for this mail (0: only errors, 1: all)"
                         type: int
                         choices: [0, 1]
+                        help: 'Verbosity for this mail (0: only errors, 1: all)'
 
     create:
         help: Create objects in catalogs.
+        print_help: true
         subparsers:
             app:
                 help: Create an application in a catalog from a JSON file.
                 description: Create an application in a catalog from a JSON file.
-                execute:
-                    module: commands.create.app
+                print_help: true
                 options: *MAIN
                 args:
                     catalog:
@@ -95,12 +95,12 @@ subparsers:
 
     del:
         help: Delete datas.
+        print_help: true
         subparsers:
             catalog:
                 help: Delete a catalog.
                 description: Delete a catalog.
-                execute:
-                    module: commands.del.catalog
+                print_help: true
                 options:
                     <<: *MAIN
                 args:
@@ -109,10 +109,8 @@ subparsers:
 
             mail:
                 help: Dissociate a mail address to a host.
-                description: >
-                    Remove the association between a host and a mail addres
-                execute:
-                    module: commands.del.mail
+                print_help: true
+                description: Remove the association between a host and a mail addres
                 options:
                     <<: *MAIN
                 args:
@@ -122,20 +120,20 @@ subparsers:
                             value '*' associate the mail address to each hosts
                             of each catalogs.
                     mail:
+                        match: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+[.][a-zA-Z]{2,}$'
                         help: Mail address to dissociate.
 
     deploy:
         help: Deploy Tina agent on a host.
         description: Deploy Tina agent on a host.
-        execute:
-            module: commands.deploy
+        print_help: true
         options:
             <<: *MAIN
             catalogs:
                 short: c
-                match: "^.+@.+$"
-                required: True
-                nargs: "+"
+                match: '^.+@.+$'
+                required: true
+                nargs: '+'
                 help: Catalog(s) to use.
             reinstall:
                 short: r
@@ -151,8 +149,7 @@ subparsers:
             sources_dir:
                 short: s
                 default: __FILE__/files/
-                help: >
-                    Directory containing agent installers (default: __DEFAULT__).
+                help: 'Directory containing agent installers (default: __DEFAULT__).'
             bes:
                 short: b
                 action: store_true
@@ -162,18 +159,16 @@ subparsers:
         args:
             hosts:
                 help: Host(s) on which deploy the agent.
-                nargs: "+"
+                nargs: '+'
 
     dump:
         help: Dump datas from catalog(s) to DB.
         description: Dump datas from catalog(s) to DB.
-        execute:
-            module: commands.dump
         options:
             <<: *MAIN
             catalogs:
                 short: c
-                nargs: "*"
+                nargs: '*'
                 help: Only dump elements for given catalog(s).
             datas:
                 short: d
@@ -192,16 +187,15 @@ subparsers:
                     - plateforms
                     - pools
                     - schedules
-                help: "Datas to dump (default: all)."
+                help: 'Datas to dump (default: all).'
 
     list:
         help: List datas.
+        print_help: true
         subparsers:
             cartridges:
                 help: List cartridges.
                 description: List cartridges.
-                execute:
-                    module: commands.list.cartridges
                 options:
                     <<: *MAIN
                     date:
@@ -220,18 +214,18 @@ subparsers:
                             used with -d/--date.
                     catalogs:
                         short: c
-                        nargs: "*"
+                        nargs: '*'
                         help: Catalogs to print datas.
                     name:
                         short: n
                         help: Filter on name with a regular expression.
                     jobs:
                         short: j
-                        nargs: "*"
+                        nargs: '*'
                         help: Filter on jobs.
                     libraries:
                         short: l
-                        nargs: "*"
+                        nargs: '*'
                         help: Filter on libraries.
                     recyclable_status:
                         short: r
@@ -262,8 +256,6 @@ subparsers:
             catalogs:
                 help: List catalogs
                 description: List catalogs.
-                execute:
-                    module: commands.list.catalogs
                 options:
                     <<: *MAIN
                     show_passwords:
@@ -271,7 +263,7 @@ subparsers:
                         action: store_true
                         help: Decrypt passwords.
                 exclusive_groups:
-                    - required: False
+                    - required: false
                       options:
                         active:
                             short: a
@@ -286,12 +278,11 @@ subparsers:
 
             jobs:
                 help: List jobs datas.
+                print_help: true
                 subparsers:
                     summary:
                         help: List a summary of jobs in last hours.
                         description: List a summary of jobs in last hours.
-                        execute:
-                            module: commands.list.jobs.summary
                         options:
                             <<: *MAIN
                             delta:
@@ -307,7 +298,7 @@ subparsers:
                                 nargs: '*'
                             plateforms:
                                 short: p
-                                nargs: "*"
+                                nargs: '*'
                                 help: >
                                     Filter on hosts or applications. The value
                                     is a regular expression.
@@ -353,8 +344,6 @@ subparsers:
             mails:
                 help: List associations between hosts and mails.
                 description: List association between hosts and mail addresses.
-                execute:
-                    module: commands.list.mails
                 options:
                     <<: *MAIN
                     host:
@@ -370,8 +359,6 @@ subparsers:
             plateforms:
                 help: List plateforms (hosts and applications).
                 description: List hosts (hosts and applications).
-                execute:
-                    module: commands.list.plateforms
                 options:
                     <<: *MAIN
                     date:
@@ -390,14 +377,14 @@ subparsers:
                             used with -d/--date.
                     catalogs:
                         short: c
-                        nargs: "*"
+                        nargs: '*'
                         help: Catalogs to print datas.
                     name:
                         short: n
                         help: Filter on name with a regular expression.
                     types:
                         short: t
-                        nargs: "*"
+                        nargs: '*'
                         choices: [host, app]
                         default: [host, app]
                         help: >
@@ -422,7 +409,7 @@ subparsers:
                         short: p
                         help: Filter on given pool.
                     columns:
-                        nargs: "*"
+                        nargs: '*'
                         choices:
                             - host_type
                             - version
@@ -435,25 +422,25 @@ subparsers:
 
     oneshot:
         help: Oneshot commands.
+        print_help: true
         subparsers:
             import_dumps:
                 help: Import old dumps in database.
                 description: Import old dumps in database.
-                execute:
-                    module: commands.oneshot.import_dumps
+                print_help: true
                 options:
                     <<: *MAIN
                     begin_date:
                         short: b
                         type: Date
-                        help: "Begin date (format: DD/MM/YYYY; default: today)."
+                        help: 'Begin date (format: DD/MM/YYYY; default: today).'
                     end_date:
                         short: e
                         type: Date
-                        help: "End date (format: DD/MM/YYYY; default: today)."
+                        help: 'End date (format: DD/MM/YYYY; default: today).'
                     import:
                         short: i
-                        nargs: "*"
+                        nargs: '*'
                         choices:
                             - plateforms
                             - libraries
@@ -468,13 +455,12 @@ subparsers:
             migrate:
                 help: Migrate datas from one catalog to another.
                 description: Migrate datas from one catalog to another.
-                execute:
-                    module: commands.oneshot.migrate
+                print_help: true
                 options:
                     <<: *MAIN
                     types:
                         short: t
-                        nargs: "*"
+                        nargs: '*'
                         choices: [pools, schedules, plateforms]
                         default: [pools, schedules, plateforms]
                         help: Only migrate these objects.
@@ -487,8 +473,7 @@ subparsers:
             sympa:
                 help: Create strategies for Sympa.
                 description: Create strategies for Sympa.
-                execute:
-                    module: commands.oneshot.sympa
+                print_help: true
                 options:
                     <<: *MAIN
                     host:
@@ -502,35 +487,33 @@ subparsers:
 
     sync:
         help: Sync datas (to the wiki, graphite, ...)
+        print_help: true
         subparsers:
             wiki:
                 help: Synchronize wiki pages.
+                print_help: true
                 subparsers:
                     jobs:
                         help: Synchronize jobs summary in the wiki.
                         description: Synchronize jobs summary in the wiki.
-                        execute:
-                            module: commands.sync.wiki.jobs
                         options:
                             <<: *MAIN
 
                     config:
                         help: Synchronize clients configuration.
                         description: Synchronize clients configuration.
-                        execute:
-                            module: commands.sync.wiki.config
                         options:
                             <<: *MAIN
 
 
     update:
         help: Update datas.
+        print_help: true
         subparsers:
             catalog:
                 help: Update a catalog.
                 description: Update a catalog.
-                execute:
-                    module: commands.update.catalog
+                print_help: true
                 options:
                     <<: *MAIN
                     active:
@@ -543,10 +526,10 @@ subparsers:
                         help: Server hosting the catalog.
                     path:
                         short: p
-                        help: "Installation path."
+                        help: 'Installation path.'
                     env:
                         short: e
-                        help: "Environment name."
+                        help: 'Environment name.'
                     user:
                         short: u
                         help: User for connecting to the catalog.
@@ -560,8 +543,7 @@ subparsers:
             plateform:
                 help: Update a plateform in the catalog.
                 description: Update a plateform in the catalog.
-                execute:
-                    module: commands.update.plateform
+                print_help: true
                 options:
                     <<: *MAIN
                     type:
