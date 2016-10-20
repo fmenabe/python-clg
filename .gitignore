@@ -16,5 +16,6 @@ env*
 build/
 MANIFEST.in
 *.egg-info
+dist/
 
 test/*
