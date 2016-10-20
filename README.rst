@@ -59,6 +59,12 @@ Release notes
       `page_help <https://clg.readthedocs.io/en/latest/configuration.html#page-help>`_
       parameter) when the ``help`` option was not defined manually
       (`0a1a0b4 <https://github.com/fmenabe/python-clg/commit/0a1a0b4>`_).
+    * Add the ``completer`` parameter for options and arguments allowing to manage
+      `argcomplete completers
+      <http://argcomplete.readthedocs.io/en/latest/#specifying-completers>`_
+      (`20c8461 <https://github.com/fmenabe/python-clg/commit/20c8461>`_).
+    * Update documentation for `argcomplete <http://argcomplete.readthedocs.io/en/latest/>`_
+      (`66ad52a <https://github.com/fmenabe/python-clg/commit/66ad52a>`_).
 
 2.2.0 (2016-06-09)
 ~~~~~~~~~~~~~~~~~~
