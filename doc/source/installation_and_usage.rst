@@ -2,6 +2,7 @@
 Installation and usage
 **********************
 
+
 Installation
 ============
 This module is tested with python2.7, python3.4 and python 3.5 (it should work
@@ -27,6 +28,7 @@ So, for installing it in a virtualenv with the use of an ordered YAML file:
 
 Otherwise sources are on `github <https://github.com/fmenabe/python-clg>`_
 
+
 Usage
 =====
 The main program is very simple. You need to import the necessaries modules
@@ -42,7 +44,6 @@ inheriting from ``argparse``
 `Namespace <https://docs.python.org/dev/library/argparse.html#argparse.Namespace>`_
 object but with additionals methods for making it iterable and allowing to
 access arguments with both attributes and list syntax.
-
 
 With YAML
 ---------
@@ -66,7 +67,7 @@ With YAML
     import yaml
     import yamlordereddictloader
 
-    cmd_conf = yaml.load(open('cmd'), Loader=yamlordereddictloader.Loader)
+    cmd_conf = yaml.load(open('cmd.yml'), Loader=yamlordereddictloader.Loader)
     cmd = clg.CommandLine(cmd_conf)
     args = cmd.parse()
 
@@ -102,7 +103,6 @@ With YAML
     Access 'foo' option with attribute syntax: foo
     Access 'foo' option with list syntax: foo
 
-
 With JSON
 ----------
 *Configuration file*:
@@ -114,7 +114,6 @@ With JSON
                  "bar": {"short": "b",
                          "help": "Bar help."}}}
 
-
 *Python program*:
 
 .. code-block:: python
@@ -123,6 +122,28 @@ With JSON
     import json
     from collections import OrderedDict
 
-    cmd_conf = json.load(open('cmd'), object_pairs_hook=OrderedDict)
+    cmd_conf = json.load(open('cmd.json'), object_pairs_hook=OrderedDict)
     cmd = clg.CommandLine(cmd_conf)
     args = cmd.parse()
+
+
+Completion
+==========
+For completion (Bash and Zsh), there's the great project `argcomplete
+<http://argcomplete.readthedocs.io/en/latest/>`_. It provides an extensible command-line
+tab completion for programs based on ``argparse``.
+
+The usage with ``clg`` looks like this:
+
+.. code:: python
+
+    import clg
+    import yaml
+    import yamlordereddictloader
+    import argcomplete
+
+    cmd_conf = yaml.load(open('cmd.yml'), Loader=yamlordereddictloader.Loader)
+    cmd = clg.CommandLine(cmd_conf)
+    argcomplete.autocomplete(cmd.parser)
+    args = cmd.parse()
+
