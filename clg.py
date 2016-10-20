@@ -24,6 +24,8 @@ TYPES = {builtin: getattr(_BUILTINS, builtin) for builtin in vars(_BUILTINS)}
 TYPES['suppress'] = argparse.SUPPRESS
 # Allow custom actions.
 ACTIONS = {}
+# Allow argcomplete completers.
+COMPLETERS = {}
 
 # Keywords (argparse and clg).
 KEYWORDS = {
@@ -40,11 +42,11 @@ KEYWORDS = {
                          'clg': ['options']},
     'options': {'argparse': ['action', 'nargs', 'const', 'default', 'choices',
                              'required', 'help', 'metavar', 'type', 'version'],
-                'clg': ['short'],
+                'clg': ['short', 'completer'],
                 'post': ['match', 'need', 'conflict']},
     'args': {'argparse': ['action', 'nargs', 'const', 'default', 'choices',
                           'required', 'help', 'metavar', 'type'],
-             'clg': ['short'],
+             'clg': ['short', 'completer'],
              'post': ['match', 'need', 'conflict']},
     'execute': {'clg': ['module', 'file', 'function']}}
 
@@ -617,8 +619,12 @@ class CommandLine(object):
                                          .replace('__FILE__', sys.path[0])
                     }.get(param, lambda: _set_builtin(value))()
 
-        # Add argument to parser.
-        parser.add_argument(*arg_args, **arg_params)
+        # Add argument to parser (and manager completers for argcomplete).
+        completer = arg_params.pop('completer', None)
+        if completer is not None:
+            parser.add_argument(*arg_args, **arg_params).completer = COMPLETERS[completer]
+        else:
+            parser.add_argument(*arg_args, **arg_params)
 
     def parse(self, args=None):
         """Parse command-line."""
