@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='clg',
-    version='2.2.0',
+    version='2.3.0',
     author='François Ménabé',
     author_email='francois.menabe@gmail.com',
     url='https://clg.readthedocs.org/en/latest/',

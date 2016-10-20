@@ -41,8 +41,8 @@ Documentation is available on readthedocs (https://clg.readthedocs.org/en/latest
 
 Release notes
 -------------
-2.3.0 (not released)
-~~~~~~~~~~~~~~~~~~~~
+2.3.0 (2016-10-20)
+~~~~~~~~~~~~~~~~~~
     * Add subparsers after args and options for improved behaviour
       (`4c4471c <https://github.com/fmenabe/python-clg/commit/4c4471c>`_).
     * Add a '-p/--page' option to the ``help`` command (added by the
