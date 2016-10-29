@@ -613,13 +613,16 @@ class CommandLine(object):
         choices = ', '.join(map(str, arg_conf.get('choices', ['?'])))
         for param, value in sorted(arg_conf.items()):
             if param not in KEYWORDS[arg_type]['post']:
-                arg_params[param] = {
-                    'type': lambda: TYPES[value],
-                    'help': lambda: value.replace('__DEFAULT__', default)
-                                         .replace('__CHOICES__', choices)
-                                         .replace('__MATCH__', match)
-                                         .replace('__FILE__', sys.path[0])
-                    }.get(param, lambda: _set_builtin(value))()
+                try:
+                    arg_params[param] = {
+                        'type': lambda: TYPES[value],
+                        'help': lambda: value.replace('__DEFAULT__', default)
+                                             .replace('__CHOICES__', choices)
+                                             .replace('__MATCH__', match)
+                                             .replace('__FILE__', sys.path[0])
+                        }.get(param, lambda: _set_builtin(value))()
+                except KeyError:
+                    raise CLGError(path, "invalid type '%s'" % value)
 
         # Add argument to parser (and manager completers for argcomplete).
         completer = arg_params.pop('completer', None)
