@@ -426,6 +426,8 @@ class CommandLine(object):
         (preferably an OrderedDict). **keyword** is the name use for knowing the
         path of subcommands (ie: 'command0', 'command1', ... in the namespace of
         arguments)."""
+        _check_empty('', config)
+        _check_type('', config, dict)
         self.config = _deepcopy(config) if deepcopy else config
         self.keyword = keyword
         self._parsers = OrderedDict()
