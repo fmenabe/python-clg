@@ -470,6 +470,22 @@ class CommandLine(object):
                 config = config[elt]
         return config
 
+    def _get_cmd_number(self, path):
+        """Get the command number from **path**."""
+        path = list(path)
+        cmd_number = 0
+        while path:
+            try:
+                elt = path.pop()
+                if elt == 'subparsers':
+                    next_elt = path.pop()
+                    if next_elt == 'parsers':
+                        path.pop()
+                    cmd_number += 1
+            except IndexError:
+                pass
+        return cmd_number
+
     def _add_parser(self, path, parser=None):
         """Add a subparser to a parser. If **parser** is ``None``, the subparser
         is in fact the main parser."""
@@ -550,7 +566,7 @@ class CommandLine(object):
         indicate it."""
         # Get arguments to pass to add_subparsers method.
         required = True
-        subparsers_params = {'dest': '%s%d' % (self.keyword, len(path) / 2)}
+        subparsers_params = {'dest': '%s%d' % (self.keyword, self._get_cmd_number(path))}
         if 'parsers' in subparsers_conf:
             _check_section(path, subparsers_conf, 'subparsers')
 
