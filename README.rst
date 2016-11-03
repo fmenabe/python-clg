@@ -41,6 +41,14 @@ Documentation is available on readthedocs (https://clg.readthedocs.org/en/latest
 
 Release notes
 -------------
+2.3.1 (not released)
+~~~~~~~~~~~~~~~~~~~~
+    * Add some additionnal checks (for the main configuration and types;
+      `bbcff61 <https://github.com/fmenabe/python-clg/commit/bbcff61>`_,
+      `dd21371 <https://github.com/fmenabe/python-clg/commit/dd21371>`_).
+    * Correct a bug where some commands number in the resulted Namespace were skipped
+      (`6ec1abc <https://github.com/fmenabe/python-clg/commit/6ec1abc>`_).
+
 2.3.0 (2016-10-20)
 ~~~~~~~~~~~~~~~~~~
     * Add subparsers after args and options for improved behaviour
