@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# coding: utf-8
 
 """This module is a wrapper to ``argparse`` module. It allow to generate a
 command-line from a predefined directory (ie: a YAML, JSON, ... file)."""
@@ -742,3 +742,43 @@ class CommandLine(object):
         else:
             print(output)
         sys.exit(0)
+
+
+def init(format='yaml', data=os.path.join(sys.path[0], 'cmd.yml'),
+         completion=False, subcommands_keyword='command', deepcopy=True):
+    """Wrapping method that initialize the command-line and export the input
+    configuration and the **CommandLine** object at the module level.
+
+    The configuration is loaded based on the format `format` and `data`. `data`
+    is a filepath if `format` is *yaml* or *json* and a dictionnary if `format`
+    is *raw*. By default, the configuration is loaded from the file *cmd.yml* in
+    the program directory.
+
+    `completion` parameter allows to initialize ``argcomplete`` for completion.
+    """
+    # Get command-line configuration based on format and data and initialize CommandLine.
+    if format == 'yaml':
+        import yaml, yamlordereddictloader
+        config = yaml.load(open(data), Loader=yamlordereddictloader.Loader)
+    elif format == 'json':
+        import json
+        config = json.load(open('cmd.json'), object_pairs_hook=OrderedDict)
+    elif format == 'raw':
+        config = data
+    else:
+        raise CLGError('unsupported format: %s' % format)
+    cmd = CommandLine(config, subcommands_keyword, deepcopy)
+
+    # Activate completion if wished.
+    if completion:
+        import argcomplete
+        argcomplete.autocomplete(cmd.parser)
+
+    # Set attributes to the module itself.
+    setattr(_SELF, 'config', config)
+    setattr(_SELF, 'cmd', cmd)
+
+    # Parse arguments.
+    args = cmd.parse()
+
+    return args
