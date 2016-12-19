@@ -407,7 +407,7 @@ class Namespace(argparse.Namespace):
         self.__dict__.update(args)
 
     def __getitem__(self, key):
-        return self.__dict__[key]
+        return self.__dict__.get(key, None)
 
     def __setitem__(self, key, value):
         if key not in self.__dict__:
