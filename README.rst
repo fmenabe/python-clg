@@ -29,7 +29,7 @@ Command-line generator in python
            :target: https://pypi.python.org/pypi/clg
            :alt: Downloads
 
-This module is a wrapper to **argparse** module. Its goal is to generate a
+This module is a wrapper to **argparse** module. It aims is to generate a
 custom and advanced command-line from a formatted dictionary. As python
 dictionnaries are easily exportable to configuration files (like YAML or JSON),
 the idea is to outsource the command-line definition to a file instead of
@@ -41,6 +41,18 @@ Documentation is available on readthedocs (https://clg.readthedocs.org/en/latest
 
 Release notes
 -------------
+3.0.0 (not released)
+~~~~~~~~~~~~~~~~~~~~
+    * Add an ``init`` function to the module that initialize the **CommandLine**
+      object and set some variables in the module namespace (this is needed by
+      some ``clg`` plugins and simplify the usage;
+      `43fefa6 <https://github.com/fmenabe/python-clg/commit/43fefa6>`_).
+    * Access to non existing element in the **Namespace** using the dictionnary
+      syntax now returns *None* instead of throwing the *KeyError* exception
+      (`bb49cd4 <https://github.com/fmenabe/python-clg/commit/bb49cd4>`_).
+    * Force escaping of percent characters in help message.
+      (`b8665b1 <https://github.com/fmenabe/python-clg/commit/b8665b1>`_).
+
 2.3.1 (2017-01-19)
 ~~~~~~~~~~~~~~~~~~
     * Add some additionnal checks (for the main configuration and types;
