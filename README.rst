@@ -25,7 +25,7 @@ Command-line generator in python
            :target: https://landscape.io/github/fmenabe/python-clg/master
            :alt: Code Health
 
-.. image:: https://img.shields.io/pypi/dm/clg.svg
+.. .. image:: https://img.shields.io/pypi/dm/clg.svg
            :target: https://pypi.python.org/pypi/clg
            :alt: Downloads
 
@@ -41,8 +41,8 @@ Documentation is available on readthedocs (https://clg.readthedocs.org/en/latest
 
 Release notes
 -------------
-2.3.1 (not released)
-~~~~~~~~~~~~~~~~~~~~
+2.3.1 (2017-01-19)
+~~~~~~~~~~~~~~~~~~
     * Add some additionnal checks (for the main configuration and types;
       `bbcff61 <https://github.com/fmenabe/python-clg/commit/bbcff61>`_,
       `dd21371 <https://github.com/fmenabe/python-clg/commit/dd21371>`_).
