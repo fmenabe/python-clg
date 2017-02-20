@@ -636,6 +636,7 @@ class CommandLine(object):
                                              .replace('__CHOICES__', choices)
                                              .replace('__MATCH__', match)
                                              .replace('__FILE__', sys.path[0])
+                                             .replace('%', '%%')
                         }.get(param, lambda: _set_builtin(value))()
                 except KeyError:
                     raise CLGError(path, "invalid type '%s'" % value)
