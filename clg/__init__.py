@@ -687,27 +687,34 @@ class CommandLine(object):
     def print_help(self, args):
         """Print commands' tree with theirs descriptions."""
         # Get column at which we must start printing the description.
-        lengths = []
-        for path in self._parsers:
-            cmds = [elt for elt in path.split('/') if elt != 'subparsers']
-            lengths.append(3 * (len(cmds)) + len(cmds[-1]))
-        start = max(lengths) + 4
-        desc_len = 80 - start
+        def get_size(config, path, length):
+            for param, value in config.items():
+                if param == 'subparsers':
+                    subparsers_conf = value
+                    if 'parsers' in subparsers_conf:
+                        subparsers_conf = subparsers_conf['parsers']
+                    subcommands = subparsers_conf.keys()
+                    for command in subcommands:
+                        length = max(length, 4 * len(path) + 4 + len(command))
+                        length = get_size(subparsers_conf[command], path + [command], length)
+            return length
+        desc_start = get_size(self.config, [], 0) + 4
+        desc_len = 80 - desc_start
 
         # Print arboresence of commands with their descriptions. This use
         # closures so we don't have to pass whatmille arguments to functions.
         output = []
         def parse_conf(cmd_conf, last):
             def print_line(cmd, line, first_line, has_childs):
-                symbols = ['  ' if elt else '│ ' for elt in last[:-1]]
-                symbols.append(('└─' if last[-1] else '├─')
+                symbols = ['    ' if elt else '│   ' for elt in last[:-1]]
+                symbols.append(('└── ' if last[-1] else '├── ')
                                if first_line
-                               else ('  ' if last[-1] else '│ '))
+                               else ('    ' if last[-1] else '│   '))
                 if not first_line and has_childs:
-                    symbols.append('│ ')
+                    symbols.append('│   ')
                 output.append('%s%s %s' % (''.join(symbols),
                                            cmd if first_line else '',
-                                           '\033[%sG%s' % (start, line)))
+                                           '\033[%sG%s' % (desc_start, line)))
 
             if 'subparsers' not in cmd_conf:
                 return
