@@ -2,8 +2,8 @@ Command-line generator in python
 ================================
 
 .. image:: https://img.shields.io/pypi/l/clg.svg
-		   :target: https://opensource.org/licenses/MIT
-		   :alt: License
+           :target: https://opensource.org/licenses/MIT
+           :alt: License
 
 .. image:: https://img.shields.io/pypi/pyversions/clg.svg
            :target: https://pypi.python.org/pypi/clg
@@ -52,6 +52,12 @@ Release notes
       (`bb49cd4 <https://github.com/fmenabe/python-clg/commit/bb49cd4>`_).
     * Force escaping of percent characters in help message.
       (`b8665b1 <https://github.com/fmenabe/python-clg/commit/b8665b1>`_).
+    * Correct and improve the  ``help`` command (added by the ``add_help_cmd``
+      parameter):
+        * Correct a bug that caused loss of the order of commands
+          (`8396042 <https://github.com/fmenabe/python-clg/commit/8396042>`_).
+        * The output now looks more like the output of the ``tree`` command
+          (`9796e82 <https://github.com/fmenabe/python-clg/commit/9796e82>`_).
 
 2.3.1 (2017-01-19)
 ~~~~~~~~~~~~~~~~~~
