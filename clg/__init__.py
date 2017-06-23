@@ -447,12 +447,11 @@ class CommandLine(object):
                 raise CLGError([], 'unable to add help command: no subparsers')
 
             if 'parsers' in subparsers_conf:
-                subparsers_conf['parsers'].update(_HELP_PARSER)
-                subparsers_conf['parsers'] = (
-                    OrderedDict(sorted(subparsers_conf['parsers'].items())))
+                subparsers_conf['parsers'] = OrderedDict(
+                    list(_HELP_PARSER.items()) + list(subparsers_conf['parsers'].items()))
             else:
-                subparsers_conf.update(_HELP_PARSER)
-                subparsers_conf = OrderedDict(sorted(subparsers_conf.items()))
+                subparsers_conf = OrderedDict(
+                    list(_HELP_PARSER.items()) + list(subparsers_conf.items()))
             self.config['subparsers'] = subparsers_conf
 
         self._add_parser([])
