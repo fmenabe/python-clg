@@ -67,7 +67,10 @@ _MISSING_KEYWORD = "keyword '{keyword}' is missing"
 _UNKNOWN_ARG = "unknown {type} '{arg}'"
 _SHORT_ERR = 'this must be a single letter'
 _NEED_ERR = "{type} '{arg}' need {need_type} '{need_arg}'"
+_NEED_VALUE_ERR = "{type} '{arg}' need {need_type} '{need_arg}' with value '{need_value}'"
 _CONFLICT_ERR = "{type} '{arg}' conflict with {conflict_type} '{conflict_arg}'"
+_CONFLICT_VALUE_ERR = ("{type} '{arg}' conflict with value '{conflict_value}' "
+                       "of {conflict_type} '{conflict_arg}'")
 _MATCH_ERR = "value '{val}' of {type} '{arg}' does not match pattern '{pattern}'"
 _FILE_ERR = "Unable to load file: {err}"
 _LOAD_ERR = "Unable to load module: {err}"
@@ -266,6 +269,9 @@ def _post_need(parser, parser_args, args_values, arg):
     """Post processing that check all for needing options."""
     arg_type, arg_conf = parser_args[arg]
     for cur_arg in arg_conf['need']:
+        cur_arg_split = cur_arg.split(':')
+        cur_arg = cur_arg_split[0]
+        need_value = cur_arg_split[1] if len(cur_arg_split) == 2 else None
         cur_arg_type, cur_arg_conf = parser_args[cur_arg]
         if not _has_value(args_values[cur_arg], cur_arg_conf):
             strings = {'type': arg_type[:-1],
@@ -274,18 +280,34 @@ def _post_need(parser, parser_args, args_values, arg):
                        'need_arg': _format_arg(cur_arg, cur_arg_conf, cur_arg_type)}
             parser.error(_NEED_ERR.format(**strings))
 
+        if need_value is not None and args_values[cur_arg] != need_value:
+            strings = {'type': arg_type[:-1],
+                       'arg': _format_arg(arg, arg_conf, arg_type),
+                       'need_type': cur_arg_type[:-1],
+                       'need_arg': _format_arg(cur_arg, cur_arg_conf, cur_arg_type),
+                       'need_value': need_value}
+            parser.error(_NEED_VALUE_ERR.format(**strings))
+
 
 def _post_conflict(parser, parser_args, args_values, arg):
     """Post processing that check for conflicting options."""
     arg_type, arg_conf = parser_args[arg]
     for cur_arg in arg_conf['conflict']:
+        cur_arg_split = cur_arg.split(':')
+        cur_arg = cur_arg_split[0]
+        conflict_value = cur_arg_split[1] if len(cur_arg_split) == 2 else None
         cur_arg_type, cur_arg_conf = parser_args[cur_arg]
         if _has_value(args_values[cur_arg], cur_arg_conf):
             strings = {'type': arg_type[:-1],
                        'arg': _format_arg(arg, arg_conf, arg_type),
                        'conflict_type': cur_arg_type[:-1],
                        'conflict_arg': _format_arg(cur_arg, cur_arg_conf, cur_arg_type)}
-            parser.error(_CONFLICT_ERR.format(**strings))
+            if conflict_value is not None:
+                if args_values[cur_arg] == conflict_value:
+                    strings.update(conflict_value=conflict_value)
+                    parser.error(_CONFLICT_VALUE_ERR.format(**strings))
+            else:
+                parser.error(_CONFLICT_ERR.format(**strings))
 
 
 def _post_match(parser, parser_args, args_values, arg):
@@ -606,6 +628,7 @@ class CommandLine(object):
             if keyword in arg_conf:
                 _check_type(path + [keyword], arg_conf[keyword], list)
                 for cur_arg in arg_conf[keyword]:
+                    cur_arg = cur_arg.split(':')[0]
                     if cur_arg not in self._parser_args:
                         err_str = _UNKNOWN_ARG.format(type='option/argument', arg=cur_arg)
                         raise CLGError(path + [keyword], err_str)
@@ -766,10 +789,12 @@ def init(format='yaml', data=os.path.join(sys.path[0], 'cmd.yml'),
     # Get command-line configuration based on format and data and initialize CommandLine.
     if format == 'yaml':
         import yaml, yamlordereddictloader
-        config = yaml.load(open(data), Loader=yamlordereddictloader.Loader)
+        with open(data) as fhandler:
+            config = yaml.load(fhandler, Loader=yamlordereddictloader.Loader)
     elif format == 'json':
         import json
-        config = json.load(open('cmd.json'), object_pairs_hook=OrderedDict)
+        with open(data) as fhandler:
+            config = json.load(fhandler, object_pairs_hook=OrderedDict)
     elif format == 'raw':
         config = data
     else:
