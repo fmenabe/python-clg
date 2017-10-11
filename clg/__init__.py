@@ -262,14 +262,17 @@ def _post_need(parser, parser_args, args_values, arg):
         cur_arg = cur_arg_split[0]
         need_value = cur_arg_split[1] if len(cur_arg_split) == 2 else None
         cur_arg_type, cur_arg_conf = parser_args[cur_arg]
-        if not _has_value(args_values[cur_arg], cur_arg_conf):
+        cur_value = args_values[cur_arg]
+        if not _has_value(cur_value, cur_arg_conf):
             strings = {'type': arg_type[:-1],
                        'arg': _format_arg(arg, arg_conf, arg_type),
                        'need_type': cur_arg_type[:-1],
                        'need_arg': _format_arg(cur_arg, cur_arg_conf, cur_arg_type)}
             parser.error(_NEED_ERR.format(**strings))
 
-        if need_value is not None and args_values[cur_arg] != need_value:
+        if (need_value is not None
+        and (isinstance(cur_value, (list, tuple)) and need_value not in cur_value)
+        and cur_value != need_value):
             strings = {'type': arg_type[:-1],
                        'arg': _format_arg(arg, arg_conf, arg_type),
                        'need_type': cur_arg_type[:-1],
@@ -285,18 +288,20 @@ def _post_conflict(parser, parser_args, args_values, arg):
         cur_arg = cur_arg_split[0]
         conflict_value = cur_arg_split[1] if len(cur_arg_split) == 2 else None
         cur_arg_type, cur_arg_conf = parser_args[cur_arg]
+        cur_value = args_values[cur_arg]
         if _has_value(args_values[cur_arg], cur_arg_conf):
             strings = {'type': arg_type[:-1],
                        'arg': _format_arg(arg, arg_conf, arg_type),
                        'conflict_type': cur_arg_type[:-1],
                        'conflict_arg': _format_arg(cur_arg, cur_arg_conf, cur_arg_type)}
-            if conflict_value is not None:
-                if args_values[cur_arg] == conflict_value:
-                    strings.update(conflict_value=conflict_value)
-                    parser.error(_CONFLICT_VALUE_ERR.format(**strings))
-            else:
+            if conflict_value is None:
                 parser.error(_CONFLICT_ERR.format(**strings))
+                return
 
+            if ((isinstance(cur_value, (list, tuple)) and conflict_value in cur_value)
+            or cur_value == conflict_value):
+                strings.update(conflict_value=conflict_value)
+                parser.error(_CONFLICT_VALUE_ERR.format(**strings))
 
 def _post_match(parser, parser_args, args_values, arg):
     """Post processing that check the value."""
