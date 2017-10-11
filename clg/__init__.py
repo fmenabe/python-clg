@@ -110,7 +110,6 @@ def _deepcopy(config):
             new_config[key] = _deepcopy(value)
     return new_config
 
-
 def _gen_parser(parser_conf, subparser=False):
     """Retrieve arguments pass to **argparse.ArgumentParser** from
     **parser_conf**. A subparser can take an extra 'help' keyword."""
@@ -128,7 +127,6 @@ def _gen_parser(parser_conf, subparser=False):
         conf.update(help=parser_conf['help'])
     return conf
 
-
 def _get_args(parser_conf):
     """Get options and arguments from a parser configuration."""
     args = OrderedDict()
@@ -140,7 +138,6 @@ def _get_args(parser_conf):
             args.update(_get_args(group))
     return args
 
-
 def _set_builtin(value):
     """Replace configuration values which begin and end by ``__`` by the
     respective builtin function."""
@@ -150,7 +147,6 @@ def _set_builtin(value):
         return (value.replace('__FILE__', sys.path[0])
                 if isinstance(value, str)
                 else value)
-
 
 def _print_help(parser):
     """Manage 'print_help' parameter of a (sub)command. It monkey patch the
@@ -183,12 +179,10 @@ def _format_usage(prog, usage):
     usage_elts.extend(['%s %s' % (spaces, elt) for elt in usage.split('\n')[:-1]])
     return '\n'.join(usage_elts)
 
-
 def _format_optname(value):
     """Format the name of an option in the configuration file to a more
     readable option in the command-line."""
     return value.replace('_', '-').replace(' ', '-')
-
 
 def _format_optdisplay(value, conf):
     """Format the display of an option in error message (short and long option
@@ -196,7 +190,6 @@ def _format_optdisplay(value, conf):
     return ('-%s/--%s' % (conf['short'], _format_optname(value))
             if 'short' in conf
             else '--%s' % _format_optname(value))
-
 
 def _format_arg(arg, arg_conf, arg_type):
     return _format_optdisplay(arg, arg_conf) if arg_type == 'options' else arg
@@ -210,13 +203,11 @@ def _check_empty(path, conf):
     if conf is None or (hasattr(conf, '__iter__') and not len(conf)):
         raise CLGError(path, _EMPTY_CONF)
 
-
 def _check_type(path, conf, conf_type=dict):
     """Check the **conf** is of **conf_type** type and raise an error if not."""
     if not isinstance(conf, conf_type):
         type_str = str(conf_type).split()[1][1:-2]
         raise CLGError(path, _INVALID_SECTION.format(type=type_str))
-
 
 def _check_keywords(path, conf, section, one=None, need=None):
     """Check items of **conf** from **KEYWORDS[section]**. **one** indicate
@@ -237,7 +228,6 @@ def _check_keywords(path, conf, section, one=None, need=None):
         for keyword in need:
             if keyword not in conf:
                 raise CLGError(path, _MISSING_KEYWORD.format(keyword=keyword))
-
 
 def _check_section(path, conf, section, one=None, need=None):
     """Check section is not empty, is a dict and have not extra keywords."""
@@ -264,7 +254,6 @@ def _has_value(value, conf):
             (action and action == 'store_true' and value) or
             (action and action == 'store_false' and not value))
 
-
 def _post_need(parser, parser_args, args_values, arg):
     """Post processing that check all for needing options."""
     arg_type, arg_conf = parser_args[arg]
@@ -287,7 +276,6 @@ def _post_need(parser, parser_args, args_values, arg):
                        'need_arg': _format_arg(cur_arg, cur_arg_conf, cur_arg_type),
                        'need_value': need_value}
             parser.error(_NEED_VALUE_ERR.format(**strings))
-
 
 def _post_conflict(parser, parser_args, args_values, arg):
     """Post processing that check for conflicting options."""
@@ -323,7 +311,6 @@ def _post_match(parser, parser_args, args_values, arg):
     elif not re.match(pattern, args_values[arg]):
         parser.error(_MATCH_ERR.format(val=args_values[arg], **msg_elts))
 
-
 def _exec_module(path, exec_conf, args_values):
     """Load and execute a function of a module according to **exec_conf**."""
     mdl_func = exec_conf.get('function', 'main')
@@ -337,7 +324,6 @@ def _exec_module(path, exec_conf, args_values):
         except (ImportError, AttributeError) as err:
             raise CLGError(path, _LOAD_ERR.format(err=err))
     getattr(mdl, mdl_func)(args_values)
-
 
 def _exec_file(path, exec_conf, args_values):
     """Load and execute a function of a file according to **exec_conf**."""
@@ -400,7 +386,6 @@ class NoAbbrevParser(argparse.ArgumentParser):
         # return the collected option tuples
         return result
 
-
 # Use Pager for showing help.
 class HelpPager(argparse.Action):
     """Action allowing to page help."""
@@ -421,7 +406,6 @@ class HelpPager(argparse.Action):
         parser.exit()
 ACTIONS.update(page_help=HelpPager)
 
-
 class Namespace(argparse.Namespace):
     """Iterable namespace."""
     def __init__(self, args):
@@ -438,7 +422,6 @@ class Namespace(argparse.Namespace):
 
     def __iter__(self):
         return ((key, value) for key, value in self.__dict__.items())
-
 
 class CommandLine(object):
     """CommandLine object that parse a preformatted dictionnary and generate
