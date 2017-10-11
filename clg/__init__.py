@@ -425,6 +425,11 @@ class Namespace(argparse.Namespace):
             raise KeyError(key)
         self.__dict__[key] = value
 
+    def __delitem__(self, key):
+        if key not in self.__dict__:
+            raise KeyError(key)
+        del self.__dict__[key]
+
     def __iter__(self):
         return ((key, value) for key, value in self.__dict__.items())
 
