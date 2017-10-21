@@ -50,14 +50,21 @@ Release notes
     * Access to non existing element in the **Namespace** using the dictionnary
       syntax now returns *None* instead of throwing the *KeyError* exception
       (`bb49cd4 <https://github.com/fmenabe/python-clg/commit/bb49cd4>`_).
+    * Allow deletion of keys in the arguments **Namespace**
+      (`d37fcc7 <https://github.com/fmenabe/python-clg/commit/d37fcc7>`_)
     * Force escaping of percent characters in help message.
       (`b8665b1 <https://github.com/fmenabe/python-clg/commit/b8665b1>`_).
     * Correct and improve the  ``help`` command (added by the ``add_help_cmd``
       parameter):
-        * Correct a bug that caused loss of the order of commands
+
+        * Correct a bug that caused the loss of commands order
           (`8396042 <https://github.com/fmenabe/python-clg/commit/8396042>`_).
         * The output now looks more like the output of the ``tree`` command
           (`9796e82 <https://github.com/fmenabe/python-clg/commit/9796e82>`_).
+    * Improve ``need`` and ``conflict`` post checks for checking values
+      of options
+      (`436e670 <https://github.com/fmenabe/python-clg/commit/436e670>`_,
+      `b077f75 <https://github.com/fmenabe/python-clg/commit/b077f75>`_).
 
 2.3.1 (2017-01-19)
 ~~~~~~~~~~~~~~~~~~
