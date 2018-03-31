@@ -1,14 +1,11 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 
 import clg
 import yaml
-import yamlordereddictloader
 
 def main():
-    cmd = clg.CommandLine(yaml.load(open('subparsers.yml'),
-                                    Loader=yamlordereddictloader.Loader))
-    print(cmd.parse())
-
+    args = clg.init(format='yaml', data='subparsers.yml')
+    print(args)
 
 if __name__ == '__main__':
     main()

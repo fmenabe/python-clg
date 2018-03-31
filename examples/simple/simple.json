@@ -1,4 +1,15 @@
-{"options": {"foo": {"short": "f",
-                     "help": "Foo help."},
-             "bar": {"short": "b",
-                     "help": "Bar help."}}}
+{
+  "print_help": true,
+  "options": {
+    "foo": {
+      "short": "f",
+      "required": true,
+      "help": "Foo help."
+    },
+    "bar": {
+      "short": "b",
+      "required": true,
+      "help": "Bar help."
+    }
+  }
+}

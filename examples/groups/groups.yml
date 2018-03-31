@@ -1,10 +1,10 @@
 groups:
-    - title: group
-      description: group description
-      options:
-        foo:
-            help: foo help
-      args:
-        bar:
-            help: bar help
-            nargs: "?"
+  - title: group
+    description: group description
+    options:
+      foo:
+        help: foo help
+    args:
+      bar:
+        help: bar help
+        nargs: "?"

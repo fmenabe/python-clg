@@ -1,16 +1,11 @@
 #!/usr/bin/env python
 
 import clg
-import json
-from collections import OrderedDict
-#import yaml
-#import yamlordereddictloader
 
 def main():
-    cmd_conf = json.load(open('simple.json'), object_pairs_hook=OrderedDict)
-#    cmd_conf = yaml.load(open('simple.yml'), Loader=yamlordereddictloader.Loader)
-    cmd = clg.CommandLine(cmd_conf)
-    args = cmd.parse()
+    args = clg.init(format='json', data='simple.json')
+    #args = clg.init(data='simple.yml')
+
     print("Print Namespace object: %s" % args)
     print("Print Namespace attributes: %s" % vars(args))
     print("Iter arguments:")

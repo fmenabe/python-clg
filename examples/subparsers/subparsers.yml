@@ -1,26 +1,26 @@
 prog: PROG
 
 options:
-    foo:
-        action: store_true
-        help: foo help
+  foo:
+    action: store_true
+    help: foo help
 
 subparsers:
-    title: subcommands
-    description: valid subcommands
-    help: additional help
-    prog: SUBCOMMANDS
-    metavar: "{METAVAR}"
-    parsers:
-        a:
-            help: a help
-            args:
-                bar:
-                    type: int
-                    help: bar help
-        b:
-            help: b help
-            options:
-                baz:
-                    choices: XYZ
-                    help: baz help
+  title: subcommands
+  description: valid subcommands
+  help: additional help
+  prog: SUBCOMMANDS
+  metavar: "{METAVAR}"
+  parsers:
+    a:
+      help: a help
+      args:
+        bar:
+          type: int
+          help: bar help
+    b:
+      help: b help
+      options:
+        baz:
+          choices: XYZ
+          help: baz help

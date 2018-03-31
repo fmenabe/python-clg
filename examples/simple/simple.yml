@@ -1,7 +1,10 @@
+print_help: True
 options:
-    foo:
-        short: f
-        help: Foo help.
-    bar:
-        short: b
-        help: Bar help.
+  foo:
+    short: f
+    required: True
+    help: Foo help.
+  bar:
+    short: b
+    required: True
+    help: Bar help.
