@@ -3,49 +3,45 @@ Examples
 ********
 
 All theses examples (and more) are available in the *examples* directory of the
-`github repository <https://github.com/fmenabe/python-clg>`_. All examples
-describe here use a YAML file.
+`github repository <https://github.com/fmenabe/python-clg/tree/master/examples>`_. All
+examples describe here use YAML files.
 
 First argparse example
 ----------------------
 This is the first `argparse example
-<https://docs.python.org/dev/library/argparse.html#example>`_. This shows a
-simple command with an option, an argument and the use of builtins.
-
-*Python program*:
+<https://docs.python.org/dev/library/argparse.html#example>`_ and shows a simple
+command with an option, an argument and the use of builtins.
 
 .. code-block:: python
+    :caption: Python program
 
     import clg
     import yaml
 
-    cmd = clg.CommandLine(yaml.load(open('builtins.yml')))
-    args = cmd.parse()
+    args = clg.init(format='yaml', data='builtins.yml')
     print(args.sum(args.integers))
 
-*Configuration file*:
-
 .. code-block:: yaml
+    :caption: Configuration file
 
     description: Process some integers.
 
     options:
-        sum:
-            action: store_const
-            const: __SUM__
-            default: __MAX__
-            help: "sum the integers (default: find the max)."
+      sum:
+        action: store_const
+        const: __SUM__
+        default: __MAX__
+        help: "sum the integers (default: find the max)."
 
     args:
-        integers:
-            metavar: N
-            type: int
-            nargs: +
-            help: an integer for the accumulator
+      integers:
+        metavar: N
+          type: int
+          nargs: +
+          help: an integer for the accumulator
 
-*Executions*:
-
-.. code:: bash
+.. code-block:: text
+    :caption: Executions
 
     # python builtins.py -h
     usage: builtins.py [-h] [--sum] N [N ...]
@@ -69,51 +65,55 @@ simple command with an option, an argument and the use of builtins.
 Subparsers example
 ------------------
 This is the same example that `argparse subparsers documentation
-<https://docs.python.org/dev/library/argparse.html#sub-commands>`_.
+<https://docs.python.org/dev/library/argparse.html#sub-commands>`_ and shows the usage
+of subcommands. The main command has an option `foo` taking no value and two subcommands
+`a` and `b`. `a` command has an option `--bar` expecting an integer and `b` command has an
+option `--baz` expecting to be either *X*, *Y* or *Z*.
 
-The python program initialize ``clg`` and prints arguments:
+The python program just initialize ``clg`` and print arguments:
 
 .. code-block:: python
+    :caption: Main program
 
     import clg
     import yaml
 
-    cmd = clg.CommandLine(yaml.load(open('subparsers.yml')))
-    print(cmd.parse())
+    args = clg.init(format='yaml', data='subparsers.yml')
+    print(args)
 
-Without custom help
-~~~~~~~~~~~~~~~~~~~
-We begin by a simple configuration without personalizing subparsers help.
-`subparsers` section just contains the configuration of commands.
+We first start by showing this example without any customization of the subcommands and
+then fully customizations.
 
-*Configuration file*:
+No subcommands customizations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Without customizations, commands are put directly in the `subparsers` section:
 
 .. code-block:: yaml
+    :caption: Configuration file
 
     prog: PROG
 
     options:
-        foo:
-            action: store_true
-            help: foo help
+      foo:
+        action: store_true
+        help: foo help
 
     subparsers:
         a:
-            help: a help
-            options:
-                bar:
-                    type: int
-                    help: bar help
+          help: a help
+          options:
+            bar:
+              type: int
+              help: bar help
         b:
-            help: b help
-            options:
-                baz:
-                    choices: XYZ
-                help: baz help
+          help: b help
+          options:
+            baz:
+              choices: XYZ
+            help: baz help
 
-*Executions*:
-
-.. code:: bash
+.. code-block:: text
+    :caption: Executions
 
     # python subparsers.py --help
     usage: PROG [-h] [--foo] {a,b} ...
@@ -133,45 +133,43 @@ We begin by a simple configuration without personalizing subparsers help.
     # python subparsers.py --foo b --baz Z
     Namespace(baz='Z', command0='b', foo=True)
 
-With custom help
-~~~~~~~~~~~~~~~~
-Now we customize the help. The configuration of commands is put in the
-`parsers` section and other keywords are used for customizing help.
-
-*Configuration file*:
+With subcommands customizations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Customizations parameters are put in the `subparsers` section and commands are defined in
+the `parsers` section of this section.
 
 .. code-block:: yaml
+    :caption: Configuration file
 
     prog: PROG
 
     options:
-        foo:
-            action: store_true
-            help: foo help
+      foo:
+        action: store_true
+        help: foo help
 
     subparsers:
-        title: subcommands
-        description: valid subcommands
-        help: additional help
-        prog: SUBCOMMANDS
-        metavar: "{METAVAR}"
-        parsers:
-            a:
-                help: a help
-                options:
-                    bar:
-                        type: int
-                        help: bar help
-            b:
-                help: b help
-                options:
-                    baz:
-                        choices: XYZ
-                    help: baz help
+      title: subcommands
+      description: valid subcommands
+      help: additional help
+      prog: SUBCOMMANDS
+      metavar: "{METAVAR}"
+      parsers:
+        a:
+          help: a help
+          options:
+            bar:
+              type: int
+              help: bar help
+        b:
+          help: b help
+          options:
+            baz:
+              choices: XYZ
+            help: baz help
 
-*Executions*:
-
-.. code:: bash
+.. code-block:: text
+    :caption: Executions
 
     # python subparsers.py --help
     usage: PROG [-h] [--foo] {METAVAR} ...
@@ -200,27 +198,24 @@ Now we customize the help. The configuration of commands is put in the
 Groups example
 --------------
 This is the same example that `argparse groups documentation
-<https://docs.python.org/dev/library/argparse.html#argument-groups>`_ .
-
-*Configuration file*:
+<https://docs.python.org/dev/library/argparse.html#argument-groups>`_:
 
 .. code-block:: yaml
+    :caption: Configuration file
 
     groups:
-        - title: group
-          description: group description
-          options:
-            foo:
-                help: foo help
-          args:
-            bar:
-                help: bar help
-                nargs: "?"
+      - title: group
+        description: group description
+        options:
+          foo:
+            help: foo help
+        args:
+          bar:
+            help: bar help
+            nargs: "?"
 
-
-*Execution*:
-
-.. code:: bash
+.. code-block:: text
+    :caption: Executions
 
     # python groups.py --help
     usage: groups.py [-h] [--foo FOO] [bar]
@@ -237,24 +232,22 @@ This is the same example that `argparse groups documentation
 Exclusive groups example
 ------------------------
 This is the same example that `argparse exclusives groups documentation
-<https://docs.python.org/dev/library/argparse.html#mutual-exclusion>`_ .
-
-*Configuration file*:
+<https://docs.python.org/dev/library/argparse.html#mutual-exclusion>`_:
 
 .. code-block:: yaml
+    :caption: Configuration file
 
     prog: PROG
 
     exclusive_groups:
-        - options:
-            foo:
-                action: store_true
-            bar:
-                action: store_false
+      - options:
+          foo:
+            action: store_true
+          bar:
+            action: store_false
 
-*Executions*:
-
-.. code:: bash
+.. code-block:: text
+    :caption: Executions
 
     # python exclusive_groups.py --bar
     Namespace(bar=False, foo=False)
@@ -273,20 +266,20 @@ This example is a program I made for managing KVM guests. Actually, there is
 only two commands for deploying or migrating guests. Each command use an
 external module for implementing the logic. A ``main`` function, taking the
 command-line Namespace as argument, has been implemented. For the example,
-theses functions will only ``pprint`` the command-line arguments.
+theses functions will only pretty print the command-line arguments.
 
 This example use:
-    * YAML anchors
-    * subparsers, options, arguments, groups and exclusives groups
-    * custom types
+
+    * YAML anchors,
+    * subparsers, options, arguments, groups and exclusives groups,
+    * custom types (defined in each command python file),
     * special "builtins",
-    * the root 'help' command
-    * specific formatter class
+    * the root 'help' command,
+    * specific formatter class,
     * ...
 
-*Directory structure*:
-
-.. code:: bash
+.. code-block:: text
+    :caption: Directory structure
 
     .
     ├── commands
@@ -296,32 +289,20 @@ This example use:
     ├── kvm.py
     └── kvm.yml
 
-*kvm.py*:
-
 .. code-block:: python
+    :caption: ./kvm.py
 
     import clg
-    import yaml
-    import yamlordereddictloader
-    from os import path
 
-    CMD_FILE = path.abspath(path.join(path.dirname(__file__), 'kvm.yml'))
-
-    # Add custom command-line types.
+    # Import custom command-line types.
     from commands.deploy import InterfaceType, DiskType, FormatType
     clg.TYPES.update({'Interface': InterfaceType, 'Disk': DiskType, 'Format': FormatType})
 
-    def main():
-        cmd = clg.CommandLine(yaml.load(open('kvm.yml'),
-                                        Loader=yamlordereddictloader.Loader))
-        cmd.parse()
-
     if __name__ == '__main__':
-        main()
-
-*commands/deploy.py*
+        clg.init(format='raw', data='kvm.yml')
 
 .. code-block:: python
+    :caption: ./commands/deploy.py
 
     from pprint import pprint
 
@@ -364,210 +345,206 @@ This example use:
         options = {opt: opt_val for elt in value for opt, opt_val in [elt.split('=')]}
         return dict(type=fmt, options=options)
 
-
     def main(args):
         pprint(vars(args))
 
-*Configuration file*:
+.. code-block:: text
+    :caption: Configuration file
 
-.. code-block:: yaml
-
-    add_help_cmd: True
-    allow_abbrev: False
+    add_help_cmd: true
+    allow_abbrev: false
     description: Utility for managing KVM hosts.
 
     anchors:
-        main: &MAIN
-            help:
-                short: h
-                action: help
-                default: __SUPPRESS__
-                help: Show this help message and exit.
-            conf_file:
-                help: 'Configuration file (default: __DEFAULT__).'
-                default: __FILE__/conf/conf.yml
-            logdir:
-                help: 'Log directory (default: __DEFAULT__).'
-                default: __FILE__/logs
-            loglevel:
-                choices: [verbose, debug, info, warn, error, none]
-                default: info
-                help: 'Log level on console (default: __DEFAULT__).'
+      main: &MAIN
+        help:
+          short: h
+          action: help
+          default: __SUPPRESS__
+          help: Show this help message and exit.
+        conf_file:
+          help: 'Configuration file (default: __DEFAULT__).'
+          default: __FILE__/conf/conf.yml
+        logdir:
+          help: 'Log directory (default: __DEFAULT__).'
+          default: __FILE__/logs
+        loglevel:
+          choices: [verbose, debug, info, warn, error, none]
+          default: info
+          help: 'Log level on console (default: __DEFAULT__).'
 
     subparsers:
-        deploy:
-            help: Deploy a new guest on an hyperviror based on a model.
-            description: Deploy a new guest on an hypervisor based on a model.
-            add_help: False
-            formatter_class: RawTextHelpFormatter
-            execute:
-                module: commands.deploy
+      deploy:
+        help: Deploy a new guest on an hyperviror based on a model.
+        description: Deploy a new guest on an hypervisor based on a model.
+        add_help: false
+        formatter_class: RawTextHelpFormatter
+        execute:
+          module: commands.deploy
 
-            groups:
-                - title: Common options
-                  options: *MAIN
-                - title: Optional options
-                  options:
-                    cores:
-                        short: c
-                        type: int
-                        default: 2
-                        help: |
-                            Number of cores assigned to the guest (default:
-                            __DEFAULT__).
-                    memory:
-                        short: m
-                        type: float
-                        default: 2
-                        help: |
-                            Memory in Gb assigned to the guest (default: __DEFAULT__).
-                    format:
-                        type: Format
-                        metavar: FORMAT,OPT1=VALUE,OPT2=VALUE,...
-                        help: |
-                            Format of the main image. Each format has options
-                            that can be specified, separated by commas. By default
-                            models use qcow2 images without options.
-                    resize:
-                        type: int
-                        help: |
-                            Resize (in fact, only increase) the main disk image.
-                            For linux system, it will allocate the new size on the
-                            root LVM Volume Group. This option only work on KVM
-                            hypervisors which have a version of qemu >= 0.15.0.
-                    disks:
-                        nargs: '+'
-                        type: Disk
-                        metavar: DISK
-                        help: |
-                            Add new disk(s). Format of DISK is:
-                              SUFFIX,SIZE[,FORMAT,OTP1=VAL, OPT2=VAL,...]
-                            Where:
-                                * SUFFIX is used for generating the filename of
-                                  the image. The filename is: NAME-SUFFIX.FORMAT
-                                * SIZE is the size in Gb
-                                * FORMAT is the format of the image (default is
-                                  'qcow2')
-                                * OPT=VAL are the options of the format
-                    force:
-                        action: store_true
-                        help: |
-                            If a guest or some images already exists on the
-                            destination, configuration and disk images are
-                            automaticaly backuped, then overwrited, without
-                            confirmation.
-                    no_check:
-                        action: store_true
-                        help: |
-                            Ignore checking of resources (use with cautions as
-                            overloading an hypervisor could lead to bad
-                            performance!).
-                    no_autostart:
-                        action: store_true
-                        help: Don't set autostart for the new guest.
-                    ...
-                - title: Arguments
-                  args:
-                    name:
-                        help: Name of the new guest.
-                    dst_host:
-                        help: Hypervisor on which deploy the new guest.
-                    model:
-                        metavar: MODEL
-                        choices:
-                            - ubuntu-lucid
-                            - ubuntu-precise
-                            - ubuntu-trusty
-                            - redhat-5.8
-                            - redhat-6.3
-                            - centos-5
-                            - w2003
-                            - w2008r2
-                        help: |
-                            Model on which the new guest is based. Choices are:
-                                * ubuntu-precise
-                                * ubuntu-trusty
-                                * redhat-5.8
-                                * redhat-6.3
-                                * centos-5
-                                * w2003
-                                * w2008-r2
-                    interfaces:
-                        nargs: '+'
-                        type: Interface
-                        metavar: INTERFACE
-                        help: |
-                            Network configuration. This is a list of network
-                            interfaces configurations. Each interface
-                            configuration is a list of parameters separated by
-                            commas. Parameters are:
-                                * the network type ('network' (NAT) or 'bridge'),
-                                * the source (network name for 'network' type
-                                  or vlan number for 'bridge' type),
-                                * the IP address,
-                                * the netmask,
-                                * the gateway (only for the first interface)
-                            For example, for deploying a guest with an inteface
-                            in the public network and an interface in the storage
-                            network:
-                                * bridge,br903,130.79.200.1,255.255.254.0,130.79.201.254,801
-                                * bridge,br896,172.30.0.1,255.255.254.0,896
-                                * network,default,192.168.122.2,255.255.255.0,192.168.122.1
+        groups:
+          - title: Common options
+            options: *MAIN
+          - title: Optional options
+            options:
+            cores:
+              short: c
+              type: int
+              default: 2
+              help: |
+                Number of cores assigned to the guest (default:
+                __DEFAULT__).
+            memory:
+              short: m
+              type: float
+              default: 2
+              help: |
+                Memory in Gb assigned to the guest (default: __DEFAULT__).
+            format:
+              type: Format
+              metavar: FORMAT,OPT1=VALUE,OPT2=VALUE,...
+              help: |
+                Format of the main image. Each format has options
+                that can be specified, separated by commas. By default
+                models use qcow2 images without options.
+            resize:
+              type: int
+              help: |
+                Resize (in fact, only increase) the main disk image.
+                For linux system, it will allocate the new size on the
+                root LVM Volume Group. This option only work on KVM
+                hypervisors which have a version of qemu >= 0.15.0.
+            disks:
+              nargs: '+'
+              type: Disk
+              metavar: DISK
+              help: |
+                Add new disk(s). Format of DISK is:
+                  SUFFIX,SIZE[,FORMAT,OTP1=VAL, OPT2=VAL,...]
+                Where:
+                  * SUFFIX is used for generating the filename of
+                    the image. The filename is: NAME-SUFFIX.FORMAT
+                  * SIZE is the size in Gb
+                  * FORMAT is the format of the image (default is
+                    'qcow2')
+                  * OPT=VAL are the options of the format
+            force:
+              action: store_true
+              help: |
+                If a guest or some images already exists on the
+                destination, configuration and disk images are
+                automaticaly backuped, then overwrited, without
+                confirmation.
+            no_check:
+              action: store_true
+              help: |
+                Ignore checking of resources (use with cautions as
+                overloading an hypervisor could lead to bad
+                performance!).
+            no_autostart:
+              action: store_true
+              help: Don't set autostart for the new guest.
+            ...
+          - title: Arguments
+            args:
+            name:
+              help: Name of the new guest.
+            dst_host:
+              help: Hypervisor on which deploy the new guest.
+            model:
+              metavar: MODEL
+              choices:
+                - ubuntu-lucid
+                - ubuntu-precise
+                - ubuntu-trusty
+                - redhat-5.8
+                - redhat-6.3
+                - centos-5
+                - w2003
+                - w2008r2
+              help: |
+                Model on which the new guest is based. Choices are:
+                  * ubuntu-precise
+                  * ubuntu-trusty
+                  * redhat-5.8
+                  * redhat-6.3
+                  * centos-5
+                  * w2003
+                  * w2008-r2
+            interfaces:
+              nargs: '+'
+              type: Interface
+              metavar: INTERFACE
+              help: |
+                Network configuration. This is a list of network
+                interfaces configurations. Each interface
+                configuration is a list of parameters separated by
+                commas. Parameters are:
+                  * the network type ('network' (NAT) or 'bridge'),
+                  * the source (network name for 'network' type
+                    or vlan number for 'bridge' type),
+                  * the IP address,
+                  * the netmask,
+                  * the gateway (only for the first interface)
+                For example, for deploying a guest with an inteface
+                in the public network and an interface in the storage
+                network:
+                  * bridge,br903,130.79.200.1,255.255.254.0,130.79.201.254,801
+                  * bridge,br896,172.30.0.1,255.255.254.0,896
+                  * network,default,192.168.122.2,255.255.255.0,192.168.122.1
 
-        migrate:
-            description: >
-                Move a guest to an other hypervisor. This command manage
-                both cold and live migration.
-            help: Move a guest to an other hypervisor.
-            add_help: False
-            execute:
-                module: commands.migrate
-            groups:
-                - title: Common options
-                  options: *MAIN
-                - title: Optional options
-                  options:
-                    no_check:
-                        action: store_true
-                        help: >
-                            Don't check for valid resources in the destination
-                            hypervisor.
-                    force:
-                        action: store_true
-                        help:
-                            If a guest or some images already exists on the
-                            destination, configuration and disk images are
-                            automaticaly backuped, then overwrited, without
-                            confirmation.
-                    remove:
-                        short: r
-                        action: store_true
-                        help: Remove guest on source hypervisor after migration.
-                - title: Migration type (exclusive and required)
-                  exclusive_groups:
-                      - required: True
-                        options:
-                            cold:
-                                short: c
-                                action: store_true
-                                help: Cold migration.
-                            live:
-                                short: l
-                                action: store_true
-                                help: Live migration.
-                - title: Arguments
-                  args:
-                    src_host:
-                        help: Hypervisor source.
-                    name:
-                        help: Name of the guest.
-                    dst_host:
-                        help: Hypervisor destination.
+      migrate:
+        description: >
+          Move a guest to an other hypervisor. This command manage
+          both cold and live migration.
+        help: Move a guest to an other hypervisor.
+        add_help: false
+        execute:
+          module: commands.migrate
+        groups:
+          - title: Common options
+            options: *MAIN
+          - title: Optional options
+            options:
+            no_check:
+              action: store_true
+              help: >
+                Don't check for valid resources in the destination
+                hypervisor.
+            force:
+              action: store_true
+              help:
+                If a guest or some images already exists on the
+                destination, configuration and disk images are
+                automaticaly backuped, then overwrited, without
+                confirmation.
+            remove:
+              short: r
+              action: store_true
+              help: Remove guest on source hypervisor after migration.
+          - title: Migration type (exclusive and required)
+            exclusive_groups:
+              - required: true
+              options:
+                cold:
+                  short: c
+                  action: store_true
+                  help: Cold migration.
+                live:
+                  short: l
+                  action: store_true
+                  help: Live migration.
+          - title: Arguments
+            args:
+            src_host:
+              help: Hypervisor source.
+            name:
+              help: Name of the guest.
+            dst_host:
+              help: Hypervisor destination.
 
-
-*Executions*:
-
-.. code-block:: bash
+.. code-block:: text
+    :caption: Executions
 
     # python kvm.py
     usage: kvm.py [-h] {help,deploy,migrate} ...
@@ -744,3 +721,8 @@ This example use:
      'src_disks': '/vm/disk',
      'src_host': 'bes1',
      'vgroot': 'sys'}
+
+Note that even with this modules, generating complex command-lines with a lot of nested
+subcommands cause long configuration files that are hard to manage. It can also be useful
+to manage configuration files or logging for command-line and this is why some
+`plugins <plugins.html>`_ have been created.
