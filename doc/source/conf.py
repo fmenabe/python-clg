@@ -34,6 +34,10 @@ extensions = [
 html_static_path = ['_static']
 html_theme = 'sphinx_rtd_theme'
 
+# Custom CSS for code caption. 
+def setup(app):
+    app.add_stylesheet('css/code_caption.css')
+
 
 # -- Options for LaTeX output --------------------------------------------------
 
