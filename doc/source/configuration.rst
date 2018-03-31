@@ -67,9 +67,9 @@ formatter_class
 **argparse link**: `<https://docs.python.org/dev/library/argparse.html#formatter-class>`_
 
 A class for customizing the help output. It takes the name of one of the class
-defining in ``argparse``:
+defined in ``argparse``:
 
-.. code:: yaml
+.. code-block:: yaml
 
     formatter_class: RawTextHelpFormatter
 
@@ -95,20 +95,22 @@ add_help
 --------
 **argparse link**: `<https://docs.python.org/dev/library/argparse.html#add-help>`_
 
-Add a ``-h``/``–help`` option to the parser (default: *True*) that allows to
-print the help. You may need to have a better control on this option (for
-putting the option in a group, customizing the help message, removing the short
-option, ...). You can manually set this option by using theses values:
+Add a ``-h``/``--help`` option to the parser (default: *True*) allowing to
+print the help of the command.
 
-.. code:: yaml
+You may need to have a better control on this option (for putting the option in a group,
+customizing the help message, removing the short option, ...). You can manually set this
+option by using this configuration:
+
+.. code-block:: yaml
 
     options:
-        help:
-          short: h
-          action: help
-          default: __SUPPRESS__
-          help: My help message.
-        ...
+      help:
+        short: h
+        action: help
+        default: __SUPPRESS__
+        help: My help message.
+      ...
 
 
 
@@ -130,11 +132,10 @@ for a (sub)command (default: *False*).
 
 add_help_cmd
 ------------
-Add a `help` subcommand at the root of the parser that print the arborsence of
-commands with their description.
+Add a `help` command at the root of the parser that print the tree of
+commands with their descriptions.
 
-The command has a ``--page`` option allowing to page the output of the command (using
-`less -c` command).
+The command has a ``--page`` option allowing to page the output (using `less -c`).
 
 
 
@@ -144,7 +145,7 @@ Boolean indicating whether `abrevations
 <https://docs.python.org/dev/library/argparse.html#argument-abbreviations-prefix-matching>`_
 are allowed (default: *False*).
 
-.. note:: The default behavior of ``argparse`` is to allow abbrevation but
+.. note:: The default behavior of ``argparse`` is to allow abbrevations but
     ``clg`` module disable this "feature" by default.
 
 
@@ -163,9 +164,8 @@ by a '+') and to remove (by prefixing them by a '-'). For managing this, I just 
 the parameter `negative_value` for matching absolutes paths prefixed by a dash (I kept
 the parts for matching integers and floats):
 
-*YAML configuration*:
-
 .. code-block:: yaml
+    :caption: YAML configuration
 
     negative_value: '^-\d+$|^-\d*\.\d+$|^-/.*$'
     options:
@@ -179,9 +179,8 @@ the parts for matching integers and floats):
         host:
             help: Manage selection for this host.
 
-*Execution*:
-
 .. code-block:: bash
+    :caption: Execution
 
     $ python selections.py myhost --paths +/etc -/tmp
     Namespace(host='myhost', paths=['+/etc', '-/tmp'])
@@ -236,11 +235,11 @@ prefixed and sufixed by double underscores (``__BUILTIN__``). For example:
 .. code-block:: yaml
 
     options:
-        sum:
-            action: store_const
-            const: __SUM__
-            default: __MAX__
-            help: "sum the integers (default: find the max)"
+      sum:
+        action: store_const
+        const: __SUM__
+        default: __MAX__
+        help: "sum the integers (default: find the max)"
 
 In the same way, there are specials "builtins":
     * ``__DEFAULT__``: this is replaced in the help message by the value of the
@@ -267,12 +266,14 @@ completer
 ~~~~~~~~~
 This parameters allows to use `argcomplete completers
 <http://argcomplete.readthedocs.io/en/latest/#specifying-completers>`_ for improving
-completion. Theses completers must be previously added to the ``COMPLETERS`` variable of
+completion. These completers must be previously added to the ``COMPLETERS`` variable of
 the module.
 
 For example, the ``argcomplete`` example for retrieving github members looks like this:
 
-.. code:: python
+.. code-block:: python
+
+    #!/usr/bin/env python
 
     import clg
     import requests
@@ -281,7 +282,7 @@ For example, the ``argcomplete`` example for retrieving github members looks lik
 
     CMD = {'options':
         {
-            'organization': {'help': 'Github organization'},
+            'org': {'help': 'Github organization'},
             'member': {
                 'help': 'Github member',
                 'completer': 'github_org_members'
@@ -290,17 +291,18 @@ For example, the ``argcomplete`` example for retrieving github members looks lik
     }
 
     def github_org_members(prefix, parsed_args, **kwargs):
-        resource = "https://api.github.com/orgs/{org}/members".format(org=parsed_args.organization)
+        resource = "https://api.github.com/orgs/{org}/members".format(org=parsed_args.org)
         return (member['login']
                 for member in requests.get(resource).json()
                 if member['login'].startswith(prefix))
     clg.COMPLETERS.update(github_org_members=github_org_members)
 
-    cmd = clg.CommandLine(CMD)
-    argcomplete.autocomplete(cmd.parser)
-    args = cmd.parse()
+    def main():
+        args = clg.init(format='raw', data=CMD, completion=True)
+        pprint(requests.get("https://api.github.com/users/{m}".format(m=args.member)).json())
 
-    pprint(requests.get("https://api.github.com/users/{m}".format(m=args.member)).json())
+    if __name__ == '__main__':
+        main()
 
 
 help
@@ -354,10 +356,10 @@ want. For example, to add a custom `Date` type based on french date format
 
     ...
     options:
-        date:
-            short: d
-            type: Date
-            help: Date.
+      date:
+        short: d
+        type: Date
+        help: Date.
     ...
 
 
@@ -389,9 +391,8 @@ of the module.
 
 For example, to add an action that page help (using the `less -c` command):
 
-*Python program*:
-
 .. code-block:: python
+    :caption: Python program
 
     import os
     import clg
@@ -413,17 +414,16 @@ For example, to add an action that page help (using the `less -c` command):
     command = clg.CommandLine(yaml.load(open('cmd.yml'))
     args = command.parse()
 
-*YAML configuration*:
-
 .. code-block:: yaml
+    :caption: YAML configuration
 
     ...
     options:
-        help:
-            short: h
-            action: page_help
-            default: __SUPPRESS__
-            help: My help message.
+      help:
+        short: h
+        action: page_help
+        default: __SUPPRESS__
+        help: My help message.
     ...
 
 
@@ -438,7 +438,7 @@ allows to print the version information and exits.
 
 The ``argparse`` example look like this:
 
-.. code:: python
+.. code-block:: python
 
     >>> import argparse
     >>> parser = argparse.ArgumentParser(prog='PROG')
@@ -448,7 +448,7 @@ The ``argparse`` example look like this:
 
 And the ``clg`` equivalent in YAML is this:
 
-.. code:: python
+.. code-block:: python
 
     options:
         version:
@@ -483,12 +483,42 @@ A name for the argument in usage messages.
 
 need
 ~~~~
-List of options needed with the current option.
+List of options needed with the current option. This can also check the value of
+the option and manage lists values.
+
+For exemple, for forcing the ``bar`` option to be use with values *value1* and
+*value2* of ``foo`` option:
+
+.. code-block:: yaml
+
+    options:
+      foo:
+        nargs: '*'
+        help: Foo option.
+      bar:
+        action: store_true
+        need: ['foo:value1', 'foo:value2']
+        help: Bar option.
 
 
 conflict
 ~~~~~~~~
-List of options that must not be used with the current option.
+List of options that must not be used with the current option. This can also check
+the value of the option and manage lists values.
+
+For example, for preventing the ``bar`` option to be use with the values *value1* and
+*value2* of the ``foo`` option:
+
+.. code-block:: yaml
+
+    options:
+      foo:
+        nargs: '*'
+        help: Foo option.
+      bar:
+        action: store_true
+        conflict: ['foo:value1', 'foo:value2']
+        help: Bar option.
 
 
 match
@@ -601,18 +631,6 @@ Keywords:
    configurations. This prevent the use of the extra keyword `parsers` if none
    of the other parameters need to be set).
 
-.. note:: When using subparsers and for being able to retrieve configuration of
-   the used (sub)command, `dest` argument of `argparse.ArgumentParser.add_subparsers`
-   method is used. It adds in the resulted `Namespace` an entry which the key is
-   `dest` value and the value the used subparser. `dest` value is generated from
-   the `keyword` argument (default: *command*) of the `CommandLine` object,
-   incremented at each level of the arborescence. For example:
-
-   .. code:: bash
-
-       $ python prog.py list users
-       Namespace(command0='list', command1='users')
-
 
 title
 ~~~~~
@@ -680,7 +698,7 @@ main program.
 
 For example, the directory structure of your program could be like this:
 
-.. code:: bash
+.. code::
 
     .
     ├── prog.py                 => Main program intializing clg
@@ -698,11 +716,11 @@ And the configuration syntax is:
 .. code-block:: yaml
 
     subparsers:
-        list:
-            subparsers:
-                users:
-                    execute:
-                        module: commands.list.users
+      list:
+        subparsers:
+          users:
+            execute:
+              module: commands.list.users
 
 This will execute the ``main`` function if the file *commands/list/users.py*.
 
