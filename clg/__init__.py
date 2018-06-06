@@ -781,9 +781,9 @@ def init(format='yaml', data=os.path.join(sys.path[0], 'cmd.yml'),
     """
     # Get command-line configuration based on format and data and initialize CommandLine.
     if format == 'yaml':
-        import yaml, yamlordereddictloader
+        import yaml, yamlloader
         with open(data) as fhandler:
-            config = yaml.load(fhandler, Loader=yamlordereddictloader.Loader)
+            config = yaml.load(fhandler, Loader=yamlloader.ordereddict.CLoader)
     elif format == 'json':
         import json
         with open(data) as fhandler:
