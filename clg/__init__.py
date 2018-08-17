@@ -666,7 +666,7 @@ class CommandLine(object):
     def parse(self, args=None):
         """Parse command-line."""
         args_values = Namespace(self.parser.parse_args(args).__dict__)
-        if self.help_cmd and args_values['command0'] == 'help':
+        if self.help_cmd and args_values['%s0' % self.keyword] == 'help':
             self.print_help(args_values)
 
         # Get command configuration.
