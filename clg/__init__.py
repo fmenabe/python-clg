@@ -417,6 +417,9 @@ class Namespace(argparse.Namespace):
         argparse.Namespace.__init__(self)
         self.__dict__.update(args)
 
+    def __getattr__(self, name):
+        return None
+
     def __getitem__(self, key):
         return self.__dict__.get(key, None)
 
