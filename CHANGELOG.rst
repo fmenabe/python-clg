@@ -8,10 +8,15 @@ Changelog
   object and set some variables in the module namespace (this is required for
   some ``clg`` plugins and simplify the usage);
   `43fefa6 <https://github.com/fmenabe/python-clg/commit/43fefa6>`_).
-* Access to non existing element in the **Namespace** now returns *None*
-  instead of throwing the *KeyError*/*AttributeErrors* exception
-  (`bb49cd4 <https://github.com/fmenabe/python-clg/commit/bb49cd4>`_,
-  `0ff8007 <https://github.com/fmenabe/python-clg/commit/0ff8007>`_).
+* Improve **Namespace**:
+
+   * Accessing non existing elements now returns *None* instead of
+     throwing the *KeyError*/*AttributeError* exception (
+     `bb49cd4 <https://github.com/fmenabe/python-clg/commit/bb49cd4>`_,
+     `0ff8007 <https://github.com/fmenabe/python-clg/commit/0ff8007>`_).
+   * Arguments can be deleted
+     (`d37fcc7 <https://github.com/fmenabe/python-clg/commit/d37fcc7>`_).
+
 * Allow deletion of keys in the arguments **Namespace**
   (`d37fcc7 <https://github.com/fmenabe/python-clg/commit/d37fcc7>`_)
 * Force escaping of percent characters in help message.
