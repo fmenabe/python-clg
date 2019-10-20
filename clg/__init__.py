@@ -412,16 +412,16 @@ class HelpPager(argparse.Action):
 ACTIONS.update(page_help=HelpPager)
 
 class Namespace(argparse.Namespace):
-    """Iterable namespace."""
+    """Iterable and editable namespace."""
     def __init__(self, args):
         argparse.Namespace.__init__(self)
         self.__dict__.update(args)
 
-    def __getattr__(self, name):
-        return None
-
+#    def __getattr__(self, name):
+#        return None
+#
     def __getitem__(self, key):
-        return self.__dict__.get(key, None)
+        return self.__dict__[key]
 
     def __setitem__(self, key, value):
         if key not in self.__dict__:
@@ -432,6 +432,12 @@ class Namespace(argparse.Namespace):
         if key not in self.__dict__:
             raise KeyError(key)
         del self.__dict__[key]
+
+    def _get(self, key, default=None):
+        try:
+            return self.__dict__[key]
+        except KeyError:
+            return default
 
     def __iter__(self):
         return ((key, value) for key, value in self.__dict__.items())
