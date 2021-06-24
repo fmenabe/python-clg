@@ -185,7 +185,7 @@ subparsers:
         add_help: False
         print_help: True
         execute:
-            module: commands.migrate
+            file: __FILE__/commands/migrate.py
         groups:
             - title: Common options
               options: *MAIN

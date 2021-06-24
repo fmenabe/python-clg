@@ -6,7 +6,7 @@ command-line from a predefined directory (ie: a YAML, JSON, ... file)."""
 import os
 import re
 import sys
-import imp
+import importlib
 import copy
 import pydoc
 import argparse
@@ -19,7 +19,7 @@ from collections import OrderedDict
 _SELF = sys.modules[__name__]
 
 # Get types.
-_BUILTINS = sys.modules['builtins' if sys.version_info.major == 3 else '__builtin__']
+_BUILTINS = sys.modules['builtins']
 TYPES = {builtin: getattr(_BUILTINS, builtin) for builtin in vars(_BUILTINS)}
 TYPES['suppress'] = argparse.SUPPRESS
 # Allow custom actions.
@@ -319,28 +319,29 @@ def _post_match(parser, parser_args, args_values, arg):
 def _exec_module(path, exec_conf, args_values):
     """Load and execute a function of a module according to **exec_conf**."""
     mdl_func = exec_conf.get('function', 'main')
-    mdl_tree = exec_conf['module'].split('.')
-    mdl = None
+    mdl_tree = exec_conf['module']
 
-    for mdl_idx, mdl_name in enumerate(mdl_tree):
-        try:
-            imp_args = imp.find_module(mdl_name, mdl.__path__ if mdl else None)
-            mdl = imp.load_module('.'.join(mdl_tree[:mdl_idx + 1]), *imp_args)
-        except (ImportError, AttributeError) as err:
-            raise CLGError(path, _LOAD_ERR.format(err=err))
+    try:
+        mdl = importlib.import_module(mdl_tree)
+    except (ImportError, ModuleNotFoundError) as err:
+        raise CLGError(path, _LOAD_ERR.format(err=err))
     getattr(mdl, mdl_func)(args_values)
 
 def _exec_file(path, exec_conf, args_values):
     """Load and execute a function of a file according to **exec_conf**."""
-    mdl_path = os.path.abspath(exec_conf['file'])
+    mdl_path = _set_builtin(exec_conf['file'])  # Allow __FILE__ builtin.
     mdl_name = os.path.splitext(os.path.basename(mdl_path))[0]
     mdl_func = exec_conf.get('function', 'main')
 
     try:
-        getattr(imp.load_source(mdl_name, mdl_path), mdl_func)(args_values)
+        spec = importlib.util.spec_from_file_location(mdl_name, mdl_path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        getattr(module, mdl_func)(args_values)
+    except FileNotFoundError as err:
+        raise CLGError(path, _FILE_ERR.format(err=err.filename))
     except (IOError, ImportError, AttributeError) as err:
-        raise CLGError(path, _FILE_ERR.format(err=err))
-
+        raise CLGError(path, _FILE_ERR.format(err=str(err)))
 
 #
 # Classes.

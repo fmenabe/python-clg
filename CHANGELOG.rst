@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+3.1.0 (not released)
+~~~~~~~~~~~~~~~~~~~~
+
+* Replace deprecated ``imp`` module withh ``importlib`` before it is dropped in
+  Python 3.10. `pep-0594 <https://www.python.org/dev/peps/pep-0594/#imp>`_
+* Drop Python 2 support.
+* Allow ``__FILE__`` builtin with the ``file`` argument to ``execute``.
+
 3.0.0 (not released)
 ~~~~~~~~~~~~~~~~~~~~
 
