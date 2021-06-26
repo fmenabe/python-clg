@@ -9,7 +9,7 @@ from pprint import pprint
 CMD_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), 'cmd.yml'))
 
 def main():
-    cmd = clg.CommandLine(yaml.load(open('cmd.yml'), Loader=yamlordereddictloader.Loader))
+    cmd = clg.CommandLine(yaml.load(open(CMD_FILE), Loader=yamlordereddictloader.Loader))
     args = cmd.parse()
     pprint(vars(args))
 

@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 
+import os
+import datetime
 import clg
 import yaml
 import yamlordereddictloader
 from pprint import pprint
+
+CMD_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), 'cmd.yml'))
 
 def Date(value):
     try:
@@ -13,7 +17,7 @@ def Date(value):
 clg.TYPES['Date'] = Date
 
 def main():
-    conf = yaml.load(open('cmd.yml'), Loader=yamlordereddictloader.Loader)
+    conf = yaml.load(open(CMD_FILE), Loader=yamlordereddictloader.Loader)
     cmd = clg.CommandLine(conf)
     args = cmd.parse()
     pprint(vars(args))

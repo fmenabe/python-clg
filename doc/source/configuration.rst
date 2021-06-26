@@ -668,7 +668,8 @@ Keywords:
 
 file
 ~~~~
-Path of the python file to load.
+Path of the python file to load. The ``__FILE__`` builtin to can be used to
+define the file relatively to the main program.
 
 
 module
