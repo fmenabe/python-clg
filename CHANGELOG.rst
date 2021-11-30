@@ -1,27 +1,27 @@
 Changelog
 ---------
 
-3.1.0 (not released)
-~~~~~~~~~~~~~~~~~~~~
+3.1.0 (2021-11-30)
+~~~~~~~~~~~~~~~~~~
 
 * Replace deprecated ``imp`` module withh ``importlib`` before it is dropped in
   Python 3.10. `pep-0594 <https://www.python.org/dev/peps/pep-0594/#imp>`_
 * Drop Python 2 support.
 * Allow ``__FILE__`` builtin with the ``file`` argument to ``execute``.
 
-3.0.0 (not released)
-~~~~~~~~~~~~~~~~~~~~
+3.0.0 (never released)
+~~~~~~~~~~~~~~~~~~~~~~
 
 * Add an ``init`` function to the module that initialize the **CommandLine**
   object and set some variables in the module namespace (this is required for
   some ``clg`` plugins and simplify the usage);
   `43fefa6 <https://github.com/fmenabe/python-clg/commit/43fefa6>`_).
-* Improve **Namespace**:
+* **Namespace** changes:
 
-   * Accessing non existing elements now returns *None* instead of
-     throwing the *KeyError*/*AttributeError* exception (
-     `bb49cd4 <https://github.com/fmenabe/python-clg/commit/bb49cd4>`_,
-     `0ff8007 <https://github.com/fmenabe/python-clg/commit/0ff8007>`_).
+   * Access to an element in the namespace now raise an exception based on the
+     syntax used (`AttributeError` or `KeyError`). To access an element which
+     may not exists, a `_get` method has been implement based on `dict.get`
+     (`_get(args, default=None)`).
    * Arguments can be deleted
      (`d37fcc7 <https://github.com/fmenabe/python-clg/commit/d37fcc7>`_).
 
