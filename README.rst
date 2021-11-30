@@ -37,6 +37,6 @@ exportable to configuration files like *YAML* or *JSON*, the idea is to
 outsource the command-line definition to a file instead of writing dozens or
 hundreds lines of code.
 
-| Code is available on `Github <http://github.com/fmenabe/python-clg>`__.
-| Documentation is available on `Readthedocs <https://clg.readthedocs.org/en/latest/>`__.
-| Changlog is available `here <http://github.com/fmenabe/python-clg/blob/master/CHANGELOG.rst>`__
+* Code is available on `Github <http://github.com/fmenabe/python-clg>`__.
+* Documentation is available on `Readthedocs <https://clg.readthedocs.org/en/latest/>`__.
+* Changlog is available `here <http://github.com/fmenabe/python-clg/blob/master/CHANGELOG.rst>`__
