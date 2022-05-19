@@ -1,6 +1,12 @@
 Changelog
 ---------
 
+3.1.1 (2022-05-19)
+~~~~~~~~~~~~~~~~~~
+
+* Add builtin BooleanOptionalAction Action.
+  https://docs.python.org/3/library/argparse.html?highlight=argparse#action
+
 3.1.0 (2021-11-30)
 ~~~~~~~~~~~~~~~~~~
 

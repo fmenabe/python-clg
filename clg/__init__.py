@@ -79,6 +79,10 @@ _LOAD_ERR = "Unable to load module: {err}"
 _GRP_METHODS = {'groups': 'add_argument_group',
                 'exclusive_groups': 'add_mutually_exclusive_group'}
 
+# Add builtin BooleanOptionalAction Action.
+# https://docs.python.org/3/library/argparse.html?highlight=argparse#action
+if sys.version_info >= (3, 9):
+    ACTIONS.update(BooleanOptionalAction=argparse.BooleanOptionalAction)
 
 #
 # Exceptions.
