@@ -430,6 +430,9 @@ For example, to add an action that page help (using the `less -c` command):
 .. note:: The `page_help` action is implemented and added by default in the
    ``clg`` module so you can use it without redefining it.
 
+.. note:: `argparse.BooleanOptionalAction` is added by default in ``clg`` and
+   adds support for boolean actions such as `--foo` and `--no-foo`. It can be
+   activated with `action: BooleanOptionalAction`. Requires Python3.9 or greater.
 
 version
 ~~~~~~~
