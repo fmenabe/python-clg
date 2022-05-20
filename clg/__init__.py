@@ -805,7 +805,7 @@ def init(format='yaml', data=os.path.join(sys.path[0], 'cmd.yml'),
     elif format == 'raw':
         config = data
     else:
-        raise CLGError('unsupported format: %s' % format)
+        raise CLGError([], 'unsupported format: %s' % format)
     cmd = CommandLine(config, subcommands_keyword, deepcopy)
 
     # Activate completion if wished.

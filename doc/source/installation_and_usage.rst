@@ -5,7 +5,7 @@ Installation and usage
 
 Installation
 ============
-This module is tested with python2.7, python3.4 and python 3.5 (it should work
+This module is tested with python3.4 through python 3.10 (it should work
 for any python3 version). It is on `PyPi <https://pypi.python.org/pypi/clg>`_
 so you can use the ``pip`` command for installing it. If you use YAML for your
 configuration file, you need to install the ``pyyaml`` module too. ``json``
