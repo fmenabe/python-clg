@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+3.2.0 (2022-05-22)
+~~~~~~~~~~~~~~~~~~
+
+* Add support of typing `#13 <https://github.com/fmenabe/python-clg/pull/13>`__
+
 3.1.1 (2022-05-19)
 ~~~~~~~~~~~~~~~~~~
 

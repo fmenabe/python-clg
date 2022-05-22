@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='clg',
-    version='3.1.1',
+    version='3.2.0',
     author='François Ménabé',
     author_email='francois.menabe@gmail.com',
     url='https://clg.readthedocs.org/en/latest/',
@@ -34,5 +34,5 @@ setup(
         # installed) and in MANIFEST.in (which determines what gets included
         # in the sdist tarball)
         "clg": ["py.typed", "__init__.pyi"],
-    }
+    },
     packages=['clg'])
