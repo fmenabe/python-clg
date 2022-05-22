@@ -1,2 +1,4 @@
 include README.rst
 include LICENSE
+include clg/py.typed
+include clg/*.pyi

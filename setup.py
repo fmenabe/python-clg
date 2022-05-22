@@ -29,4 +29,10 @@ setup(
         'Programming Language :: Python :: 3.10',
         'Topic :: Utilities'
     ],
+    package_data={
+        # data files need to be listed both here (which determines what gets
+        # installed) and in MANIFEST.in (which determines what gets included
+        # in the sdist tarball)
+        "clg": ["py.typed", "__init__.pyi"],
+    }
     packages=['clg'])
