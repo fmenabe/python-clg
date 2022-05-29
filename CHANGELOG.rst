@@ -1,6 +1,12 @@
 Changelog
 ---------
 
+3.2.1 (2022-05-29)
+~~~~~~~~~~~~~~~~~~
+
+* Revert an uncommitted test while previously pushing the package. The test was
+  replacing dashes by underscores in ``execute`` module's name.
+
 3.2.0 (2022-05-22)
 ~~~~~~~~~~~~~~~~~~
 
