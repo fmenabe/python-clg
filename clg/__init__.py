@@ -223,7 +223,8 @@ def _check_keywords(path, conf, section, one=None, need=None):
     for keyword in conf:
         if keyword not in valid_keywords:
             raise CLGError(path, _INVALID_KEYWORD.format(keyword=keyword))
-        _check_empty(path + [keyword], conf[keyword])
+        if keyword != 'default':
+            _check_empty(path + [keyword], conf[keyword])
 
     if one and len([arg for arg in conf if arg in one]) != 1:
         raise CLGError(path, _ONE_KEYWORDS.format(keywords="', '".join(one)))
