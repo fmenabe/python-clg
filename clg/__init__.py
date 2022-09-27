@@ -257,7 +257,10 @@ def _has_value(value, conf):
     action = conf.get('action', None)
     return ((not action and value) or
             (action and action == 'store_true' and value) or
-            (action and action == 'store_false' and not value))
+            (action and action == 'store_false' and not value) or
+            # Manage boolean values like BooleanOptional action
+            (isinstance(value, bool) and value))
+
 
 def _post_need(parser, parser_args, args_values, arg):
     """Post processing that check all for needing options."""
