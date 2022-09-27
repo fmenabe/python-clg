@@ -786,7 +786,8 @@ class CommandLine(object):
 
 
 def init(format='yaml', data=os.path.join(sys.path[0], 'cmd.yml'),
-         completion=False, subcommands_keyword='command', deepcopy=True):
+         completion=False, subcommands_keyword='command', deepcopy=True,
+         args=None):
     """Wrapping method that initialize the command-line and export the input
     configuration and the **CommandLine** object at the module level.
 
@@ -822,6 +823,4 @@ def init(format='yaml', data=os.path.join(sys.path[0], 'cmd.yml'),
     setattr(_SELF, 'cmd', cmd)
 
     # Parse arguments.
-    args = cmd.parse()
-
-    return args
+    return cmd.parse(args)
