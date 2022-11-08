@@ -1,6 +1,16 @@
 Changelog
 ---------
 
+3.3.0 (2022-11-09)
+~~~~~~~~~~~~~~~~~~
+
+* Allow *default* parameter of an option to be an empty list
+  (`3a99af3 <https://github.com/fmenabe/python-clg/commit/3a99af3>`_)
+* Manage boolean values in post checks (*need*/*conflict*;
+  `092fbce <https://github.com/fmenabe/python-clg/commit/092fbce>`_)
+* Allow to pass args to the `init` function
+  (`d047652 <https://github.com/fmenabe/python-clg/commit/d047652>`_)
+
 3.2.1 (2022-05-29)
 ~~~~~~~~~~~~~~~~~~
 
